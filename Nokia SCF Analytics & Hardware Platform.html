@@ -631,7 +631,7 @@
     <!-- LINE 1: MAIN BRANDING & FILE ACTIONS HEADER -->
     <header>
         <div class="logo-area">
-            <h1>SCF Nokia Analytics <span class="logo-badge">Pro Suite</span> <span class="logo-badge" style="background:rgba(255,255,255,0.1); font-weight:600;">v1.90</span></h1>
+            <h1>SCF Nokia Analytics <span class="logo-badge">Pro Suite</span> <span class="logo-badge" style="background:rgba(255,255,255,0.1); font-weight:600;">v1.91</span></h1>
         </div>
         <div class="upload-area">
             <span class="summary-badge" id="site-summary">No SCF file loaded</span>
@@ -5252,14 +5252,16 @@
         // NEIGHBOR MAPPING (Phase 1): intra-LTE LNADJ/LNREL event-dynamics graph
         // ============================================================
 
-        // Nokia-convention candidate parameter names per LTE mobility event. Multiple candidates
-        // per field because exact names can vary slightly by SW release — first match wins.
+        // Standardized LNCEL parameter mapping per event (per spec):
+        // A1 = LNCEL/threshold1, dBm = raw - 140
+        // A2 = LNCEL/threshold2a, dBm = raw - 140
+        // A3 = LNCEL/a3offset (RSRP offset in dB), dB = raw / 2
+        // A5 is not a per-cell parameter: it lives inside the LNHOIF (inter-freq mobility profile)
+        // matched to this specific relation's target frequency (see getA5ForRelation below).
         const NBR_MAP_EVENT_CONFIG = {
-            A1: { thresholdKeys: ['threshold2a'], hysteresisKeys: ['a1a2Hysteresis', 'hysteresisA1A2', 'a1Hysteresis'], tttKeys: ['a1TimeToTrigger', 'timeToTriggerA1'], dbmOffset: 140 },
-            A2: { thresholdKeys: ['threshold1', 'threshold1a'], hysteresisKeys: ['a1a2Hysteresis', 'hysteresisA1A2', 'a2Hysteresis'], tttKeys: ['a2TimeToTrigger', 'timeToTriggerA2'], dbmOffset: 140 },
-            A3: { offsetKeys: ['a3offset', 'a3Offset'], hysteresisKeys: ['a3hysteresis', 'hysteresisA3'], tttKeys: ['a3TimeToTrigger', 'timeToTriggerA3'] },
-            // A5 is not a per-cell parameter: it lives inside the LNHOIF (inter-freq mobility profile)
-            // matched to this specific relation's target frequency (see getA5ForRelation below).
+            A1: { thresholdKeys: ['threshold1'], hysteresisKeys: ['a1a2Hysteresis', 'hysteresisA1A2', 'a1Hysteresis'], tttKeys: ['a1TimeToTrigger', 'timeToTriggerA1'], dbmOffset: 140 },
+            A2: { thresholdKeys: ['threshold2a'], hysteresisKeys: ['a1a2Hysteresis', 'hysteresisA1A2', 'a2Hysteresis'], tttKeys: ['a2TimeToTrigger', 'timeToTriggerA2'], dbmOffset: 140 },
+            A3: { offsetKeys: ['a3offset'], offsetDivisor: 2, hysteresisKeys: ['a3hysteresis', 'hysteresisA3'], tttKeys: ['a3TimeToTrigger', 'timeToTriggerA3'] },
             A5: { thresholdKeys: ['threshold3InterFreq'], threshold2Keys: ['threshold3aInterFreq'], carrierKeys: ['eutraCarrierInfo'], tttKeys: ['a5TimeToTrigger'], dbmOffset: 140 }
         };
 
@@ -5299,7 +5301,7 @@
 
             const a3Off = nbrMapFirstParam(servingParams, NBR_MAP_EVENT_CONFIG.A3.offsetKeys);
             profile.A3 = a3Off ? {
-                offsetRaw: a3Off.raw, offsetKey: a3Off.key, offsetDb: parseFloat(a3Off.raw),
+                offsetRaw: a3Off.raw, offsetKey: a3Off.key, offsetDb: parseFloat(a3Off.raw) / NBR_MAP_EVENT_CONFIG.A3.offsetDivisor,
                 hysteresis: nbrMapFirstParam(servingParams, NBR_MAP_EVENT_CONFIG.A3.hysteresisKeys),
                 ttt: nbrMapFirstParam(servingParams, NBR_MAP_EVENT_CONFIG.A3.tttKeys)
             } : null;
