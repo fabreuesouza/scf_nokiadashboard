@@ -354,15 +354,26 @@
         .sidebar-chip-group { display: flex; flex-direction: column; gap: 4px; max-height: 180px; overflow-y: auto; background: var(--bg-subtle); padding: 6px; border-radius: 6px; border: 1px solid var(--border-color); }
 
         .nbr-map-select { width: 100%; margin-top: 2px; padding: 5px 6px; border-radius: 5px; border: 1px solid var(--border-color-strong); background: var(--bg-card); color: var(--text-primary); font-size: 0.8rem; font-weight: 600; font-family: 'JetBrains Mono', monospace; }
-        .nbr-map-graph-card { flex: 1; background-color: var(--bg-card); border: 1px solid var(--border-color); border-radius: 8px; overflow: hidden; box-shadow: var(--shadow-xs); position: relative; min-width: 0; }
-        .nbr-map-node-box { fill: var(--bg-card); stroke: var(--border-color-strong); stroke-width: 1.5; rx: 8; cursor: pointer; }
-        .nbr-map-node-box.is-source { stroke: var(--brand-blue); stroke-width: 2.5; }
-        .nbr-map-node-title { font-family: 'JetBrains Mono', monospace; font-size: 11px; font-weight: 700; fill: var(--text-primary); }
-        .nbr-map-node-sub { font-family: 'JetBrains Mono', monospace; font-size: 9px; font-weight: 500; fill: var(--text-muted); }
-        .nbr-map-arrow-label { font-family: 'JetBrains Mono', monospace; font-size: 9px; font-weight: 600; fill: var(--text-secondary); cursor: pointer; }
-        .nbr-map-arrow-label.has-conflict { fill: #ef4444; font-weight: 700; }
-        .nbr-map-arrow-line { stroke: var(--border-color-strong); stroke-width: 1.5; fill: none; cursor: pointer; }
-        .nbr-map-arrow-line.has-conflict { stroke: #ef4444; }
+
+        .nbr-map-source-card { width: 200px; flex-shrink: 0; background-color: var(--bg-card); border: 2px solid var(--brand-blue); border-radius: 8px; padding: 12px; box-shadow: var(--shadow-xs); display: flex; flex-direction: column; gap: 6px; overflow-y: auto; }
+        .nbr-map-source-title { font-size: 0.82rem; font-weight: 800; color: var(--text-primary); line-height: 1.25; }
+        .nbr-map-source-sub { font-family: 'JetBrains Mono', monospace; font-size: 0.68rem; color: var(--text-muted); }
+
+        .nbr-map-list-card { flex: 1; min-width: 0; display: flex; flex-direction: column; background-color: var(--bg-card); border: 1px solid var(--border-color); border-radius: 8px; overflow: hidden; box-shadow: var(--shadow-xs); }
+        .nbr-map-list-toolbar { display: flex; align-items: center; gap: 10px; padding: 8px 10px; border-bottom: 1px solid var(--border-color); flex-shrink: 0; }
+        .nbr-map-search-input { flex: 1; padding: 5px 8px; border-radius: 5px; border: 1px solid var(--border-color-strong); background: var(--bg-subtle); color: var(--text-primary); font-size: 0.75rem; }
+        .nbr-map-conflict-toggle { display: flex; align-items: center; gap: 4px; font-size: 0.72rem; color: var(--text-secondary); white-space: nowrap; cursor: pointer; }
+        .nbr-map-list-scroll { flex: 1; overflow-y: auto; }
+        .nbr-map-row { display: flex; align-items: center; gap: 8px; padding: 6px 10px; border-bottom: 1px solid var(--border-color); cursor: pointer; }
+        .nbr-map-row:hover { background: var(--bg-subtle); }
+        .nbr-map-row.has-conflict { background: rgba(239, 68, 68, 0.06); }
+        .nbr-map-row.has-conflict:hover { background: rgba(239, 68, 68, 0.12); }
+        .nbr-map-row-arrow { flex-shrink: 0; }
+        .nbr-map-row-target { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+        .nbr-map-row-name { font-size: 0.78rem; font-weight: 700; color: var(--text-primary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .nbr-map-row-ids { font-family: 'JetBrains Mono', monospace; font-size: 0.66rem; color: var(--text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .nbr-map-row-events { flex-shrink: 0; text-align: right; font-family: 'JetBrains Mono', monospace; font-size: 0.68rem; color: var(--text-secondary); line-height: 1.3; }
+        .nbr-map-row-events.has-conflict { color: #ef4444; font-weight: 700; }
         .nbr-map-detail-row { padding: 4px 0; border-bottom: 1px solid var(--border-color); font-size: 0.72rem; }
         .nbr-map-detail-row b { color: var(--text-primary); }
         .nbr-map-conflict-badge { display: inline-block; background: var(--badge-false-bg); color: var(--badge-false-text); border: 1px solid var(--badge-false-border); border-radius: 4px; padding: 1px 6px; font-size: 0.68rem; font-weight: 700; margin-top: 2px; }
@@ -1125,12 +1136,21 @@
             </div>
 
             <div class="footprint-main-content" style="margin-top:4px;">
-                <div class="nbr-map-graph-card">
-                    <svg id="nbrMapSvg" width="100%" height="100%"></svg>
+                <div class="nbr-map-source-card" id="nbrMapSourceCard">
+                    <span style="font-size:0.72rem; color:var(--text-muted); font-style:italic;">Select a source cell above.</span>
+                </div>
+                <div class="nbr-map-list-card">
+                    <div class="nbr-map-list-toolbar">
+                        <input type="text" id="nbrMapSearchInput" class="nbr-map-search-input" placeholder="Filter by target name, EnbId, CellId, PCI or EARFCN…" oninput="renderNeighborMappingGraph()">
+                        <label class="nbr-map-conflict-toggle"><input type="checkbox" id="nbrMapOnlyConflicts" onchange="renderNeighborMappingGraph()"> Only conflicts</label>
+                    </div>
+                    <div class="nbr-map-list-scroll" id="nbrMapListScroll">
+                        <div style="padding:16px; font-size:0.75rem; color:var(--text-muted); font-style:italic; text-align:center;">Select a source cell above to list its neighbor relations.</div>
+                    </div>
                 </div>
                 <div class="footprint-sidebar-filters" id="nbrMapDetailPanel">
                     <div class="filter-section-title"><span>Relation Detail</span></div>
-                    <div id="nbrMapDetailContent" style="font-size:0.75rem; color:var(--text-muted); font-style:italic;">Select a source cell above, then click a neighbor node or an arrow to see the full event/threshold breakdown.</div>
+                    <div id="nbrMapDetailContent" style="font-size:0.75rem; color:var(--text-muted); font-style:italic;">Select a source cell above, then click a row to see the full event/threshold breakdown.</div>
                 </div>
             </div>
         </div>
@@ -5366,18 +5386,32 @@
         let nbrMapCurrentSourceProfile = null;
         let nbrMapCurrentSourceLabel = '';
 
+        const NBR_MAP_ROW_ARROW_SVG = (hasConflict) => `
+            <svg class="nbr-map-row-arrow" width="34" height="18" viewBox="0 0 34 18">
+                <defs>
+                    <marker id="nbrMapRowArrowHead${hasConflict ? 'Conflict' : ''}" markerWidth="7" markerHeight="7" refX="5" refY="2.5" orient="auto">
+                        <path d="M0,0 L5,2.5 L0,5 Z" fill="${hasConflict ? '#ef4444' : 'var(--border-color-strong)'}"></path>
+                    </marker>
+                </defs>
+                <line x1="1" y1="9" x2="28" y2="9" stroke="${hasConflict ? '#ef4444' : 'var(--border-color-strong)'}" stroke-width="1.5" marker-end="url(#nbrMapRowArrowHead${hasConflict ? 'Conflict' : ''})"></line>
+            </svg>`;
+
         function renderNeighborMappingGraph() {
-            const svg = document.getElementById('nbrMapSvg');
+            const listScroll = document.getElementById('nbrMapListScroll');
+            const sourceCard = document.getElementById('nbrMapSourceCard');
             const select = document.getElementById('nbrMapSourceSelect');
-            if (!svg || !select) return;
+            if (!listScroll || !sourceCard || !select) return;
             const cellId = select.value;
 
-            svg.innerHTML = '';
             document.getElementById('nbrMapTotalNeighbors').innerText = '0';
             document.getElementById('nbrMapTotalConflicts').innerText = '0';
-            document.getElementById('nbrMapDetailContent').innerHTML = `Select a source cell above, then click a neighbor node or an arrow to see the full event/threshold breakdown.`;
+            document.getElementById('nbrMapDetailContent').innerHTML = `Select a source cell above, then click a row to see the full event/threshold breakdown.`;
 
-            if (!cellId) return;
+            if (!cellId) {
+                sourceCard.innerHTML = `<span style="font-size:0.72rem; color:var(--text-muted); font-style:italic;">Select a source cell above.</span>`;
+                listScroll.innerHTML = `<div style="padding:16px; font-size:0.75rem; color:var(--text-muted); font-style:italic; text-align:center;">Select a source cell above to list its neighbor relations.</div>`;
+                return;
+            }
 
             const sourceDist = findLncelDistByShortId(cellId);
             const sourceParams = sourceDist ? scfData[sourceDist].params : {};
@@ -5399,28 +5433,23 @@
 
             document.getElementById('nbrMapTotalNeighbors').innerText = String(relations.length);
 
-            const W = svg.clientWidth || 900, H = svg.clientHeight || 560;
-            const cx = W / 2, cy = H / 2;
-            const nodeW = 190, nodeH = 54;
-            const radius = Math.min(W, H) / 2 - nodeW / 2 - 20;
+            sourceCard.innerHTML = `
+                <div class="nbr-map-source-title">${nbrMapCurrentSourceLabel}</div>
+                <div class="nbr-map-source-sub">EnbId: ${sourceEnbId}</div>
+                <div class="nbr-map-source-sub">CellId: ${cellId}</div>
+                <div class="nbr-map-source-sub">PCI: ${sourcePci} &nbsp; EARFCN: ${sourceEarfcn}</div>
+                <div style="border-top:1px solid var(--border-color); margin-top:4px; padding-top:6px; cursor:pointer;" onclick="showNeighborMappingSourceDetail()">
+                    <span style="font-size:0.68rem; color:var(--brand-blue); font-weight:600;">View event profile →</span>
+                </div>`;
 
-            let svgContent = `
-                <defs>
-                    <marker id="nbrMapArrowHead" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
-                        <path d="M0,0 L6,3 L0,6 Z" fill="var(--border-color-strong)"></path>
-                    </marker>
-                    <marker id="nbrMapArrowHeadConflict" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
-                        <path d="M0,0 L6,3 L0,6 Z" fill="#ef4444"></path>
-                    </marker>
-                </defs>`;
+            const searchTerm = (document.getElementById('nbrMapSearchInput').value || '').toLowerCase().trim();
+            const onlyConflicts = document.getElementById('nbrMapOnlyConflicts').checked;
 
-            let totalConflicts = baseConflicts.length > 0 ? 1 : 0; // source-level conflicts count once, surfaced on every arrow
+            let totalConflicts = baseConflicts.length > 0 ? 1 : 0; // source-level conflicts count once, surfaced on every row
+            let rowsHtml = '';
+            let visibleCount = 0;
 
             relations.forEach((rel, i) => {
-                const angle = (relations.length === 1) ? -Math.PI / 2 : (-Math.PI / 2 + (2 * Math.PI * i / relations.length));
-                const tx = cx + radius * Math.cos(angle);
-                const ty = cy + radius * Math.sin(angle);
-
                 const reciprocal = findReciprocalRelation(rel);
                 const relConflicts = [...baseConflicts];
                 if (reciprocal && String(reciprocal.cio) !== String(rel.cio)) {
@@ -5429,43 +5458,33 @@
                 if (relConflicts.length > 0) totalConflicts++;
                 const hasConflict = relConflicts.length > 0;
 
-                const dx = tx - cx, dy = ty - cy, len = Math.sqrt(dx * dx + dy * dy);
-                const ux = dx / len, uy = dy / len;
-                const x1 = cx + ux * (nodeW / 2 + 4), y1 = cy + uy * (nodeH / 2 + 4);
-                const x2 = tx - ux * (nodeW / 2 + 4), y2 = ty - uy * (nodeH / 2 + 4);
-                const midX = (x1 + x2) / 2, midY = (y1 + y2) / 2;
-                const labelOffset = -10;
-                const nx = -uy, ny = ux;
+                if (onlyConflicts && !hasConflict) return;
+                if (searchTerm) {
+                    const haystack = `${rel.targetName} ${rel.targetEnbId} ${rel.targetLcrId} ${rel.targetPci} ${rel.targetEarfcn}`.toLowerCase();
+                    if (!haystack.includes(searchTerm)) return;
+                }
+                visibleCount++;
 
                 const eventBits = [];
                 if (profile.A3) eventBits.push(`A3:${profile.A3.offsetDb}dB`);
                 if (profile.A5) eventBits.push(`A5:${profile.A5.thresholdDbm}/${profile.A5.threshold2Dbm}dBm`);
                 if (eventBits.length === 0) eventBits.push('No A3/A5 found');
-                const labelLine1 = eventBits.join('  ');
-                const labelLine2 = `CIO:${rel.cio}${hasConflict ? '  ⚠' : ''}`;
 
-                svgContent += `
-                    <g data-rel-idx="${i}" onclick="showNeighborMappingRelDetail(${i})" style="cursor:pointer;">
-                        <line class="nbr-map-arrow-line ${hasConflict ? 'has-conflict' : ''}" x1="${x1.toFixed(1)}" y1="${y1.toFixed(1)}" x2="${x2.toFixed(1)}" y2="${y2.toFixed(1)}" marker-end="url(#${hasConflict ? 'nbrMapArrowHeadConflict' : 'nbrMapArrowHead'})"></line>
-                        <text class="nbr-map-arrow-label ${hasConflict ? 'has-conflict' : ''}" x="${(midX + nx * labelOffset).toFixed(1)}" y="${(midY + ny * labelOffset).toFixed(1)}" text-anchor="middle">${labelLine1}</text>
-                        <text class="nbr-map-arrow-label ${hasConflict ? 'has-conflict' : ''}" x="${(midX + nx * labelOffset).toFixed(1)}" y="${(midY + ny * labelOffset + 11).toFixed(1)}" text-anchor="middle">${labelLine2}</text>
-
-                        <rect class="nbr-map-node-box" x="${(tx - nodeW / 2).toFixed(1)}" y="${(ty - nodeH / 2).toFixed(1)}" width="${nodeW}" height="${nodeH}" rx="8"></rect>
-                        <text class="nbr-map-node-title" x="${tx.toFixed(1)}" y="${(ty - 10).toFixed(1)}" text-anchor="middle">${(rel.targetName || 'Unknown').substring(0, 24)}</text>
-                        <text class="nbr-map-node-sub" x="${tx.toFixed(1)}" y="${(ty + 4).toFixed(1)}" text-anchor="middle">EnbId:${rel.targetEnbId}  CellId:${rel.targetLcrId}</text>
-                        <text class="nbr-map-node-sub" x="${tx.toFixed(1)}" y="${(ty + 16).toFixed(1)}" text-anchor="middle">PCI:${rel.targetPci}  EARFCN:${rel.targetEarfcn}</text>
-                    </g>`;
+                rowsHtml += `
+                    <div class="nbr-map-row ${hasConflict ? 'has-conflict' : ''}" onclick="showNeighborMappingRelDetail(${i})">
+                        ${NBR_MAP_ROW_ARROW_SVG(hasConflict)}
+                        <div class="nbr-map-row-target">
+                            <span class="nbr-map-row-name">${rel.targetName || 'Unknown'}</span>
+                            <span class="nbr-map-row-ids">EnbId:${rel.targetEnbId} &nbsp;CellId:${rel.targetLcrId} &nbsp;PCI:${rel.targetPci} &nbsp;EARFCN:${rel.targetEarfcn}</span>
+                        </div>
+                        <div class="nbr-map-row-events ${hasConflict ? 'has-conflict' : ''}">
+                            <div>${eventBits.join('  ')}</div>
+                            <div>CIO:${rel.cio}${hasConflict ? '  ⚠' : ''}</div>
+                        </div>
+                    </div>`;
             });
 
-            svgContent += `
-                <g onclick="showNeighborMappingSourceDetail()" style="cursor:pointer;">
-                    <rect class="nbr-map-node-box is-source" x="${(cx - nodeW / 2).toFixed(1)}" y="${(cy - nodeH / 2).toFixed(1)}" width="${nodeW}" height="${nodeH}" rx="8"></rect>
-                    <text class="nbr-map-node-title" x="${cx.toFixed(1)}" y="${(cy - 10).toFixed(1)}" text-anchor="middle">${nbrMapCurrentSourceLabel.substring(0, 26)}</text>
-                    <text class="nbr-map-node-sub" x="${cx.toFixed(1)}" y="${(cy + 4).toFixed(1)}" text-anchor="middle">EnbId:${sourceEnbId}  CellId:${cellId}</text>
-                    <text class="nbr-map-node-sub" x="${cx.toFixed(1)}" y="${(cy + 16).toFixed(1)}" text-anchor="middle">PCI:${sourcePci}  EARFCN:${sourceEarfcn}</text>
-                </g>`;
-
-            svg.innerHTML = svgContent;
+            listScroll.innerHTML = rowsHtml || `<div style="padding:16px; font-size:0.75rem; color:var(--text-muted); font-style:italic; text-align:center;">No relations match the current filter.</div>`;
             document.getElementById('nbrMapTotalConflicts').innerText = String(totalConflicts);
         }
 
