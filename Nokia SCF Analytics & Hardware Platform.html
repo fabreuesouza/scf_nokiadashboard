@@ -369,14 +369,12 @@
         .nbr-map-row:hover { background: var(--bg-subtle); }
         .nbr-map-row.has-conflict { background: rgba(239, 68, 68, 0.06); }
         .nbr-map-row.has-conflict:hover { background: rgba(239, 68, 68, 0.12); }
-        .nbr-map-row-arrow { flex-shrink: 0; }
         .nbr-map-row-target { flex: 1; min-width: 0; display: flex; flex-direction: column; }
-        .nbr-map-row-cellnames { font-size: 0.82rem; font-weight: 800; color: var(--text-primary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: flex; align-items: center; gap: 5px; }
-        .nbr-map-row-cellnames .nbr-map-row-cellname-src { overflow: hidden; text-overflow: ellipsis; }
-        .nbr-map-row-cellnames .nbr-map-row-arrow-sep { color: var(--brand-blue); flex-shrink: 0; font-weight: 700; }
-        .nbr-map-row-cellnames .nbr-map-row-ids-inline { font-family: 'JetBrains Mono', monospace; font-size: 0.7rem; font-weight: 600; color: var(--text-secondary); overflow: hidden; text-overflow: ellipsis; }
-        .nbr-map-row-name { font-size: 0.78rem; font-weight: 700; color: var(--text-primary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-top: 6px; }
-        .nbr-map-row-ids { font-family: 'JetBrains Mono', monospace; font-size: 0.66rem; color: var(--text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .nbr-map-row-cellnames, .nbr-map-row-name, .nbr-map-row-ids { font-family: 'JetBrains Mono', monospace; font-size: 0.72rem; font-weight: 400; color: var(--text-primary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .nbr-map-row-cellnames { display: flex; align-items: center; gap: 5px; }
+        .nbr-map-row-cellnames .nbr-map-row-cellname-src, .nbr-map-row-cellnames .nbr-map-row-ids-inline { overflow: hidden; text-overflow: ellipsis; }
+        .nbr-map-row-cellnames .nbr-map-row-arrow-sep { flex-shrink: 0; }
+        .nbr-map-row-name { margin-top: 6px; }
         .nbr-map-row-events { flex-shrink: 0; text-align: right; font-family: 'JetBrains Mono', monospace; font-size: 0.68rem; color: var(--text-secondary); line-height: 1.3; }
         .nbr-map-detail-row { padding: 4px 0; border-bottom: 1px solid var(--border-color); font-size: 0.72rem; }
         .nbr-map-detail-row b { color: var(--text-primary); }
@@ -633,7 +631,7 @@
     <!-- LINE 1: MAIN BRANDING & FILE ACTIONS HEADER -->
     <header>
         <div class="logo-area">
-            <h1>SCF Nokia Analytics <span class="logo-badge">Pro Suite</span> <span class="logo-badge" style="background:rgba(255,255,255,0.1); font-weight:600;">v1.89</span></h1>
+            <h1>SCF Nokia Analytics <span class="logo-badge">Pro Suite</span> <span class="logo-badge" style="background:rgba(255,255,255,0.1); font-weight:600;">v1.90</span></h1>
         </div>
         <div class="upload-area">
             <span class="summary-badge" id="site-summary">No SCF file loaded</span>
@@ -5429,16 +5427,6 @@
             return { type: 'A5', label: `A5:${a5.thresholdDbm}/${a5.threshold2Dbm}dBm (${a5.thresholdKey}/${a5.threshold2Key})`, data: a5 };
         }
 
-        const NBR_MAP_ROW_ARROW_SVG = (hasConflict) => `
-            <svg class="nbr-map-row-arrow" width="34" height="18" viewBox="0 0 34 18">
-                <defs>
-                    <marker id="nbrMapRowArrowHead${hasConflict ? 'Conflict' : ''}" markerWidth="7" markerHeight="7" refX="5" refY="2.5" orient="auto">
-                        <path d="M0,0 L5,2.5 L0,5 Z" fill="${hasConflict ? '#ef4444' : 'var(--border-color-strong)'}"></path>
-                    </marker>
-                </defs>
-                <line x1="1" y1="9" x2="28" y2="9" stroke="${hasConflict ? '#ef4444' : 'var(--border-color-strong)'}" stroke-width="1.5" marker-end="url(#nbrMapRowArrowHead${hasConflict ? 'Conflict' : ''})"></line>
-            </svg>`;
-
         function renderNeighborMappingGraph() {
             const listScroll = document.getElementById('nbrMapListScroll');
             const sourceCard = document.getElementById('nbrMapSourceCard');
@@ -5459,7 +5447,8 @@
             const sourceDist = findLncelDistByShortId(cellId);
             const sourceParams = sourceDist ? scfData[sourceDist].params : {};
             const sourcePci = getParamCaseInsensitive(sourceParams, 'phyCellId') || getParamCaseInsensitive(sourceParams, 'physCellId') || 'N/A';
-            const sourceEarfcn = getParamCaseInsensitive(sourceParams, 'earfcnDL') || 'N/A';
+            const sourceFddData = sourceDist ? (lncelFddParams[sourceDist] || {}) : {};
+            const sourceEarfcn = sourceFddData.earfcnDL || getParamCaseInsensitive(sourceParams, 'earfcnDL') || 'N/A';
             let sourceEnbId = 'N/A';
             for (const dName of Object.keys(scfData)) {
                 const mrbtsMatch = dName.match(/MRBTS-(\d+)/);
@@ -5534,7 +5523,6 @@
 
                 rowsHtml += `
                     <div class="nbr-map-row ${hasConflict ? 'has-conflict' : ''}" onclick="showNeighborMappingRelDetail(${i})" title="${(rel.targetName || 'Unknown').replace(/"/g, '&quot;')}">
-                        ${NBR_MAP_ROW_ARROW_SVG(hasConflict)}
                         <div class="nbr-map-row-target">
                             <span class="nbr-map-row-cellnames">
                                 <span class="nbr-map-row-cellname-src">${rel.servingCellName || cellId}</span>
