@@ -353,6 +353,21 @@
         .filter-section-title span.btn-reset:hover { text-decoration: underline; }
         .sidebar-chip-group { display: flex; flex-direction: column; gap: 4px; max-height: 180px; overflow-y: auto; background: var(--bg-subtle); padding: 6px; border-radius: 6px; border: 1px solid var(--border-color); }
 
+        .nbr-map-select { width: 100%; margin-top: 2px; padding: 5px 6px; border-radius: 5px; border: 1px solid var(--border-color-strong); background: var(--bg-card); color: var(--text-primary); font-size: 0.8rem; font-weight: 600; font-family: 'JetBrains Mono', monospace; }
+        .nbr-map-graph-card { flex: 1; background-color: var(--bg-card); border: 1px solid var(--border-color); border-radius: 8px; overflow: hidden; box-shadow: var(--shadow-xs); position: relative; min-width: 0; }
+        .nbr-map-node-box { fill: var(--bg-card); stroke: var(--border-color-strong); stroke-width: 1.5; rx: 8; cursor: pointer; }
+        .nbr-map-node-box.is-source { stroke: var(--brand-blue); stroke-width: 2.5; }
+        .nbr-map-node-title { font-family: 'JetBrains Mono', monospace; font-size: 11px; font-weight: 700; fill: var(--text-primary); }
+        .nbr-map-node-sub { font-family: 'JetBrains Mono', monospace; font-size: 9px; font-weight: 500; fill: var(--text-muted); }
+        .nbr-map-arrow-label { font-family: 'JetBrains Mono', monospace; font-size: 9px; font-weight: 600; fill: var(--text-secondary); cursor: pointer; }
+        .nbr-map-arrow-label.has-conflict { fill: #ef4444; font-weight: 700; }
+        .nbr-map-arrow-line { stroke: var(--border-color-strong); stroke-width: 1.5; fill: none; cursor: pointer; }
+        .nbr-map-arrow-line.has-conflict { stroke: #ef4444; }
+        .nbr-map-detail-row { padding: 4px 0; border-bottom: 1px solid var(--border-color); font-size: 0.72rem; }
+        .nbr-map-detail-row b { color: var(--text-primary); }
+        .nbr-map-conflict-badge { display: inline-block; background: var(--badge-false-bg); color: var(--badge-false-text); border: 1px solid var(--badge-false-border); border-radius: 4px; padding: 1px 6px; font-size: 0.68rem; font-weight: 700; margin-top: 2px; }
+        .nbr-map-ok-badge { display: inline-block; background: var(--badge-true-bg); color: var(--badge-true-text); border: 1px solid var(--badge-true-border); border-radius: 4px; padding: 1px 6px; font-size: 0.68rem; font-weight: 700; margin-top: 2px; }
+
         .footprint-table-card, .boost-table-card { flex: 1; display: flex; flex-direction: column; overflow: hidden; background-color: var(--bg-card); border: 1px solid var(--border-color); border-radius: 8px; padding: 12px; box-shadow: var(--shadow-xs); }
         .footprint-table-scroll, .boost-table-scroll { flex: 1; overflow-y: auto; overflow-x: auto; margin-top: 4px; border: 1px solid var(--border-color); border-radius: 6px; }
         .checkbox-cell { width: 34px; text-align: center; }
@@ -632,7 +647,7 @@
                 </div>
             </div>
             <div class="main-nav-btn-group" id="neighborNavGroup">
-                <button class="main-nav-btn" id="btnNavNeighbor" onclick="toggleNavDropdown(event, 'neighborDropdownMenu')"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block; vertical-align:-3px; margin-right:2px;"><path d="M9 15l6-6"></path><path d="M8 13l-2 2a3 3 0 0 0 4 4l2-2"></path><path d="M16 11l2-2a3 3 0 0 0-4-4l-2 2"></path></svg>Neighbor Audit<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block; vertical-align:-1px; margin-left:3px;"><polyline points="6,9 12,15 18,9"></polyline></svg></button>
+                <button class="main-nav-btn" id="btnNavNeighbor" onclick="toggleNavDropdown(event, 'neighborDropdownMenu')"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block; vertical-align:-3px; margin-right:2px;"><path d="M9 15l6-6"></path><path d="M8 13l-2 2a3 3 0 0 0 4 4l2-2"></path><path d="M16 11l2-2a3 3 0 0 0-4-4l-2 2"></path></svg>Neighbor Analytics<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block; vertical-align:-1px; margin-left:3px;"><polyline points="6,9 12,15 18,9"></polyline></svg></button>
                 <div class="nav-dropdown-menu" id="neighborDropdownMenu">
                     <button class="nav-dropdown-item" id="btnNavNeighborAudit" onclick="switchMainTab('neighbor'); closeAllNavDropdowns();">Audit</button>
                     <button class="nav-dropdown-item" id="btnNavNeighborMapping" onclick="switchMainTab('neighborMapping'); closeAllNavDropdowns();">Mapping</button>
@@ -1085,8 +1100,39 @@
             </div>
         </div>
 
-        <!-- MODULE 6b: NEIGHBOR MAPPING (placeholder) -->
+        <!-- MODULE 6b: NEIGHBOR MAPPING -->
         <div class="neighbor-mapping-view" id="neighborMappingView">
+            <div class="footprint-fixed-header">
+                <div class="footprint-summary-grid">
+                    <div class="power-summary-card">
+                        <span class="power-card-title">Source Cell (LNCEL)</span>
+                        <select id="nbrMapSourceSelect" class="nbr-map-select" onchange="renderNeighborMappingGraph()">
+                            <option value="">Select a serving cell…</option>
+                        </select>
+                        <span class="power-card-sub">Phase 1: intra-LTE (LNADJ/LNREL) only</span>
+                    </div>
+                    <div class="power-summary-card">
+                        <span class="power-card-title">Neighbors Mapped</span>
+                        <span class="power-card-value" id="nbrMapTotalNeighbors">0</span>
+                        <span class="power-card-sub">4G relations from selected source</span>
+                    </div>
+                    <div class="power-summary-card" style="border-left: 3px solid #ef4444;">
+                        <span class="power-card-title">🔴 Event Dynamics Conflicts</span>
+                        <span class="power-card-value" id="nbrMapTotalConflicts" style="color:#ef4444;">0</span>
+                        <span class="power-card-sub">A1/A2/A3/A5 overlap, inversion or asymmetry</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="footprint-main-content" style="margin-top:4px;">
+                <div class="nbr-map-graph-card">
+                    <svg id="nbrMapSvg" width="100%" height="100%"></svg>
+                </div>
+                <div class="footprint-sidebar-filters" id="nbrMapDetailPanel">
+                    <div class="filter-section-title"><span>Relation Detail</span></div>
+                    <div id="nbrMapDetailContent" style="font-size:0.75rem; color:var(--text-muted); font-style:italic;">Select a source cell above, then click a neighbor node or an arrow to see the full event/threshold breakdown.</div>
+                </div>
+            </div>
         </div>
 
         <!-- MODULE 7: HARDWARE MAPPING -->
@@ -3843,6 +3889,7 @@
                 if (tabName === 'priority') renderPriorityDashboard();
                 if (tabName === 'connectedPriority') renderConnectedPriorityDashboard();
                 if (tabName === 'neighbor') renderNeighborMapping();
+                if (tabName === 'neighborMapping') renderNeighborMappingDashboard();
                 if (tabName === 'health') renderFeatureHealthDashboard();
                 if (tabName === 'nranchor') renderNrAnchoringDashboard();
                 if (tabName === 'hardware') {
@@ -3864,8 +3911,8 @@
             else if (tabName === 'cio') moduleName = "CIO Analytics";
             else if (tabName === 'priority') moduleName = "Idle Priority";
             else if (tabName === 'connectedPriority') moduleName = "Connected Priority";
-            else if (tabName === 'neighbor') moduleName = "Neighbor Audit";
-            else if (tabName === 'neighborMapping') moduleName = "Neighbor Mapping";
+            else if (tabName === 'neighbor') moduleName = "Neighbor Analytics - Audit";
+            else if (tabName === 'neighborMapping') moduleName = "Neighbor Analytics - Mapping";
             else if (tabName === 'hardware') moduleName = "Hardware Mapping";
             else if (tabName === 'health') moduleName = "Site Health Check";
             else if (tabName === 'nranchor') moduleName = "NR Anchoring";
@@ -3884,6 +3931,7 @@
                     if (tabName === 'priority') renderPriorityDashboard();
                     if (tabName === 'connectedPriority') renderConnectedPriorityDashboard();
                     if (tabName === 'neighbor') renderNeighborMapping();
+                    if (tabName === 'neighborMapping') renderNeighborMappingDashboard();
                     if (tabName === 'health') renderFeatureHealthDashboard();
                     if (tabName === 'nranchor') renderNrAnchoringDashboard();
                     if (tabName === 'hardware') {
@@ -5170,6 +5218,303 @@
             document.getElementById('nbrTotalAdjNodes').innerText = `${totalAdjNodes} LNADJ`;
             document.getElementById('nbrTotalConflicts').innerText = `${totalConflicts} Risks`;
             document.getElementById('nbrTotalOrphans').innerText = `${totalOrphans} Relations`;
+        }
+
+        // ============================================================
+        // NEIGHBOR MAPPING (Phase 1): intra-LTE LNADJ/LNREL event-dynamics graph
+        // ============================================================
+
+        // Nokia-convention candidate parameter names per LTE mobility event. Multiple candidates
+        // per field because exact names can vary slightly by SW release — first match wins.
+        const NBR_MAP_EVENT_CONFIG = {
+            A1: { thresholdKeys: ['threshold2a'], hysteresisKeys: ['a1a2Hysteresis', 'hysteresisA1A2', 'a1Hysteresis'], tttKeys: ['a1TimeToTrigger', 'timeToTriggerA1'], dbmOffset: 140 },
+            A2: { thresholdKeys: ['threshold1', 'threshold1a'], hysteresisKeys: ['a1a2Hysteresis', 'hysteresisA1A2', 'a2Hysteresis'], tttKeys: ['a2TimeToTrigger', 'timeToTriggerA2'], dbmOffset: 140 },
+            A3: { offsetKeys: ['a3offset', 'a3Offset'], hysteresisKeys: ['a3hysteresis', 'hysteresisA3'], tttKeys: ['a3TimeToTrigger', 'timeToTriggerA3'] },
+            A5: { thresholdKeys: ['threshold2', 'threshold2InterFreq'], threshold2Keys: ['threshold3', 'threshold3InterFreq'], tttKeys: ['a5TimeToTrigger'], dbmOffset: 140 }
+        };
+
+        function nbrMapIdxToDbm(raw, offset) {
+            const n = parseFloat(raw);
+            if (isNaN(n)) return null;
+            return n - offset;
+        }
+
+        function nbrMapFirstParam(params, keys) {
+            for (const k of keys) {
+                const v = getParamCaseInsensitive(params, k);
+                if (v !== undefined && v !== null && v !== '') return { key: k, raw: v };
+            }
+            return null;
+        }
+
+        // Detects which A1/A2/A3/A5 events are configured on a serving LNCEL and normalizes
+        // their thresholds to dBm/dB where the encoding is known. Returns null per event when
+        // its signature parameters are not found in this SCF (shown as "N/A" in the UI).
+        function getLteEventProfile(servingParams) {
+            const profile = {};
+
+            const a1Thr = nbrMapFirstParam(servingParams, NBR_MAP_EVENT_CONFIG.A1.thresholdKeys);
+            profile.A1 = a1Thr ? {
+                thresholdRaw: a1Thr.raw, thresholdKey: a1Thr.key, thresholdDbm: nbrMapIdxToDbm(a1Thr.raw, NBR_MAP_EVENT_CONFIG.A1.dbmOffset),
+                hysteresis: nbrMapFirstParam(servingParams, NBR_MAP_EVENT_CONFIG.A1.hysteresisKeys),
+                ttt: nbrMapFirstParam(servingParams, NBR_MAP_EVENT_CONFIG.A1.tttKeys)
+            } : null;
+
+            const a2Thr = nbrMapFirstParam(servingParams, NBR_MAP_EVENT_CONFIG.A2.thresholdKeys);
+            profile.A2 = a2Thr ? {
+                thresholdRaw: a2Thr.raw, thresholdKey: a2Thr.key, thresholdDbm: nbrMapIdxToDbm(a2Thr.raw, NBR_MAP_EVENT_CONFIG.A2.dbmOffset),
+                hysteresis: nbrMapFirstParam(servingParams, NBR_MAP_EVENT_CONFIG.A2.hysteresisKeys),
+                ttt: nbrMapFirstParam(servingParams, NBR_MAP_EVENT_CONFIG.A2.tttKeys)
+            } : null;
+
+            const a3Off = nbrMapFirstParam(servingParams, NBR_MAP_EVENT_CONFIG.A3.offsetKeys);
+            profile.A3 = a3Off ? {
+                offsetRaw: a3Off.raw, offsetKey: a3Off.key, offsetDb: parseFloat(a3Off.raw),
+                hysteresis: nbrMapFirstParam(servingParams, NBR_MAP_EVENT_CONFIG.A3.hysteresisKeys),
+                ttt: nbrMapFirstParam(servingParams, NBR_MAP_EVENT_CONFIG.A3.tttKeys)
+            } : null;
+
+            const a5Thr = nbrMapFirstParam(servingParams, NBR_MAP_EVENT_CONFIG.A5.thresholdKeys);
+            const a5Thr2 = nbrMapFirstParam(servingParams, NBR_MAP_EVENT_CONFIG.A5.threshold2Keys);
+            profile.A5 = (a5Thr && a5Thr2) ? {
+                thresholdRaw: a5Thr.raw, thresholdKey: a5Thr.key, thresholdDbm: nbrMapIdxToDbm(a5Thr.raw, NBR_MAP_EVENT_CONFIG.A5.dbmOffset),
+                threshold2Raw: a5Thr2.raw, threshold2Key: a5Thr2.key, threshold2Dbm: nbrMapIdxToDbm(a5Thr2.raw, NBR_MAP_EVENT_CONFIG.A5.dbmOffset),
+                ttt: nbrMapFirstParam(servingParams, NBR_MAP_EVENT_CONFIG.A5.tttKeys)
+            } : null;
+
+            return profile;
+        }
+
+        // Conflict/dynamics checks between the events configured on one serving LNCEL.
+        // Phase 1 scope: RSRP only (RSRQ deferred to Phase 2).
+        function detectLteEventConflicts(profile) {
+            const conflicts = [];
+            const MIN_HYSTERESIS_MARGIN_DB = 2;
+
+            if (profile.A1 && profile.A2 && profile.A1.thresholdDbm !== null && profile.A2.thresholdDbm !== null) {
+                const margin = profile.A1.thresholdDbm - profile.A2.thresholdDbm;
+                if (margin < MIN_HYSTERESIS_MARGIN_DB) {
+                    conflicts.push({
+                        code: 'A1_A2_INVERTED', severity: margin < 0 ? 'CONFLICT' : 'WARN',
+                        text: `A2 enter-threshold (${profile.A2.thresholdDbm}dBm) is ${margin < 0 ? 'ABOVE' : 'too close to'} A1 exit-threshold (${profile.A1.thresholdDbm}dBm) — margin ${margin.toFixed(1)}dB (min recommended ${MIN_HYSTERESIS_MARGIN_DB}dB). Risk of A1/A2 oscillation (measurement being enabled/disabled repeatedly).`
+                    });
+                }
+            }
+
+            if (profile.A3 && profile.A5 && profile.A5.ttt && profile.A3.ttt) {
+                const a3TttMs = parseFloat(profile.A3.ttt.raw);
+                const a5TttMs = parseFloat(profile.A5.ttt.raw);
+                if (!isNaN(a3TttMs) && !isNaN(a5TttMs) && a5TttMs <= a3TttMs) {
+                    conflicts.push({
+                        code: 'A5_NOT_SLOWER_THAN_A3', severity: 'WARN',
+                        text: `A5 timeToTrigger (${a5TttMs}ms) is not slower than A3 timeToTrigger (${a3TttMs}ms). A5 is meant as an emergency fallback — if it reacts as fast as or faster than A3, A3 may never get the chance to trigger the normal handover first.`
+                    });
+                }
+            }
+
+            if (profile.A3 && !isNaN(profile.A3.offsetDb) && profile.A3.offsetDb > 10) {
+                conflicts.push({
+                    code: 'A3_OFFSET_TOO_HIGH', severity: 'WARN',
+                    text: `A3 offset (${profile.A3.offsetDb}dB) is unusually high — the neighbor would need to be far stronger than serving before A3 triggers, which can make A5 (if configured) the de-facto only working event.`
+                });
+            }
+
+            return conflicts;
+        }
+
+        function findLncelDistByShortId(cellId) {
+            for (const dName of Object.keys(scfData)) {
+                if (dName.endsWith('/' + cellId) && (scfData[dName].class || '').includes('LNCEL')) return dName;
+            }
+            return null;
+        }
+
+        function populateNeighborMappingSourceSelect() {
+            const select = document.getElementById('nbrMapSourceSelect');
+            if (!select) return;
+            const prevVal = select.value;
+
+            const seen = new Map();
+            allNeighborRelationsFlat.forEach(rel => {
+                if (rel.relType === '4G' && !seen.has(rel.servingCellId)) {
+                    seen.set(rel.servingCellId, rel.servingCellName);
+                }
+            });
+
+            const ids = Array.from(seen.keys()).sort(naturalCompare);
+            select.innerHTML = `<option value="">Select a serving cell…</option>` + ids.map(id => `<option value="${id}">${seen.get(id)} (${id})</option>`).join('');
+            if (prevVal && seen.has(prevVal)) select.value = prevVal;
+        }
+
+        function renderNeighborMappingDashboard() {
+            if (allNeighborRelationsFlat.length === 0 && Object.keys(scfData).length > 0) renderNeighborMapping();
+            populateNeighborMappingSourceSelect();
+            renderNeighborMappingGraph();
+        }
+
+        // Finds, for an intra-site reciprocal pair, the reverse relation (target -> source) so we
+        // can flag A->B vs B->A asymmetry. Best-effort: only resolvable when the neighbor is itself
+        // a local LNCEL on this same SCF (isIntraSite), since that is the only case where we can be
+        // sure of the reverse LNCEL's own short cell id.
+        function findReciprocalRelation(rel) {
+            if (!rel.isIntraSite) return null;
+            const reverseServingCellId = 'LNCEL-' + rel.targetLcrId;
+            return allNeighborRelationsFlat.find(r => r.relType === '4G' && r.servingCellId === reverseServingCellId && r.targetLcrId === rel.servingCellId.replace('LNCEL-', '')) || null;
+        }
+
+        let nbrMapCurrentRelations = [];
+        let nbrMapCurrentSourceProfile = null;
+        let nbrMapCurrentSourceLabel = '';
+
+        function renderNeighborMappingGraph() {
+            const svg = document.getElementById('nbrMapSvg');
+            const select = document.getElementById('nbrMapSourceSelect');
+            if (!svg || !select) return;
+            const cellId = select.value;
+
+            svg.innerHTML = '';
+            document.getElementById('nbrMapTotalNeighbors').innerText = '0';
+            document.getElementById('nbrMapTotalConflicts').innerText = '0';
+            document.getElementById('nbrMapDetailContent').innerHTML = `Select a source cell above, then click a neighbor node or an arrow to see the full event/threshold breakdown.`;
+
+            if (!cellId) return;
+
+            const sourceDist = findLncelDistByShortId(cellId);
+            const sourceParams = sourceDist ? scfData[sourceDist].params : {};
+            const sourcePci = getParamCaseInsensitive(sourceParams, 'phyCellId') || getParamCaseInsensitive(sourceParams, 'physCellId') || 'N/A';
+            const sourceEarfcn = getParamCaseInsensitive(sourceParams, 'earfcnDL') || 'N/A';
+            let sourceEnbId = 'N/A';
+            for (const dName of Object.keys(scfData)) {
+                const mrbtsMatch = dName.match(/MRBTS-(\d+)/);
+                if (mrbtsMatch) { sourceEnbId = mrbtsMatch[1]; break; }
+            }
+
+            const relations = allNeighborRelationsFlat.filter(r => r.relType === '4G' && r.servingCellId === cellId);
+            const profile = getLteEventProfile(sourceParams);
+            const baseConflicts = detectLteEventConflicts(profile);
+
+            nbrMapCurrentRelations = relations;
+            nbrMapCurrentSourceProfile = profile;
+            nbrMapCurrentSourceLabel = `${relations[0] ? relations[0].servingCellName : cellId} (${cellId})`;
+
+            document.getElementById('nbrMapTotalNeighbors').innerText = String(relations.length);
+
+            const W = svg.clientWidth || 900, H = svg.clientHeight || 560;
+            const cx = W / 2, cy = H / 2;
+            const nodeW = 190, nodeH = 54;
+            const radius = Math.min(W, H) / 2 - nodeW / 2 - 20;
+
+            let svgContent = `
+                <defs>
+                    <marker id="nbrMapArrowHead" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+                        <path d="M0,0 L6,3 L0,6 Z" fill="var(--border-color-strong)"></path>
+                    </marker>
+                    <marker id="nbrMapArrowHeadConflict" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+                        <path d="M0,0 L6,3 L0,6 Z" fill="#ef4444"></path>
+                    </marker>
+                </defs>`;
+
+            let totalConflicts = baseConflicts.length > 0 ? 1 : 0; // source-level conflicts count once, surfaced on every arrow
+
+            relations.forEach((rel, i) => {
+                const angle = (relations.length === 1) ? -Math.PI / 2 : (-Math.PI / 2 + (2 * Math.PI * i / relations.length));
+                const tx = cx + radius * Math.cos(angle);
+                const ty = cy + radius * Math.sin(angle);
+
+                const reciprocal = findReciprocalRelation(rel);
+                const relConflicts = [...baseConflicts];
+                if (reciprocal && String(reciprocal.cio) !== String(rel.cio)) {
+                    relConflicts.push({ code: 'CIO_ASYMMETRY', severity: 'WARN', text: `Asymmetric CIO: ${cellId}→target = ${rel.cio}, target→${cellId} = ${reciprocal.cio}. Handover favors one direction over the other.` });
+                }
+                if (relConflicts.length > 0) totalConflicts++;
+                const hasConflict = relConflicts.length > 0;
+
+                const dx = tx - cx, dy = ty - cy, len = Math.sqrt(dx * dx + dy * dy);
+                const ux = dx / len, uy = dy / len;
+                const x1 = cx + ux * (nodeW / 2 + 4), y1 = cy + uy * (nodeH / 2 + 4);
+                const x2 = tx - ux * (nodeW / 2 + 4), y2 = ty - uy * (nodeH / 2 + 4);
+                const midX = (x1 + x2) / 2, midY = (y1 + y2) / 2;
+                const labelOffset = -10;
+                const nx = -uy, ny = ux;
+
+                const eventBits = [];
+                if (profile.A3) eventBits.push(`A3:${profile.A3.offsetDb}dB`);
+                if (profile.A5) eventBits.push(`A5:${profile.A5.thresholdDbm}/${profile.A5.threshold2Dbm}dBm`);
+                if (eventBits.length === 0) eventBits.push('No A3/A5 found');
+                const labelLine1 = eventBits.join('  ');
+                const labelLine2 = `CIO:${rel.cio}${hasConflict ? '  ⚠' : ''}`;
+
+                svgContent += `
+                    <g data-rel-idx="${i}" onclick="showNeighborMappingRelDetail(${i})" style="cursor:pointer;">
+                        <line class="nbr-map-arrow-line ${hasConflict ? 'has-conflict' : ''}" x1="${x1.toFixed(1)}" y1="${y1.toFixed(1)}" x2="${x2.toFixed(1)}" y2="${y2.toFixed(1)}" marker-end="url(#${hasConflict ? 'nbrMapArrowHeadConflict' : 'nbrMapArrowHead'})"></line>
+                        <text class="nbr-map-arrow-label ${hasConflict ? 'has-conflict' : ''}" x="${(midX + nx * labelOffset).toFixed(1)}" y="${(midY + ny * labelOffset).toFixed(1)}" text-anchor="middle">${labelLine1}</text>
+                        <text class="nbr-map-arrow-label ${hasConflict ? 'has-conflict' : ''}" x="${(midX + nx * labelOffset).toFixed(1)}" y="${(midY + ny * labelOffset + 11).toFixed(1)}" text-anchor="middle">${labelLine2}</text>
+
+                        <rect class="nbr-map-node-box" x="${(tx - nodeW / 2).toFixed(1)}" y="${(ty - nodeH / 2).toFixed(1)}" width="${nodeW}" height="${nodeH}" rx="8"></rect>
+                        <text class="nbr-map-node-title" x="${tx.toFixed(1)}" y="${(ty - 10).toFixed(1)}" text-anchor="middle">${(rel.targetName || 'Unknown').substring(0, 24)}</text>
+                        <text class="nbr-map-node-sub" x="${tx.toFixed(1)}" y="${(ty + 4).toFixed(1)}" text-anchor="middle">EnbId:${rel.targetEnbId}  CellId:${rel.targetLcrId}</text>
+                        <text class="nbr-map-node-sub" x="${tx.toFixed(1)}" y="${(ty + 16).toFixed(1)}" text-anchor="middle">PCI:${rel.targetPci}  EARFCN:${rel.targetEarfcn}</text>
+                    </g>`;
+            });
+
+            svgContent += `
+                <g onclick="showNeighborMappingSourceDetail()" style="cursor:pointer;">
+                    <rect class="nbr-map-node-box is-source" x="${(cx - nodeW / 2).toFixed(1)}" y="${(cy - nodeH / 2).toFixed(1)}" width="${nodeW}" height="${nodeH}" rx="8"></rect>
+                    <text class="nbr-map-node-title" x="${cx.toFixed(1)}" y="${(cy - 10).toFixed(1)}" text-anchor="middle">${nbrMapCurrentSourceLabel.substring(0, 26)}</text>
+                    <text class="nbr-map-node-sub" x="${cx.toFixed(1)}" y="${(cy + 4).toFixed(1)}" text-anchor="middle">EnbId:${sourceEnbId}  CellId:${cellId}</text>
+                    <text class="nbr-map-node-sub" x="${cx.toFixed(1)}" y="${(cy + 16).toFixed(1)}" text-anchor="middle">PCI:${sourcePci}  EARFCN:${sourceEarfcn}</text>
+                </g>`;
+
+            svg.innerHTML = svgContent;
+            document.getElementById('nbrMapTotalConflicts').innerText = String(totalConflicts);
+        }
+
+        function nbrMapEventProfileHtml(profile) {
+            const fmt = (ev, label) => {
+                if (!ev) return `<div class="nbr-map-detail-row"><b>${label}</b>: not found in this SCF</div>`;
+                if (label === 'A3') return `<div class="nbr-map-detail-row"><b>${label}</b>: offset=${ev.offsetDb}dB (${ev.offsetKey})${ev.hysteresis ? `, hysteresis=${ev.hysteresis.raw}` : ''}${ev.ttt ? `, TTT=${ev.ttt.raw}ms` : ''}</div>`;
+                if (label === 'A5') return `<div class="nbr-map-detail-row"><b>${label}</b>: thr1(serving)=${ev.thresholdDbm}dBm, thr2(neighbor)=${ev.threshold2Dbm}dBm${ev.ttt ? `, TTT=${ev.ttt.raw}ms` : ''}</div>`;
+                return `<div class="nbr-map-detail-row"><b>${label}</b>: threshold=${ev.thresholdDbm}dBm (${ev.thresholdKey})${ev.hysteresis ? `, hysteresis=${ev.hysteresis.raw}` : ''}${ev.ttt ? `, TTT=${ev.ttt.raw}ms` : ''}</div>`;
+            };
+            return fmt(profile.A1, 'A1') + fmt(profile.A2, 'A2') + fmt(profile.A3, 'A3') + fmt(profile.A5, 'A5');
+        }
+
+        function showNeighborMappingSourceDetail() {
+            const panel = document.getElementById('nbrMapDetailContent');
+            if (!panel || !nbrMapCurrentSourceProfile) return;
+            const conflicts = detectLteEventConflicts(nbrMapCurrentSourceProfile);
+            panel.innerHTML = `
+                <div style="font-weight:700; margin-bottom:6px;">${nbrMapCurrentSourceLabel} — Serving Event Profile</div>
+                ${nbrMapEventProfileHtml(nbrMapCurrentSourceProfile)}
+                <div style="margin-top:8px;">
+                    ${conflicts.length === 0 ? `<span class="nbr-map-ok-badge">No A1/A2/A3/A5 conflicts detected</span>` : conflicts.map(c => `<div class="nbr-map-conflict-badge" style="display:block; margin-bottom:4px;">${c.severity}: ${c.text}</div>`).join('')}
+                </div>`;
+        }
+
+        function showNeighborMappingRelDetail(idx) {
+            const panel = document.getElementById('nbrMapDetailContent');
+            const rel = nbrMapCurrentRelations[idx];
+            if (!panel || !rel || !nbrMapCurrentSourceProfile) return;
+
+            const conflicts = detectLteEventConflicts(nbrMapCurrentSourceProfile);
+            const reciprocal = findReciprocalRelation(rel);
+            if (reciprocal && String(reciprocal.cio) !== String(rel.cio)) {
+                conflicts.push({ severity: 'WARN', text: `Asymmetric CIO vs. reverse relation: this direction=${rel.cio}, reverse direction=${reciprocal.cio}.` });
+            }
+
+            panel.innerHTML = `
+                <div style="font-weight:700; margin-bottom:6px;">${nbrMapCurrentSourceLabel} → ${rel.targetName}</div>
+                <div class="nbr-map-detail-row"><b>Target EnbId</b>: ${rel.targetEnbId}</div>
+                <div class="nbr-map-detail-row"><b>Target CellId (LcrId)</b>: ${rel.targetLcrId}</div>
+                <div class="nbr-map-detail-row"><b>Target PCI / EARFCN</b>: ${rel.targetPci} / ${rel.targetEarfcn}</div>
+                <div class="nbr-map-detail-row"><b>CIO (cellIndOffNeigh)</b>: ${rel.cio}</div>
+                <div class="nbr-map-detail-row"><b>Intra-site</b>: ${rel.isIntraSite ? 'Yes' : 'No'} ${rel.isOrphan ? ' — ⚠ Orphan (no matching LNADJ/LNADJL target)' : ''}</div>
+                <div style="font-weight:700; margin:8px 0 4px;">Serving (source) Event Profile</div>
+                ${nbrMapEventProfileHtml(nbrMapCurrentSourceProfile)}
+                ${reciprocal ? `<div class="nbr-map-detail-row" style="margin-top:6px;"><b>Reverse relation found</b>: target→source CIO=${reciprocal.cio}</div>` : `<div class="nbr-map-detail-row" style="margin-top:6px; font-style:italic;">No reverse (B→A) relation resolved for reciprocity check (only checked for intra-site pairs in Phase 1).</div>`}
+                <div style="margin-top:8px;">
+                    ${conflicts.length === 0 ? `<span class="nbr-map-ok-badge">No A1/A2/A3/A5 conflicts detected</span>` : conflicts.map(c => `<div class="nbr-map-conflict-badge" style="display:block; margin-bottom:4px;">${c.severity}: ${c.text}</div>`).join('')}
+                </div>`;
         }
 
         function setNeighborAlertFilter(val) {
