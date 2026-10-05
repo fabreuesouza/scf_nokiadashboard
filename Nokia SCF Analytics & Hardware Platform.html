@@ -355,7 +355,8 @@
 
         .nbr-map-select { width: 100%; margin-top: 2px; padding: 5px 6px; border-radius: 5px; border: 1px solid var(--border-color-strong); background: var(--bg-card); color: var(--text-primary); font-size: 0.8rem; font-weight: 600; font-family: 'JetBrains Mono', monospace; }
 
-        .nbr-map-source-card { width: 200px; flex-shrink: 0; background-color: var(--bg-card); border: 2px solid var(--brand-blue); border-radius: 8px; padding: 12px; box-shadow: var(--shadow-xs); display: flex; flex-direction: column; gap: 6px; overflow-y: auto; }
+        .nbr-map-source-card { width: 240px; flex-shrink: 0; background-color: var(--bg-card); border: 2px solid var(--brand-blue); border-radius: 8px; padding: 12px; box-shadow: var(--shadow-xs); display: flex; flex-direction: column; gap: 6px; overflow-y: auto; }
+        #nbrMapDetailPanel { width: 275px; }
         .nbr-map-source-title { font-size: 0.82rem; font-weight: 800; color: var(--text-primary); line-height: 1.25; }
         .nbr-map-source-sub { font-family: 'JetBrains Mono', monospace; font-size: 0.68rem; color: var(--text-muted); }
 
@@ -5424,6 +5425,13 @@
             }
 
             const relations = allNeighborRelationsFlat.filter(r => r.relType === '4G' && r.servingCellId === cellId);
+            // Own-site (intra-eNB) neighbors first, then external ones ordered by EnbId, then CellId.
+            relations.sort((a, b) => {
+                if (a.isIntraSite !== b.isIntraSite) return a.isIntraSite ? -1 : 1;
+                const enbCmp = naturalCompare(String(a.targetEnbId), String(b.targetEnbId));
+                if (enbCmp !== 0) return enbCmp;
+                return naturalCompare(String(a.targetLcrId), String(b.targetLcrId));
+            });
             const profile = getLteEventProfile(sourceParams);
             const baseConflicts = detectLteEventConflicts(profile);
 
@@ -5438,8 +5446,12 @@
                 <div class="nbr-map-source-sub">EnbId: ${sourceEnbId}</div>
                 <div class="nbr-map-source-sub">CellId: ${cellId}</div>
                 <div class="nbr-map-source-sub">PCI: ${sourcePci} &nbsp; EARFCN: ${sourceEarfcn}</div>
-                <div style="border-top:1px solid var(--border-color); margin-top:4px; padding-top:6px; cursor:pointer;" onclick="showNeighborMappingSourceDetail()">
-                    <span style="font-size:0.68rem; color:var(--brand-blue); font-weight:600;">View event profile →</span>
+                <div style="border-top:1px solid var(--border-color); margin-top:6px; padding-top:6px;">
+                    <div style="font-size:0.68rem; font-weight:700; color:var(--text-secondary); text-transform:uppercase; letter-spacing:0.04em; margin-bottom:4px;">Event Profile</div>
+                    ${nbrMapEventProfileHtml(profile)}
+                    <div style="margin-top:6px;">
+                        ${baseConflicts.length === 0 ? `<span class="nbr-map-ok-badge">No conflicts</span>` : baseConflicts.map(c => `<div class="nbr-map-conflict-badge" style="display:block; margin-bottom:4px;">${c.severity}: ${c.text}</div>`).join('')}
+                    </div>
                 </div>`;
 
             const searchTerm = (document.getElementById('nbrMapSearchInput').value || '').toLowerCase().trim();
@@ -5466,20 +5478,25 @@
                 visibleCount++;
 
                 const eventBits = [];
-                if (profile.A3) eventBits.push(`A3:${profile.A3.offsetDb}dB`);
-                if (profile.A5) eventBits.push(`A5:${profile.A5.thresholdDbm}/${profile.A5.threshold2Dbm}dBm`);
+                if (profile.A3) eventBits.push(`A3:${profile.A3.offsetDb}dB (${profile.A3.offsetKey})`);
+                if (profile.A5) eventBits.push(`A5:${profile.A5.thresholdDbm}/${profile.A5.threshold2Dbm}dBm (${profile.A5.thresholdKey}/${profile.A5.threshold2Key})`);
                 if (eventBits.length === 0) eventBits.push('No A3/A5 found');
 
+                const lnrelShort = rel.distName ? rel.distName.split('/').pop() : 'N/A';
+                const lnadjShort = rel.adjDistName ? rel.adjDistName.split('/').pop() : 'N/A';
+                const lnadjlShort = rel.adjlDistName ? rel.adjlDistName.split('/').pop() : 'N/A';
+                const freqInfo = earfcnToFreqAndBand(rel.targetEarfcn);
+
                 rowsHtml += `
-                    <div class="nbr-map-row ${hasConflict ? 'has-conflict' : ''}" onclick="showNeighborMappingRelDetail(${i})">
+                    <div class="nbr-map-row ${hasConflict ? 'has-conflict' : ''}" onclick="showNeighborMappingRelDetail(${i})" title="${(rel.targetName || 'Unknown').replace(/"/g, '&quot;')} — PCI:${rel.targetPci}">
                         ${NBR_MAP_ROW_ARROW_SVG(hasConflict)}
                         <div class="nbr-map-row-target">
-                            <span class="nbr-map-row-name">${rel.targetName || 'Unknown'}</span>
-                            <span class="nbr-map-row-ids">EnbId:${rel.targetEnbId} &nbsp;CellId:${rel.targetLcrId} &nbsp;PCI:${rel.targetPci} &nbsp;EARFCN:${rel.targetEarfcn}</span>
+                            <span class="nbr-map-row-name">${lnrelShort} / ${lnadjShort} / ${lnadjlShort}</span>
+                            <span class="nbr-map-row-ids">EnbId:${rel.targetEnbId} &nbsp;CellId:${rel.targetLcrId} &nbsp;EARFCN:${rel.targetEarfcn}${freqInfo.text}</span>
                         </div>
                         <div class="nbr-map-row-events ${hasConflict ? 'has-conflict' : ''}">
                             <div>${eventBits.join('  ')}</div>
-                            <div>CIO:${rel.cio}${hasConflict ? '  ⚠' : ''}</div>
+                            <div>CIO:${rel.cio} (cellIndOffNeigh)${hasConflict ? '  ⚠' : ''}</div>
                         </div>
                     </div>`;
             });
