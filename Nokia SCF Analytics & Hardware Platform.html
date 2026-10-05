@@ -361,37 +361,34 @@
         .nbr-map-list-toolbar { display: flex; align-items: center; gap: 10px; padding: 8px 10px; border-bottom: 1px solid var(--border-color); flex-shrink: 0; }
         .nbr-map-search-input { flex: 1; padding: 5px 8px; border-radius: 5px; border: 1px solid var(--border-color-strong); background: var(--bg-subtle); color: var(--text-primary); font-size: 0.75rem; }
         .nbr-map-conflict-toggle { display: flex; align-items: center; gap: 4px; font-size: 0.72rem; color: var(--text-secondary); white-space: nowrap; cursor: pointer; }
-        .nbr-map-tree-scroll { flex: 1; overflow: auto; padding: 24px 16px; }
+        .nbr-map-tree-scroll { flex: 1; overflow: auto; padding: 14px; }
 
-        /* Pure-CSS org-chart tree: Source (CARD1) -> LNBTS group (CARD2) -> target LNCEL (CARD3) */
-        .nbr-map-tree, .nbr-map-tree ul { display: flex; list-style: none; margin: 0; padding: 0; position: relative; }
-        .nbr-map-tree { justify-content: center; }
-        .nbr-map-tree ul { padding-top: 28px; }
-        .nbr-map-tree li { display: flex; flex-direction: column; align-items: center; position: relative; padding: 0 12px; }
-        .nbr-map-tree li > ul > li { padding-top: 28px; }
-        .nbr-map-tree li > ul > li::before, .nbr-map-tree li > ul > li::after { content: ''; position: absolute; top: 0; right: 50%; border-top: 1px solid var(--border-color-strong); width: 50%; height: 28px; }
-        .nbr-map-tree li > ul > li::after { right: auto; left: 50%; border-left: 1px solid var(--border-color-strong); }
-        .nbr-map-tree li > ul > li:only-child::before, .nbr-map-tree li > ul > li:only-child::after { display: none; }
-        .nbr-map-tree li > ul > li:only-child { padding-top: 0; }
-        .nbr-map-tree li > ul > li:first-child::before, .nbr-map-tree li > ul > li:last-child::after { border: 0 none; }
-        .nbr-map-tree li > ul > li:last-child::before { border-right: 1px solid var(--border-color-strong); border-radius: 0 6px 0 0; }
-        .nbr-map-tree li > ul > li:first-child::after { border-radius: 6px 0 0 0; }
-        .nbr-map-tree li > ul::before { content: ''; position: absolute; top: 0; left: 50%; border-left: 1px solid var(--border-color-strong); width: 0; height: 28px; }
-        .nbr-map-tree-arrowhead { position: absolute; top: 24px; left: 50%; transform: translateX(-50%); color: var(--border-color-strong); font-size: 11px; line-height: 1; }
+        /* Pure-CSS left-to-right tree: Source (CARD1) -> LNBTS group (CARD2) -> target LNCEL (CARD3).
+           Each nested <ul> draws a full-height vertical bus (::before); each <li> draws a short
+           horizontal stub into its own card (::before); the last <li> in a <ul> masks the bus below
+           its own stub so the line doesn't visually continue past the final sibling. */
+        .nbr-map-tree, .nbr-map-tree ul { list-style: none; margin: 0; padding: 0; }
+        .nbr-map-tree { display: flex; }
+        .nbr-map-tree ul { display: flex; flex-direction: column; justify-content: center; margin-left: 16px; padding-left: 12px; position: relative; }
+        .nbr-map-tree ul::before { content: ''; position: absolute; top: 0; bottom: 0; left: 0; border-left: 1px solid var(--border-color-strong); }
+        .nbr-map-tree li { position: relative; margin: 2px 0; display: flex; align-items: center; }
+        .nbr-map-tree ul li::before { content: ''; position: absolute; top: 50%; left: -12px; width: 12px; height: 0; border-top: 1px solid var(--border-color-strong); }
+        .nbr-map-tree ul > li:last-child::after { content: ''; position: absolute; top: 50%; bottom: -2px; left: -13px; width: 3px; background: var(--bg-card); }
+        .nbr-map-tree-arrowhead { position: absolute; left: -7px; top: 50%; transform: translateY(-50%); color: var(--border-color-strong); font-size: 9px; line-height: 1; }
 
-        .nbr-map-card { background-color: var(--bg-card); border: 1px solid var(--border-color-strong); border-radius: 8px; padding: 10px 12px; box-shadow: var(--shadow-xs); display: flex; flex-direction: column; gap: 3px; font-family: 'JetBrains Mono', monospace; }
-        .nbr-map-card-source { width: 220px; border: 2px solid var(--brand-blue); }
-        .nbr-map-card-lnbts { width: 150px; align-items: center; background: var(--bg-subtle); }
-        .nbr-map-card-leaf { width: 190px; cursor: pointer; }
+        .nbr-map-card { background-color: var(--bg-card); border: 1px solid var(--border-color-strong); border-radius: 6px; padding: 4px 6px; box-shadow: var(--shadow-xs); display: flex; flex-direction: column; gap: 1px; font-family: 'JetBrains Mono', monospace; }
+        .nbr-map-card-source { width: 165px; border: 2px solid var(--brand-blue); }
+        .nbr-map-card-lnbts { width: 115px; align-items: center; background: var(--bg-subtle); cursor: pointer; user-select: none; }
+        .nbr-map-card-leaf { width: 145px; cursor: pointer; }
         .nbr-map-card-leaf:hover { border-color: var(--brand-blue); }
         .nbr-map-card-leaf.has-conflict { border-left: 3px solid #ef4444; }
-        .nbr-map-card-title { font-size: 0.8rem; font-weight: 700; color: var(--text-primary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        .nbr-map-card-sub { font-size: 0.68rem; color: var(--text-secondary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        .nbr-map-card-source .nbr-map-event-profile { margin-top: 6px; padding-top: 6px; border-top: 1px solid var(--border-color); font-family: 'JetBrains Mono', monospace; }
-        .nbr-map-detail-row { padding: 4px 0; border-bottom: 1px solid var(--border-color); font-size: 0.72rem; }
+        .nbr-map-card-title { font-size: 9px; font-weight: 700; color: var(--text-primary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .nbr-map-card-sub { font-size: 9px; color: var(--text-secondary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .nbr-map-card-source .nbr-map-event-profile { margin-top: 3px; padding-top: 3px; border-top: 1px solid var(--border-color); font-family: 'JetBrains Mono', monospace; }
+        .nbr-map-detail-row { padding: 3px 0; border-bottom: 1px solid var(--border-color); font-size: 9px; }
         .nbr-map-detail-row b { color: var(--text-primary); }
-        .nbr-map-conflict-badge { display: inline-block; background: var(--badge-false-bg); color: var(--badge-false-text); border: 1px solid var(--badge-false-border); border-radius: 4px; padding: 1px 6px; font-size: 0.68rem; font-weight: 700; margin-top: 2px; }
-        .nbr-map-ok-badge { display: inline-block; background: var(--badge-true-bg); color: var(--badge-true-text); border: 1px solid var(--badge-true-border); border-radius: 4px; padding: 1px 6px; font-size: 0.68rem; font-weight: 700; margin-top: 2px; }
+        .nbr-map-conflict-badge { display: inline-block; background: var(--badge-false-bg); color: var(--badge-false-text); border: 1px solid var(--badge-false-border); border-radius: 4px; padding: 1px 6px; font-size: 9px; font-weight: 700; margin-top: 2px; }
+        .nbr-map-ok-badge { display: inline-block; background: var(--badge-true-bg); color: var(--badge-true-text); border: 1px solid var(--badge-true-border); border-radius: 4px; padding: 1px 6px; font-size: 9px; font-weight: 700; margin-top: 2px; }
 
         .footprint-table-card, .boost-table-card { flex: 1; display: flex; flex-direction: column; overflow: hidden; background-color: var(--bg-card); border: 1px solid var(--border-color); border-radius: 8px; padding: 12px; box-shadow: var(--shadow-xs); }
         .footprint-table-scroll, .boost-table-scroll { flex: 1; overflow-y: auto; overflow-x: auto; margin-top: 4px; border: 1px solid var(--border-color); border-radius: 6px; }
@@ -643,7 +640,7 @@
     <!-- LINE 1: MAIN BRANDING & FILE ACTIONS HEADER -->
     <header>
         <div class="logo-area">
-            <h1>SCF Nokia Analytics <span class="logo-badge">Pro Suite</span> <span class="logo-badge" style="background:rgba(255,255,255,0.1); font-weight:600;">v1.92</span></h1>
+            <h1>SCF Nokia Analytics <span class="logo-badge">Pro Suite</span> <span class="logo-badge" style="background:rgba(255,255,255,0.1); font-weight:600;">v1.93</span></h1>
         </div>
         <div class="upload-area">
             <span class="summary-badge" id="site-summary">No SCF file loaded</span>
@@ -5424,6 +5421,17 @@
         let nbrMapCurrentSourceLabel = '';
         let nbrMapCurrentSourceDist = null;
         let nbrMapCurrentSourceEarfcn = 'N/A';
+        // LNBTS groups are collapsed by default to keep the tree compact; this set tracks which
+        // ones the user explicitly expanded. Reset whenever the selected source cell changes.
+        let nbrMapExpandedGroups = new Set();
+        let nbrMapTreeLastCellId = null;
+
+        function toggleNbrMapGroup(enbId) {
+            const key = String(enbId);
+            if (nbrMapExpandedGroups.has(key)) nbrMapExpandedGroups.delete(key);
+            else nbrMapExpandedGroups.add(key);
+            renderNeighborMappingGraph();
+        }
 
         // Returns the event (A3 for same-frequency relations, A5 via the matching LNHOIF for
         // inter-frequency relations) that actually governs this specific relation, plus its
@@ -5453,6 +5461,8 @@
                 treeScroll.innerHTML = `<div style="padding:16px; font-size:0.75rem; color:var(--text-muted); font-style:italic; text-align:center;">Select a source cell above to build its neighbor hierarchy.</div>`;
                 return;
             }
+
+            if (cellId !== nbrMapTreeLastCellId) { nbrMapExpandedGroups = new Set(); nbrMapTreeLastCellId = cellId; }
 
             const sourceDist = findLncelDistByShortId(cellId);
             const sourceParams = sourceDist ? scfData[sourceDist].params : {};
@@ -5525,12 +5535,17 @@
                 return;
             }
 
+            // A search or "only conflicts" filter forces every matching group open — otherwise a
+            // match hidden inside a collapsed LNBTS would be invisible to the user.
+            const forceExpand = !!searchTerm || onlyConflicts;
+
             const lnbtsGroupsHtml = Array.from(groups.values()).map(group => {
+                const isExpanded = forceExpand || nbrMapExpandedGroups.has(String(group.enbId));
                 const leavesHtml = group.leaves.map(leaf => {
                     const rel = leaf.rel;
                     return `
                         <li>
-                            <span class="nbr-map-tree-arrowhead">▾</span>
+                            <span class="nbr-map-tree-arrowhead">▸</span>
                             <div class="nbr-map-card nbr-map-card-leaf ${leaf.hasConflict ? 'has-conflict' : ''}" onclick="showNeighborMappingRelDetail(${leaf.idx})" title="${leaf.governing.label}${leaf.hasConflict ? ' ⚠' : ''}">
                                 <div class="nbr-map-card-title">${rel.targetName || 'Unknown'}${leaf.hasConflict ? ' ⚠' : ''}</div>
                                 <div class="nbr-map-card-sub">LNCEL: ${rel.targetLcrId}</div>
@@ -5543,12 +5558,12 @@
 
                 return `
                     <li>
-                        <span class="nbr-map-tree-arrowhead">▾</span>
-                        <div class="nbr-map-card nbr-map-card-lnbts">
-                            <div class="nbr-map-card-title">LNBTS: ${group.enbId}</div>
+                        <span class="nbr-map-tree-arrowhead">▸</span>
+                        <div class="nbr-map-card nbr-map-card-lnbts" onclick="toggleNbrMapGroup('${group.enbId}')">
+                            <div class="nbr-map-card-title">${isExpanded ? '▾' : '▸'} LNBTS: ${group.enbId}</div>
                             <div class="nbr-map-card-sub">${group.isIntraSite ? 'Own site' : 'External'} · ${group.leaves.length} cell${group.leaves.length !== 1 ? 's' : ''}</div>
                         </div>
-                        <ul class="${group.leaves.length === 1 ? 'nbr-map-tree-single-child' : ''}">${leavesHtml}</ul>
+                        ${isExpanded ? `<ul>${leavesHtml}</ul>` : ''}
                     </li>`;
             }).join('');
 
@@ -5567,7 +5582,7 @@
                                 </div>
                             </div>
                         </div>
-                        <ul class="${groups.size === 1 ? 'nbr-map-tree-single-child' : ''}">${lnbtsGroupsHtml}</ul>
+                        <ul>${lnbtsGroupsHtml}</ul>
                     </li>
                 </ul>`;
         }
