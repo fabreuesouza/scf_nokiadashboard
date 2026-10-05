@@ -355,39 +355,36 @@
 
         .nbr-map-select { width: 100%; margin-top: 2px; padding: 5px 6px; border-radius: 5px; border: 1px solid var(--border-color-strong); background: var(--bg-card); color: var(--text-primary); font-size: 0.8rem; font-weight: 600; font-family: 'JetBrains Mono', monospace; }
 
-        #nbrMapDetailPanel { width: 275px; }
-
         .nbr-map-tree-card { flex: 1; min-width: 0; display: flex; flex-direction: column; background-color: var(--bg-card); border: 1px solid var(--border-color); border-radius: 8px; overflow: hidden; box-shadow: var(--shadow-xs); }
         .nbr-map-list-toolbar { display: flex; align-items: center; gap: 10px; padding: 8px 10px; border-bottom: 1px solid var(--border-color); flex-shrink: 0; }
         .nbr-map-search-input { flex: 1; padding: 5px 8px; border-radius: 5px; border: 1px solid var(--border-color-strong); background: var(--bg-subtle); color: var(--text-primary); font-size: 0.75rem; }
         .nbr-map-conflict-toggle { display: flex; align-items: center; gap: 4px; font-size: 0.72rem; color: var(--text-secondary); white-space: nowrap; cursor: pointer; }
         .nbr-map-tree-scroll { flex: 1; overflow: auto; padding: 14px; }
 
-        /* Pure-CSS left-to-right tree: Source (CARD1) -> LNBTS group (CARD2) -> target LNCEL (CARD3).
-           Each nested <ul> draws a full-height vertical bus (::before); each <li> draws a short
-           horizontal stub into its own card (::before); the last <li> in a <ul> masks the bus below
-           its own stub so the line doesn't visually continue past the final sibling. */
-        .nbr-map-tree, .nbr-map-tree ul { list-style: none; margin: 0; padding: 0; }
-        .nbr-map-tree { display: flex; }
-        .nbr-map-tree ul { display: flex; flex-direction: column; justify-content: center; margin-left: 16px; padding-left: 12px; position: relative; }
-        .nbr-map-tree ul::before { content: ''; position: absolute; top: 0; bottom: 0; left: 0; border-left: 1px solid var(--border-color-strong); }
-        .nbr-map-tree li { position: relative; margin: 2px 0; display: flex; align-items: center; }
-        .nbr-map-tree ul li::before { content: ''; position: absolute; top: 50%; left: -12px; width: 12px; height: 0; border-top: 1px solid var(--border-color-strong); }
-        .nbr-map-tree ul > li:last-child::after { content: ''; position: absolute; top: 50%; bottom: -2px; left: -13px; width: 3px; background: var(--bg-card); }
-        .nbr-map-tree-arrowhead { position: absolute; left: -7px; top: 50%; transform: translateY(-50%); color: var(--border-color-strong); font-size: 9px; line-height: 1; }
+        /* Source -> LNBTS -> LNCEL hierarchy, laid out as plain flex columns (left to right) and
+           connected by an SVG overlay of bezier curves — same technique as the Hardware Mapping >
+           Configuration block diagram (drawHwBlockConnectors): absolutely-positioned SVG on top of
+           the DOM cards, redrawn from each card's real getBoundingClientRect() after every render. */
+        .nbr-map-tree-wrap { position: relative; display: flex; flex-direction: row; align-items: flex-start; gap: 46px; }
+        .nbr-map-connector-svg { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 1; overflow: visible; }
+        .nbr-map-lnbts-col { display: flex; flex-direction: column; gap: 10px; }
+        .nbr-map-group-row { display: flex; flex-direction: row; align-items: flex-start; gap: 46px; }
+        .nbr-map-leaves-col { display: flex; flex-direction: column; gap: 6px; }
 
-        .nbr-map-card { background-color: var(--bg-card); border: 1px solid var(--border-color-strong); border-radius: 6px; padding: 4px 6px; box-shadow: var(--shadow-xs); display: flex; flex-direction: column; gap: 1px; font-family: 'JetBrains Mono', monospace; }
+        .nbr-map-card { position: relative; z-index: 2; background-color: var(--bg-card); border: 1px solid var(--border-color-strong); border-radius: 6px; padding: 4px 6px; box-shadow: var(--shadow-xs); display: flex; flex-direction: column; gap: 1px; font-family: 'JetBrains Mono', monospace; }
         .nbr-map-card-source { width: 165px; border: 2px solid var(--brand-blue); }
         .nbr-map-card-lnbts { width: 115px; align-items: center; background: var(--bg-subtle); cursor: pointer; user-select: none; }
         .nbr-map-card-leaf { width: 145px; cursor: pointer; }
+        .nbr-map-card-leaf.expanded { width: 260px; }
         .nbr-map-card-leaf:hover { border-color: var(--brand-blue); }
         .nbr-map-card-leaf.has-conflict { border-left: 3px solid #ef4444; }
         .nbr-map-card-title { font-size: 9px; font-weight: 700; color: var(--text-primary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .nbr-map-card-sub { font-size: 9px; color: var(--text-secondary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .nbr-map-card-source .nbr-map-event-profile { margin-top: 3px; padding-top: 3px; border-top: 1px solid var(--border-color); font-family: 'JetBrains Mono', monospace; }
-        .nbr-map-detail-row { padding: 3px 0; border-bottom: 1px solid var(--border-color); font-size: 9px; }
+        .nbr-map-leaf-detail { margin-top: 4px; padding-top: 4px; border-top: 1px solid var(--border-color); cursor: default; white-space: normal; }
+        .nbr-map-detail-row { padding: 3px 0; border-bottom: 1px solid var(--border-color); font-size: 9px; white-space: normal; }
         .nbr-map-detail-row b { color: var(--text-primary); }
-        .nbr-map-conflict-badge { display: inline-block; background: var(--badge-false-bg); color: var(--badge-false-text); border: 1px solid var(--badge-false-border); border-radius: 4px; padding: 1px 6px; font-size: 9px; font-weight: 700; margin-top: 2px; }
+        .nbr-map-conflict-badge { display: inline-block; background: var(--badge-false-bg); color: var(--badge-false-text); border: 1px solid var(--badge-false-border); border-radius: 4px; padding: 1px 6px; font-size: 9px; font-weight: 700; margin-top: 2px; white-space: normal; }
         .nbr-map-ok-badge { display: inline-block; background: var(--badge-true-bg); color: var(--badge-true-text); border: 1px solid var(--badge-true-border); border-radius: 4px; padding: 1px 6px; font-size: 9px; font-weight: 700; margin-top: 2px; }
 
         .footprint-table-card, .boost-table-card { flex: 1; display: flex; flex-direction: column; overflow: hidden; background-color: var(--bg-card); border: 1px solid var(--border-color); border-radius: 8px; padding: 12px; box-shadow: var(--shadow-xs); }
@@ -640,7 +637,7 @@
     <!-- LINE 1: MAIN BRANDING & FILE ACTIONS HEADER -->
     <header>
         <div class="logo-area">
-            <h1>SCF Nokia Analytics <span class="logo-badge">Pro Suite</span> <span class="logo-badge" style="background:rgba(255,255,255,0.1); font-weight:600;">v1.93</span></h1>
+            <h1>SCF Nokia Analytics <span class="logo-badge">Pro Suite</span> <span class="logo-badge" style="background:rgba(255,255,255,0.1); font-weight:600;">v1.94</span></h1>
         </div>
         <div class="upload-area">
             <span class="summary-badge" id="site-summary">No SCF file loaded</span>
@@ -1155,10 +1152,6 @@
                     <div class="nbr-map-tree-scroll" id="nbrMapTreeScroll">
                         <div style="padding:16px; font-size:0.75rem; color:var(--text-muted); font-style:italic; text-align:center;">Select a source cell above to build its neighbor hierarchy.</div>
                     </div>
-                </div>
-                <div class="footprint-sidebar-filters" id="nbrMapDetailPanel">
-                    <div class="filter-section-title"><span>Relation Detail</span></div>
-                    <div id="nbrMapDetailContent" style="font-size:0.75rem; color:var(--text-muted); font-style:italic;">Select a source cell above, then click a row to see the full event/threshold breakdown.</div>
                 </div>
             </div>
         </div>
@@ -5426,10 +5419,18 @@
         let nbrMapExpandedGroups = new Set();
         let nbrMapTreeLastCellId = null;
 
+        let nbrMapExpandedLeaves = new Set();
+
         function toggleNbrMapGroup(enbId) {
             const key = String(enbId);
             if (nbrMapExpandedGroups.has(key)) nbrMapExpandedGroups.delete(key);
             else nbrMapExpandedGroups.add(key);
+            renderNeighborMappingGraph();
+        }
+
+        function toggleNbrMapLeaf(idx) {
+            if (nbrMapExpandedLeaves.has(idx)) nbrMapExpandedLeaves.delete(idx);
+            else nbrMapExpandedLeaves.add(idx);
             renderNeighborMappingGraph();
         }
 
@@ -5455,14 +5456,13 @@
 
             document.getElementById('nbrMapTotalNeighbors').innerText = '0';
             document.getElementById('nbrMapTotalConflicts').innerText = '0';
-            document.getElementById('nbrMapDetailContent').innerHTML = `Select a source cell above, then click a cell card to see the full event/threshold breakdown.`;
 
             if (!cellId) {
                 treeScroll.innerHTML = `<div style="padding:16px; font-size:0.75rem; color:var(--text-muted); font-style:italic; text-align:center;">Select a source cell above to build its neighbor hierarchy.</div>`;
                 return;
             }
 
-            if (cellId !== nbrMapTreeLastCellId) { nbrMapExpandedGroups = new Set(); nbrMapTreeLastCellId = cellId; }
+            if (cellId !== nbrMapTreeLastCellId) { nbrMapExpandedGroups = new Set(); nbrMapExpandedLeaves = new Set(); nbrMapTreeLastCellId = cellId; }
 
             const sourceDist = findLncelDistByShortId(cellId);
             const sourceParams = sourceDist ? scfData[sourceDist].params : {};
@@ -5539,53 +5539,111 @@
             // match hidden inside a collapsed LNBTS would be invisible to the user.
             const forceExpand = !!searchTerm || onlyConflicts;
 
-            const lnbtsGroupsHtml = Array.from(groups.values()).map(group => {
+            const groupsArr = Array.from(groups.values());
+            const connectorLinks = [];
+
+            const lnbtsGroupsHtml = groupsArr.map(group => {
+                const groupDomId = `nbrMapLnbts-${group.enbId}`;
                 const isExpanded = forceExpand || nbrMapExpandedGroups.has(String(group.enbId));
-                const leavesHtml = group.leaves.map(leaf => {
+                connectorLinks.push({ fromId: 'nbrMapSrcCard', toId: groupDomId, color: 'var(--border-color-strong)' });
+
+                const leavesHtml = isExpanded ? group.leaves.map(leaf => {
                     const rel = leaf.rel;
+                    const leafDomId = `nbrMapLeaf-${leaf.idx}`;
+                    const isLeafExpanded = nbrMapExpandedLeaves.has(leaf.idx);
+                    connectorLinks.push({ fromId: groupDomId, toId: leafDomId, color: leaf.hasConflict ? '#ef4444' : 'var(--border-color-strong)' });
                     return `
-                        <li>
-                            <span class="nbr-map-tree-arrowhead">▸</span>
-                            <div class="nbr-map-card nbr-map-card-leaf ${leaf.hasConflict ? 'has-conflict' : ''}" onclick="showNeighborMappingRelDetail(${leaf.idx})" title="${leaf.governing.label}${leaf.hasConflict ? ' ⚠' : ''}">
-                                <div class="nbr-map-card-title">${rel.targetName || 'Unknown'}${leaf.hasConflict ? ' ⚠' : ''}</div>
-                                <div class="nbr-map-card-sub">LNCEL: ${rel.targetLcrId}</div>
-                                <div class="nbr-map-card-sub">TAC: ${rel.targetTac}</div>
-                                <div class="nbr-map-card-sub">EARFCN: ${rel.targetEarfcn}</div>
-                                <div class="nbr-map-card-sub">PCI: ${rel.targetPci}</div>
-                            </div>
-                        </li>`;
-                }).join('');
+                        <div id="${leafDomId}" class="nbr-map-card nbr-map-card-leaf ${leaf.hasConflict ? 'has-conflict' : ''} ${isLeafExpanded ? 'expanded' : ''}" onclick="toggleNbrMapLeaf(${leaf.idx})" title="${leaf.governing.label}${leaf.hasConflict ? ' ⚠' : ''}">
+                            <div class="nbr-map-card-title">${isLeafExpanded ? '▾' : '▸'} ${rel.targetName || 'Unknown'}${leaf.hasConflict ? ' ⚠' : ''}</div>
+                            <div class="nbr-map-card-sub">LNCEL: ${rel.targetLcrId}</div>
+                            <div class="nbr-map-card-sub">TAC: ${rel.targetTac}</div>
+                            <div class="nbr-map-card-sub">EARFCN: ${rel.targetEarfcn}</div>
+                            <div class="nbr-map-card-sub">PCI: ${rel.targetPci}</div>
+                            ${isLeafExpanded ? `<div class="nbr-map-leaf-detail" onclick="event.stopPropagation()">${buildNbrMapLeafDetailHtml(leaf)}</div>` : ''}
+                        </div>`;
+                }).join('') : '';
 
                 return `
-                    <li>
-                        <span class="nbr-map-tree-arrowhead">▸</span>
-                        <div class="nbr-map-card nbr-map-card-lnbts" onclick="toggleNbrMapGroup('${group.enbId}')">
+                    <div class="nbr-map-group-row">
+                        <div id="${groupDomId}" class="nbr-map-card nbr-map-card-lnbts" onclick="toggleNbrMapGroup('${group.enbId}')">
                             <div class="nbr-map-card-title">${isExpanded ? '▾' : '▸'} LNBTS: ${group.enbId}</div>
                             <div class="nbr-map-card-sub">${group.isIntraSite ? 'Own site' : 'External'} · ${group.leaves.length} cell${group.leaves.length !== 1 ? 's' : ''}</div>
                         </div>
-                        ${isExpanded ? `<ul>${leavesHtml}</ul>` : ''}
-                    </li>`;
+                        ${isExpanded ? `<div class="nbr-map-leaves-col">${leavesHtml}</div>` : ''}
+                    </div>`;
             }).join('');
 
             treeScroll.innerHTML = `
-                <ul class="nbr-map-tree">
-                    <li>
-                        <div class="nbr-map-card nbr-map-card-source" onclick="showNeighborMappingSourceDetail()">
-                            <div class="nbr-map-card-title">${nbrMapCurrentSourceLabel}</div>
-                            <div class="nbr-map-card-sub">LNBTS: ${sourceEnbId}</div>
-                            <div class="nbr-map-card-sub">LNCEL: ${cellId}</div>
-                            <div class="nbr-map-card-sub">PCI: ${sourcePci} &nbsp; EARFCN: ${sourceEarfcn}</div>
-                            <div class="nbr-map-event-profile">
-                                ${nbrMapEventProfileHtml(profile)}
-                                <div style="margin-top:4px;">
-                                    ${baseConflicts.length === 0 ? `<span class="nbr-map-ok-badge">No conflicts</span>` : baseConflicts.map(c => `<div class="nbr-map-conflict-badge" style="display:block; margin-bottom:4px;">${c.severity}: ${c.text}</div>`).join('')}
-                                </div>
+                <div class="nbr-map-tree-wrap" id="nbrMapTreeWrap">
+                    <svg class="nbr-map-connector-svg" id="nbrMapConnectorSvg"></svg>
+                    <div id="nbrMapSrcCard" class="nbr-map-card nbr-map-card-source">
+                        <div class="nbr-map-card-title">${nbrMapCurrentSourceLabel}</div>
+                        <div class="nbr-map-card-sub">LNBTS: ${sourceEnbId}</div>
+                        <div class="nbr-map-card-sub">LNCEL: ${cellId}</div>
+                        <div class="nbr-map-card-sub">PCI: ${sourcePci} &nbsp; EARFCN: ${sourceEarfcn}</div>
+                        <div class="nbr-map-event-profile">
+                            ${nbrMapEventProfileHtml(profile)}
+                            <div style="margin-top:4px;">
+                                ${baseConflicts.length === 0 ? `<span class="nbr-map-ok-badge">No conflicts</span>` : baseConflicts.map(c => `<div class="nbr-map-conflict-badge" style="display:block; margin-bottom:4px;">${c.severity}: ${c.text}</div>`).join('')}
                             </div>
                         </div>
-                        <ul>${lnbtsGroupsHtml}</ul>
-                    </li>
-                </ul>`;
+                    </div>
+                    <div class="nbr-map-lnbts-col">${lnbtsGroupsHtml}</div>
+                </div>`;
+
+            drawNbrMapConnectors(connectorLinks);
         }
+
+        // Draws curved connectors between real card positions — same technique as the Hardware
+        // Mapping > Configuration block diagram (drawHwBlockConnectors): an absolutely-positioned
+        // SVG overlay, redrawn from each card's getBoundingClientRect() after every render.
+        function drawNbrMapConnectors(links) {
+            const wrap = document.getElementById('nbrMapTreeWrap');
+            const svg = document.getElementById('nbrMapConnectorSvg');
+            if (!wrap || !svg || !links || links.length === 0) return;
+
+            const wrapRect = wrap.getBoundingClientRect();
+            svg.setAttribute('width', wrapRect.width);
+            svg.setAttribute('height', wrapRect.height);
+            svg.setAttribute('viewBox', `0 0 ${wrapRect.width} ${wrapRect.height}`);
+
+            let svgContent = '';
+            links.forEach(link => {
+                const fromEl = document.getElementById(link.fromId);
+                const toEl = document.getElementById(link.toId);
+                if (!fromEl || !toEl) return;
+
+                const fRect = fromEl.getBoundingClientRect();
+                const tRect = toEl.getBoundingClientRect();
+
+                const x1 = fRect.right - wrapRect.left;
+                const y1 = (fRect.top + fRect.bottom) / 2 - wrapRect.top;
+                const x2 = tRect.left - wrapRect.left;
+                const y2 = (tRect.top + tRect.bottom) / 2 - wrapRect.top;
+                const midX = (x1 + x2) / 2;
+                const color = link.color || 'var(--text-muted)';
+
+                svgContent += `
+                    <path d="M ${x1.toFixed(1)},${y1.toFixed(1)} C ${midX.toFixed(1)},${y1.toFixed(1)} ${midX.toFixed(1)},${y2.toFixed(1)} ${x2.toFixed(1)},${y2.toFixed(1)}"
+                          fill="none" stroke="${color}" stroke-width="1.5" stroke-opacity="0.7"></path>
+                    <circle cx="${x1.toFixed(1)}" cy="${y1.toFixed(1)}" r="2.2" fill="${color}"></circle>
+                    <circle cx="${x2.toFixed(1)}" cy="${y2.toFixed(1)}" r="2.2" fill="${color}"></circle>`;
+            });
+            svg.innerHTML = svgContent;
+        }
+
+        // Redraw connectors on window resize while the Mapping submenu is visible — card positions
+        // shift with viewport width, so static coordinates would drift out of sync otherwise.
+        let _nbrMapResizeTimer = null;
+        window.addEventListener('resize', () => {
+            clearTimeout(_nbrMapResizeTimer);
+            _nbrMapResizeTimer = setTimeout(() => {
+                const mappingView = document.getElementById('neighborMappingView');
+                if (mappingView && mappingView.style.display !== 'none' && document.getElementById('nbrMapTreeWrap')) {
+                    renderNeighborMappingGraph();
+                }
+            }, 200);
+        });
 
         function nbrMapEventProfileHtml(profile) {
             const fmt = (ev, label) => {
@@ -5597,24 +5655,11 @@
                 `<div class="nbr-map-detail-row"><b>A5</b>: defined per relation inside the matching LNHOIF (threshold3InterFreq/threshold3aInterFreq) — see each row</div>`;
         }
 
-        function showNeighborMappingSourceDetail() {
-            const panel = document.getElementById('nbrMapDetailContent');
-            if (!panel || !nbrMapCurrentSourceProfile) return;
-            const conflicts = detectLteEventConflicts(nbrMapCurrentSourceProfile);
-            panel.innerHTML = `
-                <div style="font-weight:700; margin-bottom:6px;">${nbrMapCurrentSourceLabel} — Serving Event Profile</div>
-                ${nbrMapEventProfileHtml(nbrMapCurrentSourceProfile)}
-                <div style="margin-top:8px;">
-                    ${conflicts.length === 0 ? `<span class="nbr-map-ok-badge">No A1/A2/A3/A5 conflicts detected</span>` : conflicts.map(c => `<div class="nbr-map-conflict-badge" style="display:block; margin-bottom:4px;">${c.severity}: ${c.text}</div>`).join('')}
-                </div>`;
-        }
-
-        function showNeighborMappingRelDetail(idx) {
-            const panel = document.getElementById('nbrMapDetailContent');
-            const rel = nbrMapCurrentRelations[idx];
-            if (!panel || !rel || !nbrMapCurrentSourceProfile) return;
-
-            const governing = getGoverningEventForRelation(nbrMapCurrentSourceDist, nbrMapCurrentSourceEarfcn, nbrMapCurrentSourceProfile, rel);
+        // Builds the "Relation Detail" content shown inline inside a LNCEL leaf card once expanded
+        // (replaces the old separate side panel — detail now lives right where it's relevant).
+        function buildNbrMapLeafDetailHtml(leaf) {
+            const rel = leaf.rel;
+            const governing = leaf.governing;
             const conflicts = detectLteEventConflicts(nbrMapCurrentSourceProfile);
             const reciprocal = findReciprocalRelation(rel);
             if (reciprocal && String(reciprocal.cio) !== String(rel.cio)) {
@@ -5628,20 +5673,13 @@
                 ? (governing.data ? `offset=${governing.data.offsetDb}dB (${governing.data.offsetKey})${governing.data.hysteresis ? `, hysteresis=${governing.data.hysteresis.raw}` : ''}${governing.data.ttt ? `, TTT=${governing.data.ttt.raw}ms` : ''}` : 'not found')
                 : (governing.data ? `via ${governing.data.lnhoifShort}: ${governing.data.thresholdKey}(serving)=${governing.data.thresholdDbm}dBm, ${governing.data.threshold2Key}(neighbor)=${governing.data.threshold2Dbm}dBm${governing.data.ttt ? `, TTT=${governing.data.ttt.raw}ms` : ''}` : `no LNHOIF found with eutraCarrierInfo=${rel.targetEarfcn}`);
 
-            panel.innerHTML = `
-                <div style="font-weight:700; margin-bottom:6px;">${nbrMapCurrentSourceLabel} → ${rel.targetName}</div>
+            return `
                 <div class="nbr-map-detail-row"><b>LNREL / LNADJ / LNADJL</b>: ${rel.distName ? rel.distName.split('/').pop() : 'N/A'} / ${rel.adjDistName ? rel.adjDistName.split('/').pop() : 'N/A'} / ${rel.adjlDistName ? rel.adjlDistName.split('/').pop() : 'N/A'}</div>
-                <div class="nbr-map-detail-row"><b>Target LNBTS</b>: ${rel.targetEnbId}</div>
-                <div class="nbr-map-detail-row"><b>Target LNCEL (LcrId)</b>: ${rel.targetLcrId}</div>
-                <div class="nbr-map-detail-row"><b>Target PCI / EARFCN / TAC</b>: ${rel.targetPci} / ${rel.targetEarfcn} / ${rel.targetTac}</div>
                 <div class="nbr-map-detail-row"><b>CIO (cellIndOffNeigh)</b>: ${rel.cio}</div>
                 <div class="nbr-map-detail-row"><b>Intra-site</b>: ${rel.isIntraSite ? 'Yes' : 'No'} ${rel.isOrphan ? ' — ⚠ Orphan (no matching LNADJ/LNADJL target)' : ''}</div>
-                <div style="font-weight:700; margin:8px 0 4px;">Governing Event for this Relation</div>
-                <div class="nbr-map-detail-row"><b>${governing.type}</b>: ${governingDetail}</div>
-                <div style="font-weight:700; margin:8px 0 4px;">Serving (source) Cell-wide Profile</div>
-                ${nbrMapEventProfileHtml(nbrMapCurrentSourceProfile)}
-                ${reciprocal ? `<div class="nbr-map-detail-row" style="margin-top:6px;"><b>Reverse relation found</b>: target→source CIO=${reciprocal.cio}</div>` : `<div class="nbr-map-detail-row" style="margin-top:6px; font-style:italic;">No reverse (B→A) relation resolved for reciprocity check (only checked for intra-site pairs in Phase 1).</div>`}
-                <div style="margin-top:8px;">
+                <div class="nbr-map-detail-row"><b>Governing event (${governing.type})</b>: ${governingDetail}</div>
+                ${reciprocal ? `<div class="nbr-map-detail-row"><b>Reverse relation</b>: target→source CIO=${reciprocal.cio}</div>` : `<div class="nbr-map-detail-row" style="font-style:italic;">No reverse (B→A) relation resolved (only checked for intra-site pairs).</div>`}
+                <div style="margin-top:4px;">
                     ${conflicts.length === 0 ? `<span class="nbr-map-ok-badge">No conflicts detected</span>` : conflicts.map(c => `<div class="nbr-map-conflict-badge" style="display:block; margin-bottom:4px;">${c.severity}: ${c.text}</div>`).join('')}
                 </div>`;
         }
