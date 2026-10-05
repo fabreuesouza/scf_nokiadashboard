@@ -321,7 +321,7 @@
         .list-title { font-size: 0.725rem; font-weight: 700; color: var(--brand-blue); text-transform: uppercase; letter-spacing: 0.05em; }
         .list-item { background-color: var(--bg-subtle); padding: 8px; border-radius: 6px; border: 1px solid var(--border-color); }
 
-        .boost-view, .cio-view, .power-footprint-view, .layer-priority-view, .hardware-view, .neighbor-view, .health-view { display: none; flex: 1; flex-direction: column; padding: 0; overflow: hidden; gap: 8px; }
+        .boost-view, .cio-view, .power-footprint-view, .layer-priority-view, .hardware-view, .neighbor-view, .neighbor-mapping-view, .health-view { display: none; flex: 1; flex-direction: column; padding: 0; overflow: hidden; gap: 8px; }
         .boost-fixed-header, .footprint-fixed-header { display: flex; flex-direction: column; gap: 8px; flex-shrink: 0; }
         .power-tech-tabs { display: flex; align-items: center; gap: 6px; border-bottom: 1px solid var(--border-color); padding-bottom: 6px; }
         .power-tech-btn { padding: 4px 12px; border-radius: 9999px; border: 1px solid var(--border-color-strong); background: var(--bg-card); font-size: 0.75rem; font-weight: 600; color: var(--text-secondary); cursor: pointer; transition: all 0.15s ease; display: flex; align-items: center; gap: 6px; }
@@ -631,7 +631,13 @@
                     <button class="nav-dropdown-item" id="btnNavConnectedPriority" onclick="switchMainTab('connectedPriority'); closeAllNavDropdowns();">Connected Priority</button>
                 </div>
             </div>
-            <button class="main-nav-btn" id="btnNavNeighbor" onclick="switchMainTab('neighbor')"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block; vertical-align:-3px; margin-right:2px;"><path d="M9 15l6-6"></path><path d="M8 13l-2 2a3 3 0 0 0 4 4l2-2"></path><path d="M16 11l2-2a3 3 0 0 0-4-4l-2 2"></path></svg>Neighbor Audit</button>
+            <div class="main-nav-btn-group" id="neighborNavGroup">
+                <button class="main-nav-btn" id="btnNavNeighbor" onclick="toggleNavDropdown(event, 'neighborDropdownMenu')"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block; vertical-align:-3px; margin-right:2px;"><path d="M9 15l6-6"></path><path d="M8 13l-2 2a3 3 0 0 0 4 4l2-2"></path><path d="M16 11l2-2a3 3 0 0 0-4-4l-2 2"></path></svg>Neighbor Audit<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block; vertical-align:-1px; margin-left:3px;"><polyline points="6,9 12,15 18,9"></polyline></svg></button>
+                <div class="nav-dropdown-menu" id="neighborDropdownMenu">
+                    <button class="nav-dropdown-item" id="btnNavNeighborAudit" onclick="switchMainTab('neighbor'); closeAllNavDropdowns();">Audit</button>
+                    <button class="nav-dropdown-item" id="btnNavNeighborMapping" onclick="switchMainTab('neighborMapping'); closeAllNavDropdowns();">Mapping</button>
+                </div>
+            </div>
             <button class="main-nav-btn" id="btnNavHardware" onclick="switchMainTab('hardware')"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block; vertical-align:-3px; margin-right:2px;"><path d="M14.7 6.3a4 4 0 0 0-5.4 5.4L4 17l3 3 5.3-5.3a4 4 0 0 0 5.4-5.4l-2.5 2.5-2-2z"></path></svg>Hardware Mapping</button>
             <button class="main-nav-btn" id="btnNavHealth" onclick="switchMainTab('health')"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block; vertical-align:-3px; margin-right:2px;"><circle cx="12" cy="12" r="9"></circle><path d="M8.5 12.5l2.5 2.5 5-5"></path></svg>Site Health Check</button>
             <button class="main-nav-btn" id="btnNavNrAnchor" onclick="switchMainTab('nranchor')"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block; vertical-align:-3px; margin-right:2px;"><path d="M3 11 L11 19 L15 15 L7 7 Z"></path><path d="M15 15 L21 21"></path><path d="M14 3 a10 10 0 0 1 7 7" opacity="0.45"></path><path d="M11 6 a6 6 0 0 1 7 7" opacity="0.7"></path></svg>NR Anchoring</button>
@@ -1077,6 +1083,10 @@
                     </div>
                 </div>
             </div>
+        </div>
+
+        <!-- MODULE 6b: NEIGHBOR MAPPING (placeholder) -->
+        <div class="neighbor-mapping-view" id="neighborMappingView">
         </div>
 
         <!-- MODULE 7: HARDWARE MAPPING -->
@@ -3804,7 +3814,9 @@
             document.getElementById('btnNavLms')?.classList.toggle('active', tabName === 'priority' || tabName === 'connectedPriority');
             document.getElementById('btnNavIdlePriority')?.classList.toggle('active', tabName === 'priority');
             document.getElementById('btnNavConnectedPriority')?.classList.toggle('active', tabName === 'connectedPriority');
-            document.getElementById('btnNavNeighbor')?.classList.toggle('active', tabName === 'neighbor');
+            document.getElementById('btnNavNeighbor')?.classList.toggle('active', tabName === 'neighbor' || tabName === 'neighborMapping');
+            document.getElementById('btnNavNeighborAudit')?.classList.toggle('active', tabName === 'neighbor');
+            document.getElementById('btnNavNeighborMapping')?.classList.toggle('active', tabName === 'neighborMapping');
             document.getElementById('btnNavHardware')?.classList.toggle('active', tabName === 'hardware');
             document.getElementById('btnNavHealth')?.classList.toggle('active', tabName === 'health');
             document.getElementById('btnNavNrAnchor')?.classList.toggle('active', tabName === 'nranchor');
@@ -3817,6 +3829,7 @@
             const lpV = document.getElementById('layerPriorityView'); if (lpV) lpV.style.display = (tabName === 'priority') ? 'flex' : 'none';
             const cpV = document.getElementById('connectedPriorityView'); if (cpV) cpV.style.display = (tabName === 'connectedPriority') ? 'flex' : 'none';
             const nV = document.getElementById('neighborView'); if (nV) nV.style.display = (tabName === 'neighbor') ? 'flex' : 'none';
+            const nmV = document.getElementById('neighborMappingView'); if (nmV) nmV.style.display = (tabName === 'neighborMapping') ? 'flex' : 'none';
             const hV = document.getElementById('hardwareView'); if (hV) hV.style.display = (tabName === 'hardware') ? 'flex' : 'none';
             const hlV = document.getElementById('healthView'); if (hlV) hlV.style.display = (tabName === 'health') ? 'flex' : 'none';
             const nrV = document.getElementById('nranchorView'); if (nrV) nrV.style.display = (tabName === 'nranchor') ? 'flex' : 'none';
@@ -3852,6 +3865,7 @@
             else if (tabName === 'priority') moduleName = "Idle Priority";
             else if (tabName === 'connectedPriority') moduleName = "Connected Priority";
             else if (tabName === 'neighbor') moduleName = "Neighbor Audit";
+            else if (tabName === 'neighborMapping') moduleName = "Neighbor Mapping";
             else if (tabName === 'hardware') moduleName = "Hardware Mapping";
             else if (tabName === 'health') moduleName = "Site Health Check";
             else if (tabName === 'nranchor') moduleName = "NR Anchoring";
