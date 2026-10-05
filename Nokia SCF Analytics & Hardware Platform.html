@@ -355,27 +355,39 @@
 
         .nbr-map-select { width: 100%; margin-top: 2px; padding: 5px 6px; border-radius: 5px; border: 1px solid var(--border-color-strong); background: var(--bg-card); color: var(--text-primary); font-size: 0.8rem; font-weight: 600; font-family: 'JetBrains Mono', monospace; }
 
-        .nbr-map-source-card { width: 240px; flex-shrink: 0; background-color: var(--bg-card); border: 2px solid var(--brand-blue); border-radius: 8px; padding: 12px; box-shadow: var(--shadow-xs); display: flex; flex-direction: column; gap: 6px; overflow-y: auto; }
         #nbrMapDetailPanel { width: 275px; }
-        .nbr-map-source-title { font-size: 0.82rem; font-weight: 800; color: var(--text-primary); line-height: 1.25; }
-        .nbr-map-source-sub { font-family: 'JetBrains Mono', monospace; font-size: 0.68rem; color: var(--text-muted); }
 
-        .nbr-map-list-card { flex: 1; min-width: 0; display: flex; flex-direction: column; background-color: var(--bg-card); border: 1px solid var(--border-color); border-radius: 8px; overflow: hidden; box-shadow: var(--shadow-xs); }
+        .nbr-map-tree-card { flex: 1; min-width: 0; display: flex; flex-direction: column; background-color: var(--bg-card); border: 1px solid var(--border-color); border-radius: 8px; overflow: hidden; box-shadow: var(--shadow-xs); }
         .nbr-map-list-toolbar { display: flex; align-items: center; gap: 10px; padding: 8px 10px; border-bottom: 1px solid var(--border-color); flex-shrink: 0; }
         .nbr-map-search-input { flex: 1; padding: 5px 8px; border-radius: 5px; border: 1px solid var(--border-color-strong); background: var(--bg-subtle); color: var(--text-primary); font-size: 0.75rem; }
         .nbr-map-conflict-toggle { display: flex; align-items: center; gap: 4px; font-size: 0.72rem; color: var(--text-secondary); white-space: nowrap; cursor: pointer; }
-        .nbr-map-list-scroll { flex: 1; overflow-y: auto; }
-        .nbr-map-row { display: flex; align-items: center; gap: 8px; padding: 6px 10px; border-bottom: 1px solid var(--border-color); cursor: pointer; }
-        .nbr-map-row:hover { background: var(--bg-subtle); }
-        .nbr-map-row.has-conflict { background: rgba(239, 68, 68, 0.06); }
-        .nbr-map-row.has-conflict:hover { background: rgba(239, 68, 68, 0.12); }
-        .nbr-map-row-target { flex: 1; min-width: 0; display: flex; flex-direction: column; }
-        .nbr-map-row-cellnames, .nbr-map-row-name, .nbr-map-row-ids { font-family: 'JetBrains Mono', monospace; font-size: 0.72rem; font-weight: 400; color: var(--text-primary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        .nbr-map-row-cellnames { display: flex; align-items: center; gap: 5px; }
-        .nbr-map-row-cellnames .nbr-map-row-cellname-src, .nbr-map-row-cellnames .nbr-map-row-ids-inline { overflow: hidden; text-overflow: ellipsis; }
-        .nbr-map-row-cellnames .nbr-map-row-arrow-sep { flex-shrink: 0; }
-        .nbr-map-row-name { margin-top: 6px; }
-        .nbr-map-row-events { flex-shrink: 0; text-align: right; font-family: 'JetBrains Mono', monospace; font-size: 0.68rem; color: var(--text-secondary); line-height: 1.3; }
+        .nbr-map-tree-scroll { flex: 1; overflow: auto; padding: 24px 16px; }
+
+        /* Pure-CSS org-chart tree: Source (CARD1) -> LNBTS group (CARD2) -> target LNCEL (CARD3) */
+        .nbr-map-tree, .nbr-map-tree ul { display: flex; list-style: none; margin: 0; padding: 0; position: relative; }
+        .nbr-map-tree { justify-content: center; }
+        .nbr-map-tree ul { padding-top: 28px; }
+        .nbr-map-tree li { display: flex; flex-direction: column; align-items: center; position: relative; padding: 0 12px; }
+        .nbr-map-tree li > ul > li { padding-top: 28px; }
+        .nbr-map-tree li > ul > li::before, .nbr-map-tree li > ul > li::after { content: ''; position: absolute; top: 0; right: 50%; border-top: 1px solid var(--border-color-strong); width: 50%; height: 28px; }
+        .nbr-map-tree li > ul > li::after { right: auto; left: 50%; border-left: 1px solid var(--border-color-strong); }
+        .nbr-map-tree li > ul > li:only-child::before, .nbr-map-tree li > ul > li:only-child::after { display: none; }
+        .nbr-map-tree li > ul > li:only-child { padding-top: 0; }
+        .nbr-map-tree li > ul > li:first-child::before, .nbr-map-tree li > ul > li:last-child::after { border: 0 none; }
+        .nbr-map-tree li > ul > li:last-child::before { border-right: 1px solid var(--border-color-strong); border-radius: 0 6px 0 0; }
+        .nbr-map-tree li > ul > li:first-child::after { border-radius: 6px 0 0 0; }
+        .nbr-map-tree li > ul::before { content: ''; position: absolute; top: 0; left: 50%; border-left: 1px solid var(--border-color-strong); width: 0; height: 28px; }
+        .nbr-map-tree-arrowhead { position: absolute; top: 24px; left: 50%; transform: translateX(-50%); color: var(--border-color-strong); font-size: 11px; line-height: 1; }
+
+        .nbr-map-card { background-color: var(--bg-card); border: 1px solid var(--border-color-strong); border-radius: 8px; padding: 10px 12px; box-shadow: var(--shadow-xs); display: flex; flex-direction: column; gap: 3px; font-family: 'JetBrains Mono', monospace; }
+        .nbr-map-card-source { width: 220px; border: 2px solid var(--brand-blue); }
+        .nbr-map-card-lnbts { width: 150px; align-items: center; background: var(--bg-subtle); }
+        .nbr-map-card-leaf { width: 190px; cursor: pointer; }
+        .nbr-map-card-leaf:hover { border-color: var(--brand-blue); }
+        .nbr-map-card-leaf.has-conflict { border-left: 3px solid #ef4444; }
+        .nbr-map-card-title { font-size: 0.8rem; font-weight: 700; color: var(--text-primary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .nbr-map-card-sub { font-size: 0.68rem; color: var(--text-secondary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .nbr-map-card-source .nbr-map-event-profile { margin-top: 6px; padding-top: 6px; border-top: 1px solid var(--border-color); font-family: 'JetBrains Mono', monospace; }
         .nbr-map-detail-row { padding: 4px 0; border-bottom: 1px solid var(--border-color); font-size: 0.72rem; }
         .nbr-map-detail-row b { color: var(--text-primary); }
         .nbr-map-conflict-badge { display: inline-block; background: var(--badge-false-bg); color: var(--badge-false-text); border: 1px solid var(--badge-false-border); border-radius: 4px; padding: 1px 6px; font-size: 0.68rem; font-weight: 700; margin-top: 2px; }
@@ -631,7 +643,7 @@
     <!-- LINE 1: MAIN BRANDING & FILE ACTIONS HEADER -->
     <header>
         <div class="logo-area">
-            <h1>SCF Nokia Analytics <span class="logo-badge">Pro Suite</span> <span class="logo-badge" style="background:rgba(255,255,255,0.1); font-weight:600;">v1.91</span></h1>
+            <h1>SCF Nokia Analytics <span class="logo-badge">Pro Suite</span> <span class="logo-badge" style="background:rgba(255,255,255,0.1); font-weight:600;">v1.92</span></h1>
         </div>
         <div class="upload-area">
             <span class="summary-badge" id="site-summary">No SCF file loaded</span>
@@ -1138,16 +1150,13 @@
             </div>
 
             <div class="footprint-main-content" style="margin-top:4px;">
-                <div class="nbr-map-source-card" id="nbrMapSourceCard">
-                    <span style="font-size:0.72rem; color:var(--text-muted); font-style:italic;">Select a source cell above.</span>
-                </div>
-                <div class="nbr-map-list-card">
+                <div class="nbr-map-tree-card">
                     <div class="nbr-map-list-toolbar">
                         <input type="text" id="nbrMapSearchInput" class="nbr-map-search-input" placeholder="Filter by target name, LNBTS, LNCEL, PCI, EARFCN or TAC…" oninput="renderNeighborMappingGraph()">
                         <label class="nbr-map-conflict-toggle"><input type="checkbox" id="nbrMapOnlyConflicts" onchange="renderNeighborMappingGraph()"> Only conflicts</label>
                     </div>
-                    <div class="nbr-map-list-scroll" id="nbrMapListScroll">
-                        <div style="padding:16px; font-size:0.75rem; color:var(--text-muted); font-style:italic; text-align:center;">Select a source cell above to list its neighbor relations.</div>
+                    <div class="nbr-map-tree-scroll" id="nbrMapTreeScroll">
+                        <div style="padding:16px; font-size:0.75rem; color:var(--text-muted); font-style:italic; text-align:center;">Select a source cell above to build its neighbor hierarchy.</div>
                     </div>
                 </div>
                 <div class="footprint-sidebar-filters" id="nbrMapDetailPanel">
@@ -5429,20 +5438,19 @@
             return { type: 'A5', label: `A5:${a5.thresholdDbm}/${a5.threshold2Dbm}dBm (${a5.thresholdKey}/${a5.threshold2Key})`, data: a5 };
         }
 
+        // Builds the Source (CARD1) -> LNBTS group (CARD2) -> target LNCEL (CARD3) hierarchy.
         function renderNeighborMappingGraph() {
-            const listScroll = document.getElementById('nbrMapListScroll');
-            const sourceCard = document.getElementById('nbrMapSourceCard');
+            const treeScroll = document.getElementById('nbrMapTreeScroll');
             const select = document.getElementById('nbrMapSourceSelect');
-            if (!listScroll || !sourceCard || !select) return;
+            if (!treeScroll || !select) return;
             const cellId = select.value;
 
             document.getElementById('nbrMapTotalNeighbors').innerText = '0';
             document.getElementById('nbrMapTotalConflicts').innerText = '0';
-            document.getElementById('nbrMapDetailContent').innerHTML = `Select a source cell above, then click a row to see the full event/threshold breakdown.`;
+            document.getElementById('nbrMapDetailContent').innerHTML = `Select a source cell above, then click a cell card to see the full event/threshold breakdown.`;
 
             if (!cellId) {
-                sourceCard.innerHTML = `<span style="font-size:0.72rem; color:var(--text-muted); font-style:italic;">Select a source cell above.</span>`;
-                listScroll.innerHTML = `<div style="padding:16px; font-size:0.75rem; color:var(--text-muted); font-style:italic; text-align:center;">Select a source cell above to list its neighbor relations.</div>`;
+                treeScroll.innerHTML = `<div style="padding:16px; font-size:0.75rem; color:var(--text-muted); font-style:italic; text-align:center;">Select a source cell above to build its neighbor hierarchy.</div>`;
                 return;
             }
 
@@ -5471,31 +5479,18 @@
             nbrMapCurrentRelations = relations;
             nbrMapCurrentSourceProfile = profile;
             nbrMapCurrentSourceLabel = `${relations[0] ? relations[0].servingCellName : cellId} (${cellId})`;
-
-            document.getElementById('nbrMapTotalNeighbors').innerText = String(relations.length);
-
             nbrMapCurrentSourceDist = sourceDist;
             nbrMapCurrentSourceEarfcn = sourceEarfcn;
 
-            sourceCard.innerHTML = `
-                <div class="nbr-map-source-title">${nbrMapCurrentSourceLabel}</div>
-                <div class="nbr-map-source-sub">LNBTS: ${sourceEnbId}</div>
-                <div class="nbr-map-source-sub">LNCEL: ${cellId}</div>
-                <div class="nbr-map-source-sub">PCI: ${sourcePci} &nbsp; EARFCN: ${sourceEarfcn}</div>
-                <div style="border-top:1px solid var(--border-color); margin-top:6px; padding-top:6px;">
-                    <div style="font-size:0.68rem; font-weight:700; color:var(--text-secondary); text-transform:uppercase; letter-spacing:0.04em; margin-bottom:4px;">Event Profile</div>
-                    ${nbrMapEventProfileHtml(profile)}
-                    <div style="margin-top:6px;">
-                        ${baseConflicts.length === 0 ? `<span class="nbr-map-ok-badge">No conflicts</span>` : baseConflicts.map(c => `<div class="nbr-map-conflict-badge" style="display:block; margin-bottom:4px;">${c.severity}: ${c.text}</div>`).join('')}
-                    </div>
-                </div>`;
+            document.getElementById('nbrMapTotalNeighbors').innerText = String(relations.length);
 
             const searchTerm = (document.getElementById('nbrMapSearchInput').value || '').toLowerCase().trim();
             const onlyConflicts = document.getElementById('nbrMapOnlyConflicts').checked;
 
-            let totalConflicts = baseConflicts.length > 0 ? 1 : 0; // source-level conflicts count once, surfaced on every row
-            let rowsHtml = '';
-            let visibleCount = 0;
+            // Group relations by target LNBTS (CARD2), preserving the intra-site-first sort order.
+            // A Map (not a plain object) keeps insertion order even for numeric-looking LNBTS ids.
+            const groups = new Map();
+            let totalConflicts = baseConflicts.length > 0 ? 1 : 0; // source-level conflicts count once, surfaced on every leaf
 
             relations.forEach((rel, i) => {
                 const governing = getGoverningEventForRelation(sourceDist, sourceEarfcn, profile, rel);
@@ -5510,39 +5505,71 @@
                 if (relConflicts.length > 0) totalConflicts++;
                 const hasConflict = relConflicts.length > 0;
 
-                if (onlyConflicts && !hasConflict) return;
-                if (searchTerm) {
+                let visible = true;
+                if (onlyConflicts && !hasConflict) visible = false;
+                if (visible && searchTerm) {
                     const haystack = `${rel.targetName} ${rel.targetEnbId} ${rel.targetLcrId} ${rel.targetPci} ${rel.targetEarfcn} ${rel.targetTac}`.toLowerCase();
-                    if (!haystack.includes(searchTerm)) return;
+                    if (!haystack.includes(searchTerm)) visible = false;
                 }
-                visibleCount++;
+                if (!visible) return;
 
-                const lnrelShort = rel.distName ? rel.distName.split('/').pop() : 'N/A';
-                const lnadjShort = rel.adjDistName ? rel.adjDistName.split('/').pop() : 'N/A';
-                const lnadjlShort = rel.adjlDistName ? rel.adjlDistName.split('/').pop() : 'N/A';
-                const idsCompact = `LNBTS:${rel.targetEnbId} &nbsp;LNCEL:${rel.targetLcrId} &nbsp;PCI:${rel.targetPci} &nbsp;EARFCN:${rel.targetEarfcn} &nbsp;TAC:${rel.targetTac}`;
-                const idsDetailed = `LNBTS-${rel.targetEnbId} &nbsp;LNCEL-${rel.targetLcrId} &nbsp;PCI: ${rel.targetPci} &nbsp;EARFCN: ${rel.targetEarfcn} &nbsp;TAC: ${rel.targetTac}`;
-
-                rowsHtml += `
-                    <div class="nbr-map-row ${hasConflict ? 'has-conflict' : ''}" onclick="showNeighborMappingRelDetail(${i})" title="${(rel.targetName || 'Unknown').replace(/"/g, '&quot;')}">
-                        <div class="nbr-map-row-target">
-                            <span class="nbr-map-row-cellnames">
-                                <span class="nbr-map-row-cellname-src">${rel.servingCellName || cellId}</span>
-                                <span class="nbr-map-row-arrow-sep">→</span>
-                                <span class="nbr-map-row-ids-inline">${idsCompact}</span>
-                            </span>
-                            <span class="nbr-map-row-name">${lnrelShort} / ${lnadjShort} / ${lnadjlShort}</span>
-                            <span class="nbr-map-row-ids">${idsDetailed}</span>
-                        </div>
-                        <div class="nbr-map-row-events">
-                            <div>${governing.label}${hasConflict ? ' ⚠' : ''}</div>
-                            <div>CIO:${rel.cio} (cellIndOffNeigh)</div>
-                        </div>
-                    </div>`;
+                const groupKey = String(rel.targetEnbId);
+                if (!groups.has(groupKey)) groups.set(groupKey, { enbId: rel.targetEnbId, isIntraSite: rel.isIntraSite, leaves: [] });
+                groups.get(groupKey).leaves.push({ rel, idx: i, hasConflict, governing });
             });
 
-            listScroll.innerHTML = rowsHtml || `<div style="padding:16px; font-size:0.75rem; color:var(--text-muted); font-style:italic; text-align:center;">No relations match the current filter.</div>`;
             document.getElementById('nbrMapTotalConflicts').innerText = String(totalConflicts);
+
+            if (groups.size === 0) {
+                treeScroll.innerHTML = `<div style="padding:16px; font-size:0.75rem; color:var(--text-muted); font-style:italic; text-align:center;">No relations match the current filter.</div>`;
+                return;
+            }
+
+            const lnbtsGroupsHtml = Array.from(groups.values()).map(group => {
+                const leavesHtml = group.leaves.map(leaf => {
+                    const rel = leaf.rel;
+                    return `
+                        <li>
+                            <span class="nbr-map-tree-arrowhead">▾</span>
+                            <div class="nbr-map-card nbr-map-card-leaf ${leaf.hasConflict ? 'has-conflict' : ''}" onclick="showNeighborMappingRelDetail(${leaf.idx})" title="${leaf.governing.label}${leaf.hasConflict ? ' ⚠' : ''}">
+                                <div class="nbr-map-card-title">${rel.targetName || 'Unknown'}${leaf.hasConflict ? ' ⚠' : ''}</div>
+                                <div class="nbr-map-card-sub">LNCEL: ${rel.targetLcrId}</div>
+                                <div class="nbr-map-card-sub">TAC: ${rel.targetTac}</div>
+                                <div class="nbr-map-card-sub">EARFCN: ${rel.targetEarfcn}</div>
+                                <div class="nbr-map-card-sub">PCI: ${rel.targetPci}</div>
+                            </div>
+                        </li>`;
+                }).join('');
+
+                return `
+                    <li>
+                        <span class="nbr-map-tree-arrowhead">▾</span>
+                        <div class="nbr-map-card nbr-map-card-lnbts">
+                            <div class="nbr-map-card-title">LNBTS: ${group.enbId}</div>
+                            <div class="nbr-map-card-sub">${group.isIntraSite ? 'Own site' : 'External'} · ${group.leaves.length} cell${group.leaves.length !== 1 ? 's' : ''}</div>
+                        </div>
+                        <ul class="${group.leaves.length === 1 ? 'nbr-map-tree-single-child' : ''}">${leavesHtml}</ul>
+                    </li>`;
+            }).join('');
+
+            treeScroll.innerHTML = `
+                <ul class="nbr-map-tree">
+                    <li>
+                        <div class="nbr-map-card nbr-map-card-source" onclick="showNeighborMappingSourceDetail()">
+                            <div class="nbr-map-card-title">${nbrMapCurrentSourceLabel}</div>
+                            <div class="nbr-map-card-sub">LNBTS: ${sourceEnbId}</div>
+                            <div class="nbr-map-card-sub">LNCEL: ${cellId}</div>
+                            <div class="nbr-map-card-sub">PCI: ${sourcePci} &nbsp; EARFCN: ${sourceEarfcn}</div>
+                            <div class="nbr-map-event-profile">
+                                ${nbrMapEventProfileHtml(profile)}
+                                <div style="margin-top:4px;">
+                                    ${baseConflicts.length === 0 ? `<span class="nbr-map-ok-badge">No conflicts</span>` : baseConflicts.map(c => `<div class="nbr-map-conflict-badge" style="display:block; margin-bottom:4px;">${c.severity}: ${c.text}</div>`).join('')}
+                                </div>
+                            </div>
+                        </div>
+                        <ul class="${groups.size === 1 ? 'nbr-map-tree-single-child' : ''}">${lnbtsGroupsHtml}</ul>
+                    </li>
+                </ul>`;
         }
 
         function nbrMapEventProfileHtml(profile) {
