@@ -372,8 +372,10 @@
         .nbr-map-leaves-col { display: flex; flex-direction: column; gap: 6px; }
 
         .nbr-map-card { position: relative; z-index: 2; background-color: var(--bg-card); border: 1px solid var(--border-color-strong); border-radius: 6px; padding: 4px 6px; box-shadow: var(--shadow-xs); display: flex; flex-direction: column; gap: 1px; font-family: 'JetBrains Mono', monospace; }
-        .nbr-map-card-source { width: 165px; border: 2px solid var(--brand-blue); }
+        .nbr-map-card-source { width: max-content; min-width: 165px; max-width: 280px; border: 2px solid var(--brand-blue); }
+        .nbr-map-card-source .nbr-map-card-title, .nbr-map-card-source .nbr-map-card-sub { white-space: normal; overflow: visible; text-overflow: clip; word-break: break-word; }
         .nbr-map-card-lnbts { width: 115px; align-items: center; background: var(--bg-subtle); cursor: pointer; user-select: none; }
+        .nbr-map-card-lnbts.is-own-site { background: var(--badge-true-bg); border-color: var(--badge-true-border); }
         .nbr-map-card-leaf { width: 145px; cursor: pointer; }
         .nbr-map-card-leaf.expanded { width: 260px; }
         .nbr-map-card-leaf:hover { border-color: var(--brand-blue); }
@@ -637,7 +639,7 @@
     <!-- LINE 1: MAIN BRANDING & FILE ACTIONS HEADER -->
     <header>
         <div class="logo-area">
-            <h1>SCF Nokia Analytics <span class="logo-badge">Pro Suite</span> <span class="logo-badge" style="background:rgba(255,255,255,0.1); font-weight:600;">v1.94</span></h1>
+            <h1>SCF Nokia Analytics <span class="logo-badge">Pro Suite</span> <span class="logo-badge" style="background:rgba(255,255,255,0.1); font-weight:600;">v1.95</span></h1>
         </div>
         <div class="upload-area">
             <span class="summary-badge" id="site-summary">No SCF file loaded</span>
@@ -5565,7 +5567,7 @@
 
                 return `
                     <div class="nbr-map-group-row">
-                        <div id="${groupDomId}" class="nbr-map-card nbr-map-card-lnbts" onclick="toggleNbrMapGroup('${group.enbId}')">
+                        <div id="${groupDomId}" class="nbr-map-card nbr-map-card-lnbts ${group.isIntraSite ? 'is-own-site' : ''}" onclick="toggleNbrMapGroup('${group.enbId}')">
                             <div class="nbr-map-card-title">${isExpanded ? '▾' : '▸'} LNBTS: ${group.enbId}</div>
                             <div class="nbr-map-card-sub">${group.isIntraSite ? 'Own site' : 'External'} · ${group.leaves.length} cell${group.leaves.length !== 1 ? 's' : ''}</div>
                         </div>
