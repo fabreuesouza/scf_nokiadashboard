@@ -640,7 +640,7 @@
     <!-- LINE 1: MAIN BRANDING & FILE ACTIONS HEADER -->
     <header>
         <div class="logo-area">
-            <h1>SCF Nokia Analytics <span class="logo-badge">Pro Suite</span> <span class="logo-badge" style="background:rgba(255,255,255,0.1); font-weight:600;">v2.01</span></h1>
+            <h1>SCF Nokia Analytics <span class="logo-badge">Pro Suite</span> <span class="logo-badge" style="background:rgba(255,255,255,0.1); font-weight:600;">v2.02</span></h1>
         </div>
         <div class="upload-area">
             <span class="summary-badge" id="site-summary">No SCF file loaded</span>
@@ -3332,6 +3332,42 @@
             return { status: 'WARN', detail: `${summary} ${outliers.length} LNCEL deviate more than 8dB from the site median: ${outliers.slice(0, 3).join(', ')}${outliers.length > 3 ? '…' : ''}`, fullDetail };
         }
 
+        // A2 has two serving-RSRP thresholds that must stay in the right order with enough margin:
+        // threshold2InterFreq starts inter-freq measurements when serving degrades below it, while
+        // threshold2a stops inter-RAT measurements once serving recovers above it. threshold2a must
+        // be at least 3dB *better* (higher/less negative) than threshold2InterFreq, or the two
+        // thresholds sit too close (or inverted), risking the UE flapping measurements on/off right
+        // at the boundary.
+        function checkA2ThresholdMargin(ctx) {
+            if (ctx.allLncel.length === 0) return { status: 'NA', detail: 'No LNCEL found in this SCF.' };
+
+            const MIN_MARGIN_DB = 3;
+            const entries = [];
+            ctx.allLncel.forEach(cell => {
+                const label = cell.distName.split('/').pop();
+                const t2aRaw = parseFloat(getParamCaseInsensitive(cell.params, 'threshold2a'));
+                const tIfRaw = parseFloat(getParamCaseInsensitive(cell.params, 'threshold2InterFreq'));
+                if (isNaN(t2aRaw) || isNaN(tIfRaw)) return;
+                const t2aDbm = t2aRaw - 140, tIfDbm = tIfRaw - 140;
+                entries.push({ label, t2aRaw, tIfRaw, t2aDbm, tIfDbm, margin: t2aDbm - tIfDbm });
+            });
+
+            if (entries.length === 0) return { status: 'NA', detail: 'threshold2a / threshold2InterFreq not found in any LNCEL.' };
+
+            const violations = [];
+            const lines = entries.map(e => {
+                const flagged = e.margin < MIN_MARGIN_DB;
+                if (flagged) violations.push(`${e.label}: margin=${e.margin}dB`);
+                return `${flagged ? '⚠️' : '✅'} <strong>${e.label}</strong>: \nthreshold2a=${e.t2aDbm}dBm(${e.t2aRaw}), threshold2InterFreq=${e.tIfDbm}dBm(${e.tIfRaw}) — margin=${e.margin}dB (min required ${MIN_MARGIN_DB}dB)${flagged ? ' [BELOW MINIMUM]' : ''}`;
+            });
+
+            const summary = `threshold2a vs threshold2InterFreq margin evaluated on ${entries.length} LNCEL — threshold2a must be at least ${MIN_MARGIN_DB}dB better (higher) than threshold2InterFreq.`;
+            const fullDetail = `${summary}\n\n${lines.join('\n')}`;
+
+            if (violations.length === 0) return { status: 'OK', detail: summary, fullDetail };
+            return { status: 'FAIL', detail: `${summary} ${violations.length} LNCEL with margin below ${MIN_MARGIN_DB}dB (or inverted): ${violations.slice(0, 3).join(', ')}${violations.length > 3 ? '…' : ''}`, fullDetail };
+        }
+
         function checkA2RedirectTriggerTimers(ctx) {
             if (ctx.allLncel.length === 0) return { status: 'NA', detail: 'No LNCEL found in this SCF.' };
 
@@ -3425,6 +3461,7 @@
         const HEALTH_CHECKS = [
             { id: 'a1_serving_threshold', category: 'Mobility (LTE Events)', icon: 'antenna', title: 'A1 Serving Good-Signal Threshold', run: checkA1ServingGoodSignalThreshold },
             { id: 'a2_redirect_timers', category: 'Mobility (LTE Events)', icon: 'antenna', title: 'A2 Redirect & Trigger Timers', run: checkA2RedirectTriggerTimers },
+            { id: 'a2_threshold_margin', category: 'Mobility (LTE Events)', icon: 'antenna', title: 'A2 threshold2a vs threshold2InterFreq Margin', run: checkA2ThresholdMargin },
             { id: 'a3_offset', category: 'Mobility (LTE Events)', icon: 'antenna', title: 'A3 Offset (Intra-Freq HO)', run: checkA3OffsetIntraFreq },
             { id: 'a4_load_balancing', category: 'Mobility (LTE Events)', icon: 'antenna', title: 'A4 Intra-Freq Load Balancing', run: checkA4LoadBalancingConsistency },
             { id: 'a5_ttt', category: 'Mobility (LTE Events)', icon: 'antenna', title: 'A5 Emergency HO Reaction', run: checkA5TimeToTrigger },
