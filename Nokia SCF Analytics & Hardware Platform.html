@@ -640,7 +640,7 @@
     <!-- LINE 1: MAIN BRANDING & FILE ACTIONS HEADER -->
     <header>
         <div class="logo-area">
-            <h1>SCF Nokia Analytics <span class="logo-badge">Pro Suite</span> <span class="logo-badge" style="background:rgba(255,255,255,0.1); font-weight:600;">v1.99</span></h1>
+            <h1>SCF Nokia Analytics <span class="logo-badge">Pro Suite</span> <span class="logo-badge" style="background:rgba(255,255,255,0.1); font-weight:600;">v2.00</span></h1>
         </div>
         <div class="upload-area">
             <span class="summary-badge" id="site-summary">No SCF file loaded</span>
@@ -5299,11 +5299,12 @@
         // Every LNCEL param whose name contains the event's signature substring (case-insensitive),
         // e.g. all *threshold2a* variants (threshold2a, threshold2aQci1, hysThreshold2a, ...) for A2.
         // Surfaces per-RAT/per-QCI variants of the same event without having to name each one.
-        function nbrMapFindDerivedParams(params, substr) {
+        function nbrMapFindDerivedParams(params, substr, excludeKey) {
             if (!params || !substr) return [];
             const needle = substr.toLowerCase();
+            const excludeLower = excludeKey ? excludeKey.toLowerCase() : null;
             return Object.keys(params)
-                .filter(k => k.toLowerCase().includes(needle))
+                .filter(k => k.toLowerCase().includes(needle) && k.toLowerCase() !== excludeLower)
                 .sort(naturalCompare)
                 .map(k => ({ key: k, raw: params[k] }));
         }
@@ -5331,7 +5332,7 @@
                 thresholdRaw: a1Thr.raw, thresholdKey: a1Thr.key, thresholdDbm: nbrMapIdxToDbm(a1Thr.raw, NBR_MAP_EVENT_CONFIG.A1.dbmOffset),
                 hysteresis: nbrMapFirstParam(servingParams, NBR_MAP_EVENT_CONFIG.A1.hysteresisKeys),
                 ttt: nbrMapFirstParam(servingParams, NBR_MAP_EVENT_CONFIG.A1.tttKeys),
-                derivedParams: nbrMapFindDerivedParams(servingParams, NBR_MAP_EVENT_CONFIG.A1.derivedSubstr)
+                derivedParams: nbrMapFindDerivedParams(servingParams, NBR_MAP_EVENT_CONFIG.A1.derivedSubstr, a1Thr.key)
             } : null;
 
             const a2Thr = nbrMapFirstParam(servingParams, NBR_MAP_EVENT_CONFIG.A2.thresholdKeys);
@@ -5341,7 +5342,7 @@
                 // since it is a relative hysteresis value, not an absolute RSRP level.
                 const convertedKeys = new Set(NBR_MAP_EVENT_CONFIG.A2.derivedThresholdKeys.map(k => k.toLowerCase()));
                 const converted = nbrMapFindDerivedThresholds(servingParams, NBR_MAP_EVENT_CONFIG.A2.derivedThresholdKeys, NBR_MAP_EVENT_CONFIG.A2.dbmOffset);
-                const rest = nbrMapFindDerivedParams(servingParams, NBR_MAP_EVENT_CONFIG.A2.derivedSubstr).filter(p => !convertedKeys.has(p.key.toLowerCase()));
+                const rest = nbrMapFindDerivedParams(servingParams, NBR_MAP_EVENT_CONFIG.A2.derivedSubstr, a2Thr.key).filter(p => !convertedKeys.has(p.key.toLowerCase()));
                 return {
                     thresholdRaw: a2Thr.raw, thresholdKey: a2Thr.key, thresholdDbm: nbrMapIdxToDbm(a2Thr.raw, NBR_MAP_EVENT_CONFIG.A2.dbmOffset),
                     hysteresis: nbrMapFirstParam(servingParams, NBR_MAP_EVENT_CONFIG.A2.hysteresisKeys),
@@ -5355,7 +5356,7 @@
                 offsetRaw: a3Off.raw, offsetKey: a3Off.key, offsetDb: parseFloat(a3Off.raw) / NBR_MAP_EVENT_CONFIG.A3.offsetDivisor,
                 hysteresis: nbrMapFirstParam(servingParams, NBR_MAP_EVENT_CONFIG.A3.hysteresisKeys),
                 ttt: nbrMapFirstParam(servingParams, NBR_MAP_EVENT_CONFIG.A3.tttKeys),
-                derivedParams: nbrMapFindDerivedParams(servingParams, NBR_MAP_EVENT_CONFIG.A3.derivedSubstr)
+                derivedParams: nbrMapFindDerivedParams(servingParams, NBR_MAP_EVENT_CONFIG.A3.derivedSubstr, a3Off.key)
             } : null;
 
             // A5 is resolved per-relation (see getA5ForRelation) since it depends on which LNHOIF
@@ -5394,6 +5395,88 @@
                 };
             }
             return null; // no LNHOIF configured for this relation's target frequency
+        }
+
+        // B1 (inter-RAT neighbor becomes better than threshold) and B2 (serving becomes worse than
+        // threshold1 AND inter-RAT neighbor becomes better than threshold2) live on per-target-RAT
+        // mobility profile MOs that are children of the LNCEL — LNHOW (UTRA), LNHOG (GERAN), LNHOH
+        // (CDMA2000-HRPD), LNHOX (CDMA2000-1xRTT), LNHON/NRDCDPR/NRDCPR/ENDCDMEASCONF/ENDCMEASCONF
+        // (NR). Unlike A1-A5 (a flat raw-140 dBm convention), each B1/B2 threshold here has its own
+        // conversion formula depending on quantity (RSRP/RSCP/RSSI/EcN0/pilot strength) — sourced
+        // from the Nokia parameter reference (reference/nokia_lte_parameters_2026.csv) rather than
+        // assumed, since getting this wrong silently shows a plausible-looking but incorrect dBm.
+        const NBR_MAP_B1B2_CONVERT = {
+            'b1hysthresholdrsrp': { fn: r => parseFloat(r) / 2, unit: 'dB' },
+            'b1hysthresholdrsrq': { fn: r => parseFloat(r) / 2, unit: 'dB' },
+            'b1thresholdcsfbutraecn0': { fn: r => parseFloat(r) / 2 - 24, unit: 'dB' },
+            'b1thresholdcsfbutrarscp': { fn: r => parseFloat(r) - 115, unit: 'dBm' },
+            'b1thresholdnrrsrp': { fn: r => parseFloat(r) - 156, unit: 'dBm' },
+            'b1nrbeamthreshrsrp': { fn: r => parseFloat(r) - 156, unit: 'dBm' },
+            'b1thresholdnrrsrq': { fn: r => parseFloat(r) / 2, unit: 'dB' },
+            'b1nrbeamthreshrsrq': { fn: r => parseFloat(r) / 2, unit: 'dB' },
+            'b1thresholdrsrp': { fn: r => parseFloat(r) - 156, unit: 'dBm' },
+            'b1thresholdrsrq': { fn: r => parseFloat(r) / 2 - 43.5, unit: 'dB' },
+            'b1thresholdutraecn0srvcc': { fn: r => parseFloat(r) / 2 - 24, unit: 'dB' },
+            'b1thresholdutrarscpsrvcc': { fn: r => parseFloat(r) - 115, unit: 'dBm' },
+            'b2threshold1geran': { fn: r => parseFloat(r) - 140, unit: 'dBm' },
+            'b2threshold1geranqci1': { fn: r => parseFloat(r) - 140, unit: 'dBm' },
+            'b2threshold1hrpd': { fn: r => parseFloat(r) - 140, unit: 'dBm' },
+            'b2threshold1rsrqgeran': { fn: r => parseFloat(r) / 10, unit: 'dB' },
+            'b2threshold1rsrqgeranqci1': { fn: r => parseFloat(r) / 10, unit: 'dB' },
+            'b2threshold1rsrqhrpd': { fn: r => parseFloat(r) / 10, unit: 'dB' },
+            'b2threshold1rsrqrtt': { fn: r => parseFloat(r) / 10, unit: 'dB' },
+            'b2threshold1rsrqutra': { fn: r => parseFloat(r) / 10, unit: 'dB' },
+            'b2threshold1rsrqutraqci1': { fn: r => parseFloat(r) / 10, unit: 'dB' },
+            'b2threshold1rtt': { fn: r => parseFloat(r) - 140, unit: 'dBm' },
+            'b2threshold1utra': { fn: r => parseFloat(r) - 140, unit: 'dBm' },
+            'b2threshold1utraqci1': { fn: r => parseFloat(r) - 140, unit: 'dBm' },
+            'b2threshold2pstrhrpd': { fn: r => -parseFloat(r) / 2, unit: 'dB' },
+            'b2threshold2pstrrtt': { fn: r => -parseFloat(r) / 2, unit: 'dB' },
+            'b2threshold2rssigeran': { fn: r => parseFloat(r) - 110, unit: 'dBm' },
+            'b2threshold2rssigeranqci1': { fn: r => parseFloat(r) - 110, unit: 'dBm' },
+            'b2threshold2utraecn0': { fn: r => parseFloat(r) / 2 - 24, unit: 'dB' },
+            'b2threshold2utraecn0qci1': { fn: r => parseFloat(r) / 2 - 24, unit: 'dB' },
+            'b2threshold2utrarscp': { fn: r => parseFloat(r) - 115, unit: 'dBm' },
+            'b2threshold2utrarscpqci1': { fn: r => parseFloat(r) - 115, unit: 'dBm' }
+        };
+
+        // Scans every direct child MO of the source LNCEL for B1/B2 threshold and timeToTrigger
+        // params, grouped by the MO instance that carries them (one LNCEL can have several, one per
+        // target RAT). Converts each recognized threshold via NBR_MAP_B1B2_CONVERT; anything B1/B2
+        // that isn't in that table (e.g. report intervals, beam counts) is left out to keep this
+        // readable — the threshold/TTT pair is what actually defines when the event fires.
+        function getInterRatEventParams(sourceLncelDist) {
+            const groups = [];
+            if (!sourceLncelDist) return groups;
+            for (const dName of Object.keys(scfData)) {
+                if (getParentDistName(dName) !== sourceLncelDist) continue;
+                const params = (scfData[dName] && scfData[dName].params) || {};
+                const b1 = [], b2 = [];
+                Object.keys(params).forEach(k => {
+                    const lower = k.toLowerCase();
+                    if (!(lower.startsWith('b1') || lower.startsWith('b2'))) return;
+                    if (!/threshold|timetotrigger/.test(lower)) return;
+                    const conv = NBR_MAP_B1B2_CONVERT[lower];
+                    const entry = conv
+                        ? { key: k, raw: params[k], value: Math.round(conv.fn(params[k]) * 100) / 100, unit: conv.unit }
+                        : { key: k, raw: lower.includes('timetotrigger') ? nbrMapFmtMs(params[k]) : params[k] };
+                    (lower.startsWith('b1') ? b1 : b2).push(entry);
+                });
+                if (b1.length > 0 || b2.length > 0) groups.push({ moShort: dName.split('/').pop(), b1, b2 });
+            }
+            return groups;
+        }
+
+        function nbrMapInterRatHtml(groups) {
+            const fmtList = (list) => list.map(e => e.unit !== undefined ? `${e.key}=${e.value}${e.unit} (${e.raw})` : `${e.key}=${e.raw}`).join(' &nbsp;');
+            if (!groups || groups.length === 0) {
+                return `<div class="nbr-map-detail-row"><b>B1 / B2</b>: no inter-RAT mobility profile (LNHOW/LNHOG/LNHOH/LNHOX/LNHON/...) found on this LNCEL</div>`;
+            }
+            return groups.map(g => `
+                <div class="nbr-map-detail-row"><b>${g.moShort}</b></div>
+                ${g.b1.length > 0 ? `<div class="nbr-map-derived-params">B1: ${fmtList(g.b1)}</div>` : ''}
+                ${g.b2.length > 0 ? `<div class="nbr-map-derived-params">B2: ${fmtList(g.b2)}</div>` : ''}
+            `).join('');
         }
 
         // Conflict/dynamics checks between the events configured on one serving LNCEL.
@@ -5636,6 +5719,7 @@
                         <div class="nbr-map-card-sub">PCI: ${sourcePci} &nbsp; EARFCN: ${sourceEarfcn}</div>
                         <div class="nbr-map-event-profile">
                             ${nbrMapEventProfileHtml(profile)}
+                            ${nbrMapInterRatHtml(getInterRatEventParams(sourceDist))}
                             <div style="margin-top:4px;">
                                 ${baseConflicts.length === 0 ? `<span class="nbr-map-ok-badge">No conflicts</span>` : baseConflicts.map(c => `<div class="nbr-map-conflict-badge" style="display:block; margin-bottom:4px;">${c.severity}: ${c.text}</div>`).join('')}
                             </div>
