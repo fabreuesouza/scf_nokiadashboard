@@ -23,5 +23,13 @@ Nokia definitions, instead of guessing parameter names, units or conversion form
 - **`nokia_gsm_kpis_2026.csv`** — Nokia GSM KPI dictionary. Same column structure as the LTE KPI
   file, for GSM/2G KPIs. Use this for any GSM-related KPI work.
 
+- **`nokia_gsm_counters_2026.csv`** — Nokia GSM performance counter (PI) dictionary (12,290
+  counters). Columns include `PI Id`, `Network Element Name`/`NetAct Name` (the actual counter
+  name as it appears in NetAct/raw PM data), `Network Element Abbreviation`, `Description`,
+  `Unit`, `Measurement`, `Features`, `Aggregation Dimension`, `Trigger Type`, `Logical Type`,
+  `Updating Process Name`, etc. Use this to resolve a raw GSM counter referenced in a KPI formula
+  (e.g. the `sum([...])`/`max([...])` logical formulas in the GSM KPI dictionary) back to its full
+  definition, or to look up what a specific GSM counter actually measures.
+
 All are `;`-delimited CSVs with a header row; open with any spreadsheet tool or
 `csv.DictReader(..., delimiter=';')` in Python.
