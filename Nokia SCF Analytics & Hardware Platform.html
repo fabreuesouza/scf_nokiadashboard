@@ -639,7 +639,7 @@
     <!-- LINE 1: MAIN BRANDING & FILE ACTIONS HEADER -->
     <header>
         <div class="logo-area">
-            <h1>SCF Nokia Analytics <span class="logo-badge">Pro Suite</span> <span class="logo-badge" style="background:rgba(255,255,255,0.1); font-weight:600;">v1.95</span></h1>
+            <h1>SCF Nokia Analytics <span class="logo-badge">Pro Suite</span> <span class="logo-badge" style="background:rgba(255,255,255,0.1); font-weight:600;">v1.96</span></h1>
         </div>
         <div class="upload-area">
             <span class="summary-badge" id="site-summary">No SCF file loaded</span>
@@ -4836,12 +4836,15 @@
             const lnadjwMap = {}; // 3G Targets
             const lnadjGnbMap = {}; // 5G Targets
 
-            // 1. Identify Site MRBTS ID
+            // 1. Identify Site LNBTS (eNodeB) ID — this is what adjEnbId/ecgiAdjEnbId on a LNADJ/LNREL
+            // actually refers to (the Nokia eNodeB id), NOT the MRBTS container id, which is a
+            // different, unrelated number. Comparing against MRBTS here would make every intra-site
+            // relation look external.
             let siteMrbtsId = null;
             for (const dName of Object.keys(scfData)) {
-                const mrbtsMatch = dName.match(/MRBTS-(\d+)/);
-                if (mrbtsMatch) {
-                    siteMrbtsId = mrbtsMatch[1];
+                const lnbtsMatch = dName.match(/LNBTS-(\d+)/);
+                if (lnbtsMatch) {
+                    siteMrbtsId = lnbtsMatch[1];
                     break;
                 }
             }
@@ -5473,8 +5476,8 @@
             const sourceEarfcn = sourceFddData.earfcnDL || getParamCaseInsensitive(sourceParams, 'earfcnDL') || 'N/A';
             let sourceEnbId = 'N/A';
             for (const dName of Object.keys(scfData)) {
-                const mrbtsMatch = dName.match(/MRBTS-(\d+)/);
-                if (mrbtsMatch) { sourceEnbId = mrbtsMatch[1]; break; }
+                const lnbtsMatch = dName.match(/LNBTS-(\d+)/);
+                if (lnbtsMatch) { sourceEnbId = lnbtsMatch[1]; break; }
             }
 
             const relations = allNeighborRelationsFlat.filter(r => r.relType === '4G' && r.servingCellId === cellId);
