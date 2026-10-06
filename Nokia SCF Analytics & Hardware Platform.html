@@ -385,6 +385,7 @@
         .nbr-map-card-source .nbr-map-event-profile { margin-top: 3px; padding-top: 3px; border-top: 1px solid var(--border-color); font-family: 'JetBrains Mono', monospace; }
         .nbr-map-leaf-detail { margin-top: 4px; padding-top: 4px; border-top: 1px solid var(--border-color); cursor: default; white-space: normal; }
         .nbr-map-detail-row { padding: 3px 0; border-bottom: 1px solid var(--border-color); font-size: 9px; white-space: normal; }
+        .nbr-map-derived-params { margin-top: 2px; padding-left: 6px; border-left: 2px solid var(--border-color-strong); font-size: 9px; color: var(--text-muted); white-space: normal; word-break: break-word; }
         .nbr-map-detail-row b { color: var(--text-primary); }
         .nbr-map-conflict-badge { display: inline-block; background: var(--badge-false-bg); color: var(--badge-false-text); border: 1px solid var(--badge-false-border); border-radius: 4px; padding: 1px 6px; font-size: 9px; font-weight: 700; margin-top: 2px; white-space: normal; }
         .nbr-map-ok-badge { display: inline-block; background: var(--badge-true-bg); color: var(--badge-true-text); border: 1px solid var(--badge-true-border); border-radius: 4px; padding: 1px 6px; font-size: 9px; font-weight: 700; margin-top: 2px; }
@@ -639,7 +640,7 @@
     <!-- LINE 1: MAIN BRANDING & FILE ACTIONS HEADER -->
     <header>
         <div class="logo-area">
-            <h1>SCF Nokia Analytics <span class="logo-badge">Pro Suite</span> <span class="logo-badge" style="background:rgba(255,255,255,0.1); font-weight:600;">v1.96</span></h1>
+            <h1>SCF Nokia Analytics <span class="logo-badge">Pro Suite</span> <span class="logo-badge" style="background:rgba(255,255,255,0.1); font-weight:600;">v1.97</span></h1>
         </div>
         <div class="upload-area">
             <span class="summary-badge" id="site-summary">No SCF file loaded</span>
@@ -5263,9 +5264,9 @@
         // A5 is not a per-cell parameter: it lives inside the LNHOIF (inter-freq mobility profile)
         // matched to this specific relation's target frequency (see getA5ForRelation below).
         const NBR_MAP_EVENT_CONFIG = {
-            A1: { thresholdKeys: ['threshold1'], hysteresisKeys: ['a1a2Hysteresis', 'hysteresisA1A2', 'a1Hysteresis'], tttKeys: ['a1TimeToTrigger', 'timeToTriggerA1'], dbmOffset: 140 },
-            A2: { thresholdKeys: ['threshold2a'], hysteresisKeys: ['a1a2Hysteresis', 'hysteresisA1A2', 'a2Hysteresis'], tttKeys: ['a2TimeToTrigger', 'timeToTriggerA2'], dbmOffset: 140 },
-            A3: { offsetKeys: ['a3offset'], offsetDivisor: 2, hysteresisKeys: ['a3hysteresis', 'hysteresisA3'], tttKeys: ['a3TimeToTrigger', 'timeToTriggerA3'] },
+            A1: { thresholdKeys: ['threshold1'], hysteresisKeys: ['a1a2Hysteresis', 'hysteresisA1A2', 'a1Hysteresis'], tttKeys: ['a1TimeToTrigger', 'timeToTriggerA1'], dbmOffset: 140, derivedSubstr: 'threshold1' },
+            A2: { thresholdKeys: ['threshold2a'], hysteresisKeys: ['a1a2Hysteresis', 'hysteresisA1A2', 'a2Hysteresis'], tttKeys: ['a2TimeToTrigger', 'timeToTriggerA2'], dbmOffset: 140, derivedSubstr: 'threshold2a' },
+            A3: { offsetKeys: ['a3offset'], offsetDivisor: 2, hysteresisKeys: ['a3hysteresis', 'hysteresisA3'], tttKeys: ['a3TimeToTrigger', 'timeToTriggerA3'], derivedSubstr: 'a3offset' },
             A5: { thresholdKeys: ['threshold3InterFreq'], threshold2Keys: ['threshold3aInterFreq'], carrierKeys: ['eutraCarrierInfo'], tttKeys: ['a5TimeToTrigger'], dbmOffset: 140 }
         };
 
@@ -5275,12 +5276,30 @@
             return n - offset;
         }
 
+        // Nokia TTT params are often stored already suffixed ("320ms"); avoid doubling the unit.
+        function nbrMapFmtMs(raw) {
+            const s = String(raw);
+            return /ms$/i.test(s) ? s : `${s}ms`;
+        }
+
         function nbrMapFirstParam(params, keys) {
             for (const k of keys) {
                 const v = getParamCaseInsensitive(params, k);
                 if (v !== undefined && v !== null && v !== '') return { key: k, raw: v };
             }
             return null;
+        }
+
+        // Every LNCEL param whose name contains the event's signature substring (case-insensitive),
+        // e.g. all *threshold2a* variants (threshold2a, threshold2aQci1, hysThreshold2a, ...) for A2.
+        // Surfaces per-RAT/per-QCI variants of the same event without having to name each one.
+        function nbrMapFindDerivedParams(params, substr) {
+            if (!params || !substr) return [];
+            const needle = substr.toLowerCase();
+            return Object.keys(params)
+                .filter(k => k.toLowerCase().includes(needle))
+                .sort(naturalCompare)
+                .map(k => ({ key: k, raw: params[k] }));
         }
 
         // Detects which A1/A2/A3/A5 events are configured on a serving LNCEL and normalizes
@@ -5293,21 +5312,24 @@
             profile.A1 = a1Thr ? {
                 thresholdRaw: a1Thr.raw, thresholdKey: a1Thr.key, thresholdDbm: nbrMapIdxToDbm(a1Thr.raw, NBR_MAP_EVENT_CONFIG.A1.dbmOffset),
                 hysteresis: nbrMapFirstParam(servingParams, NBR_MAP_EVENT_CONFIG.A1.hysteresisKeys),
-                ttt: nbrMapFirstParam(servingParams, NBR_MAP_EVENT_CONFIG.A1.tttKeys)
+                ttt: nbrMapFirstParam(servingParams, NBR_MAP_EVENT_CONFIG.A1.tttKeys),
+                derivedParams: nbrMapFindDerivedParams(servingParams, NBR_MAP_EVENT_CONFIG.A1.derivedSubstr)
             } : null;
 
             const a2Thr = nbrMapFirstParam(servingParams, NBR_MAP_EVENT_CONFIG.A2.thresholdKeys);
             profile.A2 = a2Thr ? {
                 thresholdRaw: a2Thr.raw, thresholdKey: a2Thr.key, thresholdDbm: nbrMapIdxToDbm(a2Thr.raw, NBR_MAP_EVENT_CONFIG.A2.dbmOffset),
                 hysteresis: nbrMapFirstParam(servingParams, NBR_MAP_EVENT_CONFIG.A2.hysteresisKeys),
-                ttt: nbrMapFirstParam(servingParams, NBR_MAP_EVENT_CONFIG.A2.tttKeys)
+                ttt: nbrMapFirstParam(servingParams, NBR_MAP_EVENT_CONFIG.A2.tttKeys),
+                derivedParams: nbrMapFindDerivedParams(servingParams, NBR_MAP_EVENT_CONFIG.A2.derivedSubstr)
             } : null;
 
             const a3Off = nbrMapFirstParam(servingParams, NBR_MAP_EVENT_CONFIG.A3.offsetKeys);
             profile.A3 = a3Off ? {
                 offsetRaw: a3Off.raw, offsetKey: a3Off.key, offsetDb: parseFloat(a3Off.raw) / NBR_MAP_EVENT_CONFIG.A3.offsetDivisor,
                 hysteresis: nbrMapFirstParam(servingParams, NBR_MAP_EVENT_CONFIG.A3.hysteresisKeys),
-                ttt: nbrMapFirstParam(servingParams, NBR_MAP_EVENT_CONFIG.A3.tttKeys)
+                ttt: nbrMapFirstParam(servingParams, NBR_MAP_EVENT_CONFIG.A3.tttKeys),
+                derivedParams: nbrMapFindDerivedParams(servingParams, NBR_MAP_EVENT_CONFIG.A3.derivedSubstr)
             } : null;
 
             // A5 is resolved per-relation (see getA5ForRelation) since it depends on which LNHOIF
@@ -5651,10 +5673,14 @@
         });
 
         function nbrMapEventProfileHtml(profile) {
+            const derivedHtml = (ev) => {
+                if (!ev || !ev.derivedParams || ev.derivedParams.length === 0) return '';
+                return `<div class="nbr-map-derived-params">${ev.derivedParams.map(d => `${d.key}=${d.raw}`).join(' &nbsp;')}</div>`;
+            };
             const fmt = (ev, label) => {
                 if (!ev) return `<div class="nbr-map-detail-row"><b>${label}</b>: not found in this SCF</div>`;
-                if (label === 'A3') return `<div class="nbr-map-detail-row"><b>${label}</b>: offset=${ev.offsetDb}dB (${ev.offsetKey})${ev.hysteresis ? `, hysteresis=${ev.hysteresis.raw}` : ''}${ev.ttt ? `, TTT=${ev.ttt.raw}ms` : ''}</div>`;
-                return `<div class="nbr-map-detail-row"><b>${label}</b>: threshold=${ev.thresholdDbm}dBm (${ev.thresholdKey})${ev.hysteresis ? `, hysteresis=${ev.hysteresis.raw}` : ''}${ev.ttt ? `, TTT=${ev.ttt.raw}ms` : ''}</div>`;
+                if (label === 'A3') return `<div class="nbr-map-detail-row"><b>${label}</b>: offset=${ev.offsetDb}dB (${ev.offsetKey})${ev.hysteresis ? `, hysteresis=${ev.hysteresis.raw}` : ''}${ev.ttt ? `, TTT=${nbrMapFmtMs(ev.ttt.raw)}` : ''}${derivedHtml(ev)}</div>`;
+                return `<div class="nbr-map-detail-row"><b>${label}</b>: threshold=${ev.thresholdDbm}dBm (${ev.thresholdKey})${ev.hysteresis ? `, hysteresis=${ev.hysteresis.raw}` : ''}${ev.ttt ? `, TTT=${nbrMapFmtMs(ev.ttt.raw)}` : ''}${derivedHtml(ev)}</div>`;
             };
             return fmt(profile.A1, 'A1') + fmt(profile.A2, 'A2') + fmt(profile.A3, 'A3') +
                 `<div class="nbr-map-detail-row"><b>A5</b>: defined per relation inside the matching LNHOIF (threshold3InterFreq/threshold3aInterFreq) — see each row</div>`;
@@ -5675,8 +5701,8 @@
             }
 
             const governingDetail = governing.type === 'A3'
-                ? (governing.data ? `offset=${governing.data.offsetDb}dB (${governing.data.offsetKey})${governing.data.hysteresis ? `, hysteresis=${governing.data.hysteresis.raw}` : ''}${governing.data.ttt ? `, TTT=${governing.data.ttt.raw}ms` : ''}` : 'not found')
-                : (governing.data ? `via ${governing.data.lnhoifShort}: ${governing.data.thresholdKey}(serving)=${governing.data.thresholdDbm}dBm, ${governing.data.threshold2Key}(neighbor)=${governing.data.threshold2Dbm}dBm${governing.data.ttt ? `, TTT=${governing.data.ttt.raw}ms` : ''}` : `no LNHOIF found with eutraCarrierInfo=${rel.targetEarfcn}`);
+                ? (governing.data ? `offset=${governing.data.offsetDb}dB (${governing.data.offsetKey})${governing.data.hysteresis ? `, hysteresis=${governing.data.hysteresis.raw}` : ''}${governing.data.ttt ? `, TTT=${nbrMapFmtMs(governing.data.ttt.raw)}` : ''}` : 'not found')
+                : (governing.data ? `via ${governing.data.lnhoifShort}: ${governing.data.thresholdKey}(serving)=${governing.data.thresholdDbm}dBm, ${governing.data.threshold2Key}(neighbor)=${governing.data.threshold2Dbm}dBm${governing.data.ttt ? `, TTT=${nbrMapFmtMs(governing.data.ttt.raw)}` : ''}` : `no LNHOIF found with eutraCarrierInfo=${rel.targetEarfcn}`);
 
             return `
                 <div class="nbr-map-detail-row"><b>LNREL / LNADJ / LNADJL</b>: ${rel.distName ? rel.distName.split('/').pop() : 'N/A'} / ${rel.adjDistName ? rel.adjDistName.split('/').pop() : 'N/A'} / ${rel.adjlDistName ? rel.adjlDistName.split('/').pop() : 'N/A'}</div>
