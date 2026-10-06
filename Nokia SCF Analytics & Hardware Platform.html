@@ -640,7 +640,7 @@
     <!-- LINE 1: MAIN BRANDING & FILE ACTIONS HEADER -->
     <header>
         <div class="logo-area">
-            <h1>SCF Nokia Analytics <span class="logo-badge">Pro Suite</span> <span class="logo-badge" style="background:rgba(255,255,255,0.1); font-weight:600;">v2.00</span></h1>
+            <h1>SCF Nokia Analytics <span class="logo-badge">Pro Suite</span> <span class="logo-badge" style="background:rgba(255,255,255,0.1); font-weight:600;">v2.01</span></h1>
         </div>
         <div class="upload-area">
             <span class="summary-badge" id="site-summary">No SCF file loaded</span>
@@ -5273,7 +5273,11 @@
                 derivedThresholdKeys: ['threshold2aQci1', 'threshold2aCatM', 'threshold2GERAN', 'threshold2GERANQci1', 'threshold2InterFreq', 'threshold2NR']
             },
             A3: { offsetKeys: ['a3offset'], offsetDivisor: 2, hysteresisKeys: ['a3hysteresis', 'hysteresisA3'], tttKeys: ['a3TimeToTrigger', 'timeToTriggerA3'], derivedSubstr: 'a3offset' },
-            A5: { thresholdKeys: ['threshold3InterFreq'], threshold2Keys: ['threshold3aInterFreq'], carrierKeys: ['eutraCarrierInfo'], tttKeys: ['a5TimeToTrigger'], dbmOffset: 140 }
+            A5: {
+                thresholdKeys: ['threshold3InterFreq'], threshold2Keys: ['threshold3aInterFreq'], carrierKeys: ['eutraCarrierInfo'],
+                tttKeys: ['a5TimeToTriggerInterFreq', 'a5TimeToTrigger'], dbmOffset: 140,
+                thresholdQci1Keys: ['threshold3InterFreqQci1'], threshold2Qci1Keys: ['threshold3aInterFreqQci1']
+            }
         };
 
         function nbrMapIdxToDbm(raw, offset) {
@@ -5395,6 +5399,49 @@
                 };
             }
             return null; // no LNHOIF configured for this relation's target frequency
+        }
+
+        // Every LNHOIF (inter-freq mobility profile) configured on the source LNCEL, independent of
+        // any specific relation — one card-level summary of "every A5 this cell could trigger",
+        // including the QCI1 (VoLTE/high-priority bearer) threshold variants alongside the normal
+        // ones. threshold3InterFreqQci1/threshold3aInterFreqQci1 share the same raw-140 dBm formula
+        // as their non-QCI1 counterparts (confirmed in reference/nokia_lte_parameters_2026.csv).
+        function getAllA5ProfilesForLncel(sourceLncelDist) {
+            if (!sourceLncelDist) return [];
+            const cfg = NBR_MAP_EVENT_CONFIG.A5;
+            return getMOsByClass('LNHOIF')
+                .filter(o => getParentDistName(o.distName) === sourceLncelDist)
+                .map(o => {
+                    const t3 = nbrMapFirstParam(o.params, cfg.thresholdKeys);
+                    const t3a = nbrMapFirstParam(o.params, cfg.threshold2Keys);
+                    const t3Qci1 = nbrMapFirstParam(o.params, cfg.thresholdQci1Keys);
+                    const t3aQci1 = nbrMapFirstParam(o.params, cfg.threshold2Qci1Keys);
+                    const carrier = nbrMapFirstParam(o.params, cfg.carrierKeys);
+                    return {
+                        lnhoifShort: o.distName.split('/').pop(),
+                        earfcn: carrier ? carrier.raw : 'N/A',
+                        threshold: t3 ? { key: t3.key, raw: t3.raw, dbm: nbrMapIdxToDbm(t3.raw, cfg.dbmOffset) } : null,
+                        threshold2: t3a ? { key: t3a.key, raw: t3a.raw, dbm: nbrMapIdxToDbm(t3a.raw, cfg.dbmOffset) } : null,
+                        thresholdQci1: t3Qci1 ? { key: t3Qci1.key, raw: t3Qci1.raw, dbm: nbrMapIdxToDbm(t3Qci1.raw, cfg.dbmOffset) } : null,
+                        threshold2Qci1: t3aQci1 ? { key: t3aQci1.key, raw: t3aQci1.raw, dbm: nbrMapIdxToDbm(t3aQci1.raw, cfg.dbmOffset) } : null,
+                        ttt: nbrMapFirstParam(o.params, cfg.tttKeys)
+                    };
+                });
+        }
+
+        function nbrMapA5PerLnhoifHtml(profiles) {
+            if (!profiles || profiles.length === 0) {
+                return `<div class="nbr-map-detail-row"><b>A5 (per LNHOIF)</b>: no LNHOIF found on this LNCEL</div>`;
+            }
+            return profiles.map(p => {
+                const bits = [];
+                if (p.threshold && p.threshold2) bits.push(`${p.threshold.key}=${p.threshold.dbm}dBm / ${p.threshold2.key}=${p.threshold2.dbm}dBm`);
+                if (p.thresholdQci1 && p.threshold2Qci1) bits.push(`QCI1: ${p.thresholdQci1.key}=${p.thresholdQci1.dbm}dBm / ${p.threshold2Qci1.key}=${p.threshold2Qci1.dbm}dBm`);
+                if (p.ttt) bits.push(`TTT=${nbrMapFmtMs(p.ttt.raw)}`);
+                return `
+                    <div class="nbr-map-detail-row"><b>${p.lnhoifShort}</b> (EARFCN ${p.earfcn})</div>
+                    <div class="nbr-map-derived-params">${bits.length > 0 ? bits.join(' &nbsp;') : 'threshold3InterFreq/threshold3aInterFreq not found'}</div>`;
+            }).join('');
         }
 
         // B1 (inter-RAT neighbor becomes better than threshold) and B2 (serving becomes worse than
@@ -5719,6 +5766,7 @@
                         <div class="nbr-map-card-sub">PCI: ${sourcePci} &nbsp; EARFCN: ${sourceEarfcn}</div>
                         <div class="nbr-map-event-profile">
                             ${nbrMapEventProfileHtml(profile)}
+                            ${nbrMapA5PerLnhoifHtml(getAllA5ProfilesForLncel(sourceDist))}
                             ${nbrMapInterRatHtml(getInterRatEventParams(sourceDist))}
                             <div style="margin-top:4px;">
                                 ${baseConflicts.length === 0 ? `<span class="nbr-map-ok-badge">No conflicts</span>` : baseConflicts.map(c => `<div class="nbr-map-conflict-badge" style="display:block; margin-bottom:4px;">${c.severity}: ${c.text}</div>`).join('')}
@@ -5793,7 +5841,7 @@
                 return `<div class="nbr-map-detail-row"><b>${label}</b>: threshold=${ev.thresholdDbm}dBm (${ev.thresholdKey})${ev.hysteresis ? `, hysteresis=${ev.hysteresis.raw}` : ''}${ev.ttt ? `, TTT=${nbrMapFmtMs(ev.ttt.raw)}` : ''}${derivedHtml(ev)}</div>`;
             };
             return fmt(profile.A1, 'A1') + fmt(profile.A2, 'A2') + fmt(profile.A3, 'A3') +
-                `<div class="nbr-map-detail-row"><b>A5</b>: defined per relation inside the matching LNHOIF (threshold3InterFreq/threshold3aInterFreq) — see each row</div>`;
+                `<div class="nbr-map-detail-row"><b>A5</b>: one profile per LNHOIF (below) — which one governs a given relation depends on its target EARFCN</div>`;
         }
 
         // Builds the "Relation Detail" content shown inline inside a LNCEL leaf card once expanded
