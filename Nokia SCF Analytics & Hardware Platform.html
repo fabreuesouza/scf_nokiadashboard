@@ -640,7 +640,7 @@
     <!-- LINE 1: MAIN BRANDING & FILE ACTIONS HEADER -->
     <header>
         <div class="logo-area">
-            <h1>SCF Nokia Analytics <span class="logo-badge">Pro Suite</span> <span class="logo-badge" style="background:rgba(255,255,255,0.1); font-weight:600;">v2.05</span></h1>
+            <h1>SCF Nokia Analytics <span class="logo-badge">Pro Suite</span> <span class="logo-badge" style="background:rgba(255,255,255,0.1); font-weight:600;">v2.06</span></h1>
         </div>
         <div class="upload-area">
             <span class="summary-badge" id="site-summary">No SCF file loaded</span>
@@ -3415,22 +3415,45 @@
         function checkA2RedirectTriggerTimers(ctx) {
             if (ctx.allLncel.length === 0) return { status: 'NA', detail: 'No LNCEL found in this SCF.' };
 
-            const requiredParams = ['a2TimeToTriggerRedirect', 'a2TimeToTriggerActInterFreqMeas', 'a2TimeToTriggerActWcdmaMeas', 'a2TimeToTriggerActGERANMeas'];
+            // a2TimeToTriggerActWcdmaMeas/ActGERANMeas only matter if the site actually has a 3G/2G
+            // neighbor layer (LNRELW/LNRELG) to measure towards — on a site with no WCDMA or GERAN
+            // relations at all, those two timers being MISSING is the expected/correct state, not a gap.
+            const hasWcdma = getMOsByClass('LNRELW').length > 0;
+            const hasGeran = getMOsByClass('LNRELG').length > 0;
+
+            const alwaysRequired = ['a2TimeToTriggerRedirect', 'a2TimeToTriggerActInterFreqMeas'];
+            const conditionalParams = [
+                { key: 'a2TimeToTriggerActWcdmaMeas', requiredIf: hasWcdma, naReason: 'no LNRELW (3G) on this site' },
+                { key: 'a2TimeToTriggerActGERANMeas', requiredIf: hasGeran, naReason: 'no LNRELG (2G) on this site' }
+            ];
+
             let missingCount = 0;
             const lines = ctx.allLncel.map(cell => {
                 const label = cell.distName.split('/').pop();
-                const values = requiredParams.map(p => getParamCaseInsensitive(cell.params, p));
-                const missing = requiredParams.filter((p, i) => values[i] === undefined || values[i] === null || values[i] === '');
-                if (missing.length > 0) missingCount++;
-                const valuesStr = requiredParams.map((p, i) => `${p}=${(values[i] !== undefined && values[i] !== null && values[i] !== '') ? values[i] : 'MISSING'}`).join(', ');
-                return `${missing.length > 0 ? '❌' : '✅'} <strong>${label}</strong>: \n${valuesStr}`;
+                const alwaysValues = alwaysRequired.map(p => getParamCaseInsensitive(cell.params, p));
+                const alwaysMissing = alwaysRequired.filter((p, i) => alwaysValues[i] === undefined || alwaysValues[i] === null || alwaysValues[i] === '');
+
+                const conditionalMissing = [];
+                const conditionalStr = conditionalParams.map(c => {
+                    const v = getParamCaseInsensitive(cell.params, c.key);
+                    const isMissing = v === undefined || v === null || v === '';
+                    if (isMissing && c.requiredIf) conditionalMissing.push(c.key);
+                    if (isMissing && !c.requiredIf) return `${c.key}=N/A (${c.naReason})`;
+                    return `${c.key}=${isMissing ? 'MISSING' : v}`;
+                });
+
+                const alwaysStr = alwaysRequired.map((p, i) => `${p}=${(alwaysValues[i] !== undefined && alwaysValues[i] !== null && alwaysValues[i] !== '') ? alwaysValues[i] : 'MISSING'}`);
+                const hasRealGap = alwaysMissing.length > 0 || conditionalMissing.length > 0;
+                if (hasRealGap) missingCount++;
+                const valuesStr = [...alwaysStr, ...conditionalStr].join(', ');
+                return `${hasRealGap ? '❌' : '✅'} <strong>${label}</strong>: \n${valuesStr}`;
             });
 
-            const summary = `${ctx.allLncel.length - missingCount} of ${ctx.allLncel.length} LNCEL have all 4 A2 trigger timers configured (redirect + inter-freq/WCDMA/GERAN measurement activation).`;
+            const summary = `${ctx.allLncel.length - missingCount} of ${ctx.allLncel.length} LNCEL have all applicable A2 trigger timers configured (redirect + inter-freq always; WCDMA/GERAN measurement activation only when the site has a LNRELW/LNRELG layer).`;
             const fullDetail = `${summary}\n\n${lines.join('\n')}`;
 
             if (missingCount === 0) return { status: 'OK', detail: summary, fullDetail };
-            return { status: 'FAIL', detail: `${missingCount} of ${ctx.allLncel.length} LNCEL are missing at least one A2 trigger timer — inter-RAT/inter-freq measurement activation may not work as expected.`, fullDetail };
+            return { status: 'FAIL', detail: `${missingCount} of ${ctx.allLncel.length} LNCEL are missing at least one applicable A2 trigger timer — inter-RAT/inter-freq measurement activation may not work as expected.`, fullDetail };
         }
 
         function checkA4LoadBalancingConsistency(ctx) {
