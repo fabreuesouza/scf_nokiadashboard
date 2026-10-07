@@ -640,7 +640,7 @@
     <!-- LINE 1: MAIN BRANDING & FILE ACTIONS HEADER -->
     <header>
         <div class="logo-area">
-            <h1>SCF Nokia Analytics <span class="logo-badge">Pro Suite</span> <span class="logo-badge" style="background:rgba(255,255,255,0.1); font-weight:600;">v2.02</span></h1>
+            <h1>SCF Nokia Analytics <span class="logo-badge">Pro Suite</span> <span class="logo-badge" style="background:rgba(255,255,255,0.1); font-weight:600;">v2.03</span></h1>
         </div>
         <div class="upload-area">
             <span class="summary-badge" id="site-summary">No SCF file loaded</span>
@@ -3434,6 +3434,119 @@
             return { status: 'WARN', detail: `${summary} ${warnCount} LNHOW with B1 reaction slower than 1000ms: ${examples.join(', ')}${warnCount > examples.length ? '…' : ''}`, fullDetail };
         }
 
+        // CSFB-to-GSM depends on a REDRT (redirRat=geran) pointing at an ARFCN that actually
+        // resolves to a real neighbor cell identity in LNADJG — otherwise the UE is redirected to a
+        // frequency with no known CI/LAC/RAC/BSIC and the registration on GSM fails even though the
+        // redirect message itself was sent successfully.
+        function checkCsfbGeranTargetIdentity(ctx) {
+            const allLnadjg = getMOsByClass('LNADJG');
+            const allRedrtGeran = getMOsByClass('REDRT').filter(r => String(getParamCaseInsensitive(r.params, 'redirRat') || '').toLowerCase() === 'geran');
+
+            if (allLnadjg.length === 0 && allRedrtGeran.length === 0) {
+                return { status: 'NA', detail: 'No LNADJG or GSM-targeted REDRT found in this SCF.' };
+            }
+
+            const requiredIdentityParams = ['gTargetCi', 'gTargetLac', 'gTargetRac', 'arfcnValueGeran', 'bandIndicatorGeran'];
+            let incompleteCount = 0;
+            const lnadjgLines = allLnadjg.map(o => {
+                const label = o.distName.split('/').slice(-2).join('/');
+                const values = requiredIdentityParams.map(p => getParamCaseInsensitive(o.params, p));
+                const missing = requiredIdentityParams.filter((p, i) => values[i] === undefined || values[i] === null || values[i] === '');
+                const bcc = getParamCaseInsensitive(o.params, 'basestationColourCode');
+                const ncc = getParamCaseInsensitive(o.params, 'networkColourCode');
+                const bsicMissing = bcc === undefined || bcc === null || bcc === '' || ncc === undefined || ncc === null || ncc === '';
+                const incomplete = missing.length > 0 || bsicMissing;
+                if (incomplete) incompleteCount++;
+                const valuesStr = requiredIdentityParams.map((p, i) => `${p}=${(values[i] !== undefined && values[i] !== null && values[i] !== '') ? values[i] : 'MISSING'}`).join(', ');
+                return `${incomplete ? '❌' : '✅'} <strong>${label}</strong>: \n${valuesStr}, BSIC(NCC/BCC)=${!bsicMissing ? `${ncc}/${bcc}` : 'MISSING'}`;
+            });
+
+            // Cross-check: every GSM-targeted REDRT's frequency should resolve to at least one LNADJG
+            // with the same ARFCN under the same parent LNBTS — a redirect with no matching neighbor
+            // identity means the UE is sent to a cell the site never characterized.
+            const lnadjgArfcnsByBts = new Map();
+            allLnadjg.forEach(o => {
+                const bts = getParentDistName(getParentDistName(o.distName));
+                const arfcn = String(getParamCaseInsensitive(o.params, 'arfcnValueGeran') || '');
+                if (!lnadjgArfcnsByBts.has(bts)) lnadjgArfcnsByBts.set(bts, new Set());
+                lnadjgArfcnsByBts.get(bts).add(arfcn);
+            });
+
+            let orphanRedirectCount = 0;
+            const redrtLines = allRedrtGeran.map(r => {
+                const lncelLabel = getParentDistName(r.distName).split('/').pop();
+                const redrtLabel = r.distName.split('/').pop();
+                const bts = getParentDistName(getParentDistName(getParentDistName(r.distName)));
+                // The GSM target ARFCNs live in the redirGeranArfcnStructL list, one redirGeranArfcnValue per item.
+                const arfcnItems = (r.lists && r.lists.redirGeranArfcnStructL) || [];
+                const redirArfcns = arfcnItems.map(item => String(getParamCaseInsensitive(item, 'redirGeranArfcnValue') || '')).filter(v => v !== '');
+                const arfcnSet = lnadjgArfcnsByBts.get(bts);
+                const matchedArfcns = arfcnSet ? redirArfcns.filter(a => arfcnSet.has(a)) : [];
+                const hasMatch = redirArfcns.length > 0 && matchedArfcns.length > 0;
+                if (!hasMatch) orphanRedirectCount++;
+                const arfcnListStr = redirArfcns.length > 0 ? redirArfcns.join(',') : 'N/A';
+                return `${hasMatch ? '✅' : '⚠️'} <strong>${lncelLabel}/${redrtLabel}</strong>: \nredirGeranArfcnStructL=[${arfcnListStr}] — ${hasMatch ? `${matchedArfcns.length} of ${redirArfcns.length} ARFCNs match a known LNADJG` : 'none of these ARFCNs match any LNADJG under the same LNBTS'}`;
+            });
+
+            const summary = `${allLnadjg.length - incompleteCount} of ${allLnadjg.length} LNADJG have complete target identity (CI/LAC/RAC/ARFCN/band/BSIC); ${allRedrtGeran.length - orphanRedirectCount} of ${allRedrtGeran.length} GSM REDRT resolve to a known LNADJG.`;
+            const fullDetail = `${summary}\n\n-- LNADJG identity --\n${lnadjgLines.join('\n') || '(none)'}\n\n-- REDRT → LNADJG resolution --\n${redrtLines.join('\n') || '(none)'}`;
+
+            if (incompleteCount === 0 && orphanRedirectCount === 0) return { status: 'OK', detail: summary, fullDetail };
+            return { status: 'FAIL', detail: `${summary} Incomplete or unresolved target identity can cause CSFB redirect to GSM to point at a cell the UE cannot register on.`, fullDetail };
+        }
+
+        // CSFB admission into GSM also needs the target cell's own minimum access level (qRxLevMinGer)
+        // to be reachable given the RSSI the UE is expected to measure there (b2Threshold2RssiGERAN).
+        // If qRxLevMinGer is set higher than what the site's own B2-GERAN RSSI threshold guarantees,
+        // the UE can be redirected successfully and still get barred from camping on the GSM cell —
+        // a classic RF-marginal-site failure mode (e.g. a rural/mountain road site with weak 2G RF).
+        function checkCsfbGeranAdmissionThresholds(ctx) {
+            const allGnfl = getMOsByClass('GNFL');
+            const allLnhog = getMOsByClass('LNHOG');
+
+            if (allGnfl.length === 0 && allLnhog.length === 0) {
+                return { status: 'NA', detail: 'No GNFL or LNHOG found in this SCF — GERAN B2 admission data not configured.' };
+            }
+
+            const gnflLines = allGnfl.map(o => {
+                const label = o.distName.split('/').slice(-2).join('/');
+                const qRxLevMinGer = getParamCaseInsensitive(o.params, 'qRxLevMinGer');
+                const pMaxGer = getParamCaseInsensitive(o.params, 'pMaxGer');
+                const missing = qRxLevMinGer === undefined || qRxLevMinGer === null || qRxLevMinGer === '';
+                return { label, qRxLevMinGer, pMaxGer, missing, line: `${missing ? '❌' : '✅'} <strong>${label}</strong>: \nqRxLevMinGer=${missing ? 'MISSING' : `${qRxLevMinGer}dBm`}, pMaxGer=${pMaxGer !== undefined && pMaxGer !== '' ? pMaxGer : 'N/A'}` };
+            });
+            const gnflMissing = gnflLines.filter(l => l.missing).length;
+
+            let marginViolations = 0;
+            const lnhogLines = allLnhog.map(o => {
+                const label = o.distName.split('/').slice(-2).join('/');
+                const rssiRaw = parseFloat(getParamCaseInsensitive(o.params, 'b2Threshold2RssiGERAN'));
+                if (isNaN(rssiRaw)) return { line: `➖ <strong>${label}</strong>: \nb2Threshold2RssiGERAN not found`, violated: false };
+                const rssiDbm = rssiRaw - 110;
+                // Compare against the first GNFL's qRxLevMinGer found (site-level target admission floor).
+                const refGnfl = gnflLines.find(l => !l.missing);
+                let flagged = false;
+                let note = 'no GNFL reference to compare against';
+                if (refGnfl) {
+                    // qRxLevMinGer is stored directly in dBm (Internal value formula = UI_value, no offset).
+                    const qRxDbm = parseFloat(refGnfl.qRxLevMinGer);
+                    if (!isNaN(qRxDbm)) {
+                        flagged = rssiDbm < qRxDbm;
+                        note = `qRxLevMinGer=${qRxDbm}dBm — ${flagged ? 'B2 RSSI trigger is below the GSM admission floor' : 'B2 RSSI trigger clears the admission floor'}`;
+                    }
+                }
+                if (flagged) marginViolations++;
+                return { line: `${flagged ? '⚠️' : '✅'} <strong>${label}</strong>: \nb2Threshold2RssiGERAN=${rssiDbm}dBm(${rssiRaw}) vs ${note}`, violated: flagged };
+            });
+
+            const summary = `${allGnfl.length - gnflMissing} of ${allGnfl.length} GNFL have qRxLevMinGer configured; ${allLnhog.length - marginViolations} of ${allLnhog.length} LNHOG B2-GERAN RSSI triggers clear the GSM admission floor.`;
+            const fullDetail = `${summary}\n\n-- GNFL admission floor --\n${gnflLines.map(l => l.line).join('\n') || '(none)'}\n\n-- LNHOG B2-GERAN RSSI vs admission floor --\n${lnhogLines.map(l => l.line).join('\n') || '(none)'}`;
+
+            if (gnflMissing === 0 && marginViolations === 0) return { status: 'OK', detail: summary, fullDetail };
+            const status = marginViolations > 0 ? 'FAIL' : 'WARN';
+            return { status, detail: `${summary} On a weak-RF site this can mean the UE is redirected to GSM and then rejected for insufficient level.`, fullDetail };
+        }
+
         function checkB2CsfbFallbackThresholds(ctx) {
             if (ctx.allLnhow.length === 0) return { status: 'NA', detail: 'No LNHOW found in this SCF.' };
 
@@ -3480,6 +3593,8 @@
             { id: 'inactivity_timer_alignment', category: 'Mobility (LTE Events)', icon: 'antenna', title: 'LTE/NR Inactivity Timer Alignment', run: checkInactivityTimerAlignment },
             { id: 'redirect_3g', category: 'Mobility (LTE Events)', icon: 'antenna', title: 'LTE to 3G Redirect (REDRT)', run: checkRedirect3G },
             { id: 'redirect_gsm', category: 'Mobility (LTE Events)', icon: 'antenna', title: 'LTE to GSM Redirect (REDRT)', run: checkRedirectGsm },
+            { id: 'csfb_geran_target_identity', category: 'Mobility (LTE Events)', icon: 'antenna', title: 'CSFB GERAN Target Cell Identity (LNADJG)', run: checkCsfbGeranTargetIdentity },
+            { id: 'csfb_geran_admission', category: 'Mobility (LTE Events)', icon: 'antenna', title: 'CSFB GERAN Admission Thresholds (GNFL/LNHOG)', run: checkCsfbGeranAdmissionThresholds },
             { id: 'redirect_nr_to_lte', category: 'Mobility (LTE Events)', icon: 'antenna', title: 'NR to LTE Redirect (NRREDRT)', run: checkRedirectNrToLte },
             { id: 'anr_interfreq', category: 'Mobility (LTE Events)', icon: 'antenna', title: 'ANR Inter-Freq', run: checkAnrInterFreq },
             { id: 'twin_beam_sectors', category: 'Power & Coverage', icon: 'bolt', title: 'Twin Beam Sector Detection', run: checkTwinBeamSectors },
