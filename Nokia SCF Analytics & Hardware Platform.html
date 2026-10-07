@@ -640,7 +640,7 @@
     <!-- LINE 1: MAIN BRANDING & FILE ACTIONS HEADER -->
     <header>
         <div class="logo-area">
-            <h1>SCF Nokia Analytics <span class="logo-badge">Pro Suite</span> <span class="logo-badge" style="background:rgba(255,255,255,0.1); font-weight:600;">v2.03</span></h1>
+            <h1>SCF Nokia Analytics <span class="logo-badge">Pro Suite</span> <span class="logo-badge" style="background:rgba(255,255,255,0.1); font-weight:600;">v2.04</span></h1>
         </div>
         <div class="upload-area">
             <span class="summary-badge" id="site-summary">No SCF file loaded</span>
@@ -2903,6 +2903,38 @@
             return { status: 'WARN', detail: `${mismatches.length} of ${ctx.allLncel.length} LNCEL have inactivityTimer different from NRBTS nsaInactivityTimer (${nsaVal}): ${mismatches.slice(0, 3).join(', ')}${mismatches.length > 3 ? '…' : ''}`, fullDetail };
         }
 
+        // Shared renderer for the "CS Fallback" category — every card there reports its detail as an
+        // HTML table (columns vary per card) instead of a plain-text line list, per house standard.
+        // `cols` is [{ key, label, mono }]; `rows` is an array of plain objects keyed like `cols`.
+        function renderHcDetailTable(cols, rows) {
+            if (rows.length === 0) return '<div style="padding:8px 0; color:var(--text-muted); font-style:italic;">No rows to display.</div>';
+            const statusColor = (v) => {
+                const s = String(v || '').toUpperCase();
+                if (s === 'OK' || s === '✅') return 'var(--status-ok-main, #16a34a)';
+                if (s === 'WARN' || s === '⚠️') return 'var(--text-color)';
+                if (s === 'FAIL' || s === 'NOK' || s === '❌' || s === '⛔') return 'var(--status-fail-main, #dc2626)';
+                return 'var(--text-muted)';
+            };
+            return `
+                <div style="width:100%; overflow-x:auto;">
+                <table class="hc-detail-table">
+                    <thead><tr>${cols.map(c => `<th>${c.label}</th>`).join('')}</tr></thead>
+                    <tbody>
+                        ${rows.map(row => `
+                        <tr>
+                            ${cols.map(c => {
+                                const val = row[c.key] !== undefined && row[c.key] !== null && row[c.key] !== '' ? row[c.key] : 'N/A';
+                                const style = c.key === 'status' || c.key === 'icon'
+                                    ? `font-weight:700; color:${statusColor(val)};`
+                                    : (c.mono ? `font-family:'JetBrains Mono', monospace;` : '');
+                                return `<td style="${style}">${val}</td>`;
+                            }).join('')}
+                        </tr>`).join('')}
+                    </tbody>
+                </table>
+                </div>`;
+        }
+
         function checkRedirect3G(ctx) {
             if (ctx.allLnbts.length === 0) return { status: 'NA', detail: 'No LNBTS found in this SCF.' };
 
@@ -2924,7 +2956,7 @@
             }
 
             let positiveCount = 0;
-            const lines = allRedrt.map(r => {
+            const tableRows = allRedrt.map(r => {
                 const lncelLabel = getParentDistName(r.distName).split('/').pop();
                 const redrtLabel = r.distName.split('/').pop();
                 const redirRat = getParamCaseInsensitive(r.params, 'redirRat');
@@ -2934,11 +2966,16 @@
                 const redirFreqUtra = getParamCaseInsensitive(r.params, 'redirFreqUtra');
                 const positive = redirectActive; // redirRat=utraFDD already guaranteed by the filter above
                 if (positive) positiveCount++;
-                return `${positive ? '✅' : '❌'} <strong>${lncelLabel}/${redrtLabel}</strong>: \nredirRat=${redirRat !== undefined ? redirRat : 'N/A'}\ncsFallBPrio=${csFallBPrio !== undefined ? csFallBPrio : 'N/A'}, emerCallPrio=${emerCallPrio !== undefined ? emerCallPrio : 'N/A'}, redirectPrio=${redirectPrio !== undefined ? redirectPrio : 'N/A'}, redirFreqUtra=${redirFreqUtra !== undefined ? redirFreqUtra : 'N/A'}`;
+                return { icon: positive ? '✅' : '❌', mo: `${lncelLabel}/${redrtLabel}`, redirRat, csFallBPrio, emerCallPrio, redirectPrio, redirFreqUtra, status: positive ? 'OK' : 'FAIL' };
             });
 
             const summary = `LNBTS.actRedirect=${actRedirectVal || 'N/A'} | ${positiveCount} of ${allRedrt.length} REDRT (redirRat=utraFDD) positively configured for 3G redirect.`;
-            const fullDetail = `${summary}\n\n${lines.join('\n\n')}`;
+            const tableHtml = renderHcDetailTable([
+                { key: 'icon', label: '' }, { key: 'mo', label: 'MO', mono: true }, { key: 'redirRat', label: 'redirRat', mono: true },
+                { key: 'csFallBPrio', label: 'csFallBPrio', mono: true }, { key: 'emerCallPrio', label: 'emerCallPrio', mono: true },
+                { key: 'redirectPrio', label: 'redirectPrio', mono: true }, { key: 'redirFreqUtra', label: 'redirFreqUtra', mono: true }, { key: 'status', label: 'Status' }
+            ], tableRows);
+            const fullDetail = `${summary}${tableHtml}`;
 
             if (!redirectActive) {
                 return { status: 'FAIL', detail: `LNBTS.actRedirect is not enabled (${actRedirectVal || 'N/A'}) — 3G redirect is inactive site-wide even though ${allRedrt.length} REDRT(s) target utraFDD.`, fullDetail };
@@ -2966,21 +3003,28 @@
             }
 
             let positiveCount = 0;
-            const lines = allRedrt.map(r => {
+            const tableRows = allRedrt.map(r => {
                 const lncelLabel = getParentDistName(r.distName).split('/').pop();
                 const redrtLabel = r.distName.split('/').pop();
                 const redirRat = getParamCaseInsensitive(r.params, 'redirRat');
                 const csFallBPrio = getParamCaseInsensitive(r.params, 'csFallBPrio');
                 const emerCallPrio = getParamCaseInsensitive(r.params, 'emerCallPrio');
                 const redirectPrio = getParamCaseInsensitive(r.params, 'redirectPrio');
-                const redirFreqGeran = getParamCaseInsensitive(r.params, 'redirFreqGeran');
+                // The GSM target ARFCNs live in the redirGeranArfcnStructL list (one redirGeranArfcnValue per item), not a scalar redirFreqGeran.
+                const arfcnItems = (r.lists && r.lists.redirGeranArfcnStructL) || [];
+                const redirArfcns = arfcnItems.map(item => getParamCaseInsensitive(item, 'redirGeranArfcnValue')).filter(v => v !== undefined && v !== null && v !== '');
                 const positive = redirectActive; // redirRat=geran already guaranteed by the filter above
                 if (positive) positiveCount++;
-                return `${positive ? '✅' : '❌'} <strong>${lncelLabel}/${redrtLabel}</strong>: \nredirRat=${redirRat !== undefined ? redirRat : 'N/A'}\ncsFallBPrio=${csFallBPrio !== undefined ? csFallBPrio : 'N/A'}, emerCallPrio=${emerCallPrio !== undefined ? emerCallPrio : 'N/A'}, redirectPrio=${redirectPrio !== undefined ? redirectPrio : 'N/A'}, redirFreqGeran=${redirFreqGeran !== undefined ? redirFreqGeran : 'N/A'}`;
+                return { icon: positive ? '✅' : '❌', mo: `${lncelLabel}/${redrtLabel}`, redirRat, csFallBPrio, emerCallPrio, redirectPrio, redirGeranArfcnStructL: redirArfcns.length > 0 ? redirArfcns.join(',') : 'N/A', status: positive ? 'OK' : 'FAIL' };
             });
 
             const summary = `LNBTS.actRedirect=${actRedirectVal || 'N/A'} | ${positiveCount} of ${allRedrt.length} REDRT (redirRat=geran) positively configured for GSM redirect.`;
-            const fullDetail = `${summary}\n\n${lines.join('\n\n')}`;
+            const tableHtml = renderHcDetailTable([
+                { key: 'icon', label: '' }, { key: 'mo', label: 'MO', mono: true }, { key: 'redirRat', label: 'redirRat', mono: true },
+                { key: 'csFallBPrio', label: 'csFallBPrio', mono: true }, { key: 'emerCallPrio', label: 'emerCallPrio', mono: true },
+                { key: 'redirectPrio', label: 'redirectPrio', mono: true }, { key: 'redirGeranArfcnStructL', label: 'redirGeranArfcnStructL', mono: true }, { key: 'status', label: 'Status' }
+            ], tableRows);
+            const fullDetail = `${summary}${tableHtml}`;
 
             if (!redirectActive) {
                 return { status: 'FAIL', detail: `LNBTS.actRedirect is not enabled (${actRedirectVal || 'N/A'}) — GSM redirect is inactive site-wide even though ${allRedrt.length} REDRT(s) target geran.`, fullDetail };
@@ -3417,18 +3461,22 @@
 
             let warnCount = 0;
             const examples = [];
-            const lines = ctx.allLnhow.map(o => {
+            const tableRows = ctx.allLnhow.map(o => {
                 const label = o.distName.split('/').slice(-2).join('/');
                 const raw = getParamCaseInsensitive(o.params, 'b1TimeToTriggerCSFBUtraMeas');
-                if (raw === undefined || raw === null || raw === '') return `➖ <strong>${label}</strong>: \nb1TimeToTriggerCSFBUtraMeas not found`;
+                if (raw === undefined || raw === null || raw === '') return { icon: '➖', mo: label, b1TimeToTriggerCSFBUtraMeas: 'not found', status: 'N/A' };
                 const ms = parseInt(String(raw).replace(/[^\d]/g, ''), 10);
                 const flagged = !isNaN(ms) && ms > 1000;
                 if (flagged) { warnCount++; if (examples.length < 3) examples.push(`${label}=${raw}`); }
-                return `${flagged ? '⚠️' : '✅'} <strong>${label}</strong>: \nb1TimeToTriggerCSFBUtraMeas=${raw}`;
+                return { icon: flagged ? '⚠️' : '✅', mo: label, b1TimeToTriggerCSFBUtraMeas: raw, status: flagged ? 'WARN' : 'OK' };
             });
 
             const summary = `B1 (CSFB-to-UTRA measurement trigger) evaluated on ${ctx.allLnhow.length} LNHOW.`;
-            const fullDetail = `${summary}\n\n${lines.join('\n')}`;
+            const tableHtml = renderHcDetailTable([
+                { key: 'icon', label: '' }, { key: 'mo', label: 'MO (LNHOW)', mono: true },
+                { key: 'b1TimeToTriggerCSFBUtraMeas', label: 'b1TimeToTriggerCSFBUtraMeas', mono: true }, { key: 'status', label: 'Status' }
+            ], tableRows);
+            const fullDetail = `${summary}${tableHtml}`;
 
             if (warnCount === 0) return { status: 'OK', detail: `${summary} All react within ≤1000ms.`, fullDetail };
             return { status: 'WARN', detail: `${summary} ${warnCount} LNHOW with B1 reaction slower than 1000ms: ${examples.join(', ')}${warnCount > examples.length ? '…' : ''}`, fullDetail };
@@ -3448,7 +3496,7 @@
 
             const requiredIdentityParams = ['gTargetCi', 'gTargetLac', 'gTargetRac', 'arfcnValueGeran', 'bandIndicatorGeran'];
             let incompleteCount = 0;
-            const lnadjgLines = allLnadjg.map(o => {
+            const lnadjgTableRows = allLnadjg.map(o => {
                 const label = o.distName.split('/').slice(-2).join('/');
                 const values = requiredIdentityParams.map(p => getParamCaseInsensitive(o.params, p));
                 const missing = requiredIdentityParams.filter((p, i) => values[i] === undefined || values[i] === null || values[i] === '');
@@ -3457,8 +3505,13 @@
                 const bsicMissing = bcc === undefined || bcc === null || bcc === '' || ncc === undefined || ncc === null || ncc === '';
                 const incomplete = missing.length > 0 || bsicMissing;
                 if (incomplete) incompleteCount++;
-                const valuesStr = requiredIdentityParams.map((p, i) => `${p}=${(values[i] !== undefined && values[i] !== null && values[i] !== '') ? values[i] : 'MISSING'}`).join(', ');
-                return `${incomplete ? '❌' : '✅'} <strong>${label}</strong>: \n${valuesStr}, BSIC(NCC/BCC)=${!bsicMissing ? `${ncc}/${bcc}` : 'MISSING'}`;
+                return {
+                    icon: incomplete ? '❌' : '✅', mo: label,
+                    gTargetCi: values[0], gTargetLac: values[1], gTargetRac: values[2],
+                    arfcnValueGeran: values[3], bandIndicatorGeran: values[4],
+                    bsic: !bsicMissing ? `${ncc}/${bcc}` : 'MISSING',
+                    status: incomplete ? 'FAIL' : 'OK'
+                };
             });
 
             // Cross-check: every GSM-targeted REDRT's frequency should resolve to at least one LNADJG
@@ -3473,7 +3526,7 @@
             });
 
             let orphanRedirectCount = 0;
-            const redrtLines = allRedrtGeran.map(r => {
+            const redrtTableRows = allRedrtGeran.map(r => {
                 const lncelLabel = getParentDistName(r.distName).split('/').pop();
                 const redrtLabel = r.distName.split('/').pop();
                 const bts = getParentDistName(getParentDistName(getParentDistName(r.distName)));
@@ -3484,12 +3537,26 @@
                 const matchedArfcns = arfcnSet ? redirArfcns.filter(a => arfcnSet.has(a)) : [];
                 const hasMatch = redirArfcns.length > 0 && matchedArfcns.length > 0;
                 if (!hasMatch) orphanRedirectCount++;
-                const arfcnListStr = redirArfcns.length > 0 ? redirArfcns.join(',') : 'N/A';
-                return `${hasMatch ? '✅' : '⚠️'} <strong>${lncelLabel}/${redrtLabel}</strong>: \nredirGeranArfcnStructL=[${arfcnListStr}] — ${hasMatch ? `${matchedArfcns.length} of ${redirArfcns.length} ARFCNs match a known LNADJG` : 'none of these ARFCNs match any LNADJG under the same LNBTS'}`;
+                return {
+                    icon: hasMatch ? '✅' : '⚠️', mo: `${lncelLabel}/${redrtLabel}`,
+                    redirGeranArfcnStructL: redirArfcns.length > 0 ? redirArfcns.join(',') : 'N/A',
+                    resolution: hasMatch ? `${matchedArfcns.length} of ${redirArfcns.length} ARFCNs match a known LNADJG` : 'no LNADJG match under the same LNBTS',
+                    status: hasMatch ? 'OK' : 'WARN'
+                };
             });
 
             const summary = `${allLnadjg.length - incompleteCount} of ${allLnadjg.length} LNADJG have complete target identity (CI/LAC/RAC/ARFCN/band/BSIC); ${allRedrtGeran.length - orphanRedirectCount} of ${allRedrtGeran.length} GSM REDRT resolve to a known LNADJG.`;
-            const fullDetail = `${summary}\n\n-- LNADJG identity --\n${lnadjgLines.join('\n') || '(none)'}\n\n-- REDRT → LNADJG resolution --\n${redrtLines.join('\n') || '(none)'}`;
+            const lnadjgTableHtml = renderHcDetailTable([
+                { key: 'icon', label: '' }, { key: 'mo', label: 'MO (LNADJG)', mono: true },
+                { key: 'gTargetCi', label: 'gTargetCi', mono: true }, { key: 'gTargetLac', label: 'gTargetLac', mono: true }, { key: 'gTargetRac', label: 'gTargetRac', mono: true },
+                { key: 'arfcnValueGeran', label: 'ARFCN', mono: true }, { key: 'bandIndicatorGeran', label: 'Band', mono: true }, { key: 'bsic', label: 'BSIC(NCC/BCC)', mono: true },
+                { key: 'status', label: 'Status' }
+            ], lnadjgTableRows);
+            const redrtTableHtml = renderHcDetailTable([
+                { key: 'icon', label: '' }, { key: 'mo', label: 'MO (REDRT)', mono: true },
+                { key: 'redirGeranArfcnStructL', label: 'redirGeranArfcnStructL', mono: true }, { key: 'resolution', label: 'Resolution' }, { key: 'status', label: 'Status' }
+            ], redrtTableRows);
+            const fullDetail = `${summary}\n\n<strong>LNADJG target cell identity</strong>${lnadjgTableHtml}\n\n<strong>REDRT → LNADJG resolution</strong>${redrtTableHtml}`;
 
             if (incompleteCount === 0 && orphanRedirectCount === 0) return { status: 'OK', detail: summary, fullDetail };
             return { status: 'FAIL', detail: `${summary} Incomplete or unresolved target identity can cause CSFB redirect to GSM to point at a cell the UE cannot register on.`, fullDetail };
@@ -3508,39 +3575,45 @@
                 return { status: 'NA', detail: 'No GNFL or LNHOG found in this SCF — GERAN B2 admission data not configured.' };
             }
 
-            const gnflLines = allGnfl.map(o => {
+            const gnflTableRows = allGnfl.map(o => {
                 const label = o.distName.split('/').slice(-2).join('/');
                 const qRxLevMinGer = getParamCaseInsensitive(o.params, 'qRxLevMinGer');
                 const pMaxGer = getParamCaseInsensitive(o.params, 'pMaxGer');
                 const missing = qRxLevMinGer === undefined || qRxLevMinGer === null || qRxLevMinGer === '';
-                return { label, qRxLevMinGer, pMaxGer, missing, line: `${missing ? '❌' : '✅'} <strong>${label}</strong>: \nqRxLevMinGer=${missing ? 'MISSING' : `${qRxLevMinGer}dBm`}, pMaxGer=${pMaxGer !== undefined && pMaxGer !== '' ? pMaxGer : 'N/A'}` };
+                return { missing, qRxLevMinGerRaw: qRxLevMinGer, row: { icon: missing ? '❌' : '✅', mo: label, qRxLevMinGer: missing ? 'MISSING' : `${qRxLevMinGer}dBm`, pMaxGer: pMaxGer !== undefined && pMaxGer !== '' ? pMaxGer : 'N/A', status: missing ? 'FAIL' : 'OK' } };
             });
-            const gnflMissing = gnflLines.filter(l => l.missing).length;
+            const gnflMissing = gnflTableRows.filter(l => l.missing).length;
 
             let marginViolations = 0;
-            const lnhogLines = allLnhog.map(o => {
+            const lnhogTableRows = allLnhog.map(o => {
                 const label = o.distName.split('/').slice(-2).join('/');
                 const rssiRaw = parseFloat(getParamCaseInsensitive(o.params, 'b2Threshold2RssiGERAN'));
-                if (isNaN(rssiRaw)) return { line: `➖ <strong>${label}</strong>: \nb2Threshold2RssiGERAN not found`, violated: false };
+                if (isNaN(rssiRaw)) return { icon: '➖', mo: label, b2Threshold2RssiGERAN: 'not found', admissionFloor: 'N/A', status: 'N/A' };
                 const rssiDbm = rssiRaw - 110;
                 // Compare against the first GNFL's qRxLevMinGer found (site-level target admission floor).
-                const refGnfl = gnflLines.find(l => !l.missing);
+                const refGnfl = gnflTableRows.find(l => !l.missing);
                 let flagged = false;
                 let note = 'no GNFL reference to compare against';
                 if (refGnfl) {
                     // qRxLevMinGer is stored directly in dBm (Internal value formula = UI_value, no offset).
-                    const qRxDbm = parseFloat(refGnfl.qRxLevMinGer);
+                    const qRxDbm = parseFloat(refGnfl.qRxLevMinGerRaw);
                     if (!isNaN(qRxDbm)) {
                         flagged = rssiDbm < qRxDbm;
-                        note = `qRxLevMinGer=${qRxDbm}dBm — ${flagged ? 'B2 RSSI trigger is below the GSM admission floor' : 'B2 RSSI trigger clears the admission floor'}`;
+                        note = `${qRxDbm}dBm — ${flagged ? 'BELOW admission floor' : 'clears admission floor'}`;
                     }
                 }
                 if (flagged) marginViolations++;
-                return { line: `${flagged ? '⚠️' : '✅'} <strong>${label}</strong>: \nb2Threshold2RssiGERAN=${rssiDbm}dBm(${rssiRaw}) vs ${note}`, violated: flagged };
+                return { icon: flagged ? '⚠️' : '✅', mo: label, b2Threshold2RssiGERAN: `${rssiDbm}dBm(${rssiRaw})`, admissionFloor: note, status: flagged ? 'FAIL' : 'OK' };
             });
 
             const summary = `${allGnfl.length - gnflMissing} of ${allGnfl.length} GNFL have qRxLevMinGer configured; ${allLnhog.length - marginViolations} of ${allLnhog.length} LNHOG B2-GERAN RSSI triggers clear the GSM admission floor.`;
-            const fullDetail = `${summary}\n\n-- GNFL admission floor --\n${gnflLines.map(l => l.line).join('\n') || '(none)'}\n\n-- LNHOG B2-GERAN RSSI vs admission floor --\n${lnhogLines.map(l => l.line).join('\n') || '(none)'}`;
+            const gnflTableHtml = renderHcDetailTable([
+                { key: 'icon', label: '' }, { key: 'mo', label: 'MO (GNFL)', mono: true }, { key: 'qRxLevMinGer', label: 'qRxLevMinGer', mono: true }, { key: 'pMaxGer', label: 'pMaxGer', mono: true }, { key: 'status', label: 'Status' }
+            ], gnflTableRows.map(l => l.row));
+            const lnhogTableHtml = renderHcDetailTable([
+                { key: 'icon', label: '' }, { key: 'mo', label: 'MO (LNHOG)', mono: true }, { key: 'b2Threshold2RssiGERAN', label: 'b2Threshold2RssiGERAN', mono: true }, { key: 'admissionFloor', label: 'vs qRxLevMinGer' }, { key: 'status', label: 'Status' }
+            ], lnhogTableRows);
+            const fullDetail = `${summary}\n\n<strong>GNFL admission floor</strong>${gnflTableHtml}\n\n<strong>LNHOG B2-GERAN RSSI vs admission floor</strong>${lnhogTableHtml}`;
 
             if (gnflMissing === 0 && marginViolations === 0) return { status: 'OK', detail: summary, fullDetail };
             const status = marginViolations > 0 ? 'FAIL' : 'WARN';
@@ -3551,22 +3624,26 @@
             if (ctx.allLnhow.length === 0) return { status: 'NA', detail: 'No LNHOW found in this SCF.' };
 
             let evaluated = 0;
-            const lines = [];
+            const tableRows = [];
             ctx.allLnhow.forEach(o => {
                 const label = o.distName.split('/').slice(-2).join('/');
                 const t1Raw = parseFloat(getParamCaseInsensitive(o.params, 'b2Threshold1Utra'));
                 const rscp = getParamCaseInsensitive(o.params, 'b2Threshold2UtraRscp');
                 const ecn0 = getParamCaseInsensitive(o.params, 'b2Threshold2UtraEcn0');
-                if (isNaN(t1Raw)) { lines.push(`➖ <strong>${label}</strong>: \nb2Threshold1Utra not found`); return; }
+                if (isNaN(t1Raw)) { tableRows.push({ icon: '➖', mo: label, b2Threshold1Utra: 'not found', b2Threshold2UtraRscp: 'N/A', b2Threshold2UtraEcn0: 'N/A', status: 'N/A' }); return; }
                 evaluated++;
                 const t1Dbm = t1Raw - 140;
-                lines.push(`✅ <strong>${label}</strong>: \nb2Threshold1Utra(serving LTE)=${t1Dbm}dBm(${t1Raw}), b2Threshold2UtraRscp(ngbr, raw idx)=${rscp !== undefined && rscp !== '' ? rscp : 'N/A'}, b2Threshold2UtraEcn0(ngbr, raw idx)=${ecn0 !== undefined && ecn0 !== '' ? ecn0 : 'N/A'}`);
+                tableRows.push({ icon: '✅', mo: label, b2Threshold1Utra: `${t1Dbm}dBm(${t1Raw})`, b2Threshold2UtraRscp: rscp !== undefined && rscp !== '' ? `${rscp}(raw idx)` : 'N/A', b2Threshold2UtraEcn0: ecn0 !== undefined && ecn0 !== '' ? `${ecn0}(raw idx)` : 'N/A', status: 'OK' });
             });
 
             if (evaluated === 0) return { status: 'NA', detail: 'b2Threshold1Utra (B2 CSFB/emergency fallback to UTRA) not found in any LNHOW.' };
 
             const summary = `B2 (CSFB/emergency fallback to UTRA) thresholds present on ${evaluated} of ${ctx.allLnhow.length} LNHOW. Serving LTE threshold converted to dBm (value-140); UTRA neighbor RSCP/Ec-N0 shown as raw index — conversion formula not yet confirmed, so left unconverted.`;
-            const fullDetail = `${summary}\n\n${lines.join('\n')}`;
+            const tableHtml = renderHcDetailTable([
+                { key: 'icon', label: '' }, { key: 'mo', label: 'MO (LNHOW)', mono: true }, { key: 'b2Threshold1Utra', label: 'b2Threshold1Utra (serving)', mono: true },
+                { key: 'b2Threshold2UtraRscp', label: 'b2Threshold2UtraRscp (ngbr)', mono: true }, { key: 'b2Threshold2UtraEcn0', label: 'b2Threshold2UtraEcn0 (ngbr)', mono: true }, { key: 'status', label: 'Status' }
+            ], tableRows);
+            const fullDetail = `${summary}${tableHtml}`;
 
             return { status: 'OK', detail: summary, fullDetail };
         }
@@ -3585,16 +3662,16 @@
             { id: 'nbiot_capacity_alignment', category: 'Radio Configuration', icon: 'radio', title: 'NB-IoT Capacity Alignment', run: checkNbiotCapacityAlignment },
             { id: 'expected_cell_size', category: 'Radio Configuration', icon: 'radio', title: 'Expected Cell Size vs Frequency', run: checkExpectedCellSize },
             { id: 'earfcn_bw_alignment', category: 'Radio Configuration', icon: 'radio', title: 'EARFCN Bandwidth Alignment', run: checkEarfcnBandwidthAlignment },
-            { id: 'b1_csfb_timer', category: 'Mobility (LTE Events)', icon: 'antenna', title: 'B1 CSFB Trigger Timer', run: checkB1CsfbTriggerTimer },
-            { id: 'b2_csfb_thresholds', category: 'Mobility (LTE Events)', icon: 'antenna', title: 'B2 CSFB/Emergency Fallback to UTRA', run: checkB2CsfbFallbackThresholds },
+            { id: 'b1_csfb_timer', category: 'CS Fallback', icon: 'antenna', title: 'B1 CSFB Trigger Timer', run: checkB1CsfbTriggerTimer },
+            { id: 'b2_csfb_thresholds', category: 'CS Fallback', icon: 'antenna', title: 'B2 CSFB/Emergency Fallback to UTRA', run: checkB2CsfbFallbackThresholds },
             { id: 'srvcc_orphan', category: 'Mobility (LTE Events)', icon: 'antenna', title: 'SRVCC Relation Coverage', run: checkSrvccOrphan },
             { id: 'endc_nsa_leg', category: 'Mobility (LTE Events)', icon: 'antenna', title: '5G NSA LEG', run: checkEndcNsaLegBalance },
             { id: 'lte_nr_tac_alignment', category: 'Mobility (LTE Events)', icon: 'antenna', title: 'LTE/NR TAC Alignment', run: checkLteNrTacAlignment },
             { id: 'inactivity_timer_alignment', category: 'Mobility (LTE Events)', icon: 'antenna', title: 'LTE/NR Inactivity Timer Alignment', run: checkInactivityTimerAlignment },
-            { id: 'redirect_3g', category: 'Mobility (LTE Events)', icon: 'antenna', title: 'LTE to 3G Redirect (REDRT)', run: checkRedirect3G },
-            { id: 'redirect_gsm', category: 'Mobility (LTE Events)', icon: 'antenna', title: 'LTE to GSM Redirect (REDRT)', run: checkRedirectGsm },
-            { id: 'csfb_geran_target_identity', category: 'Mobility (LTE Events)', icon: 'antenna', title: 'CSFB GERAN Target Cell Identity (LNADJG)', run: checkCsfbGeranTargetIdentity },
-            { id: 'csfb_geran_admission', category: 'Mobility (LTE Events)', icon: 'antenna', title: 'CSFB GERAN Admission Thresholds (GNFL/LNHOG)', run: checkCsfbGeranAdmissionThresholds },
+            { id: 'redirect_3g', category: 'CS Fallback', icon: 'antenna', title: 'LTE to 3G Redirect (REDRT)', run: checkRedirect3G },
+            { id: 'redirect_gsm', category: 'CS Fallback', icon: 'antenna', title: 'LTE to GSM Redirect (REDRT)', run: checkRedirectGsm },
+            { id: 'csfb_geran_target_identity', category: 'CS Fallback', icon: 'antenna', title: 'CSFB GERAN Target Cell Identity (LNADJG)', run: checkCsfbGeranTargetIdentity },
+            { id: 'csfb_geran_admission', category: 'CS Fallback', icon: 'antenna', title: 'CSFB GERAN Admission Thresholds (GNFL/LNHOG)', run: checkCsfbGeranAdmissionThresholds },
             { id: 'redirect_nr_to_lte', category: 'Mobility (LTE Events)', icon: 'antenna', title: 'NR to LTE Redirect (NRREDRT)', run: checkRedirectNrToLte },
             { id: 'anr_interfreq', category: 'Mobility (LTE Events)', icon: 'antenna', title: 'ANR Inter-Freq', run: checkAnrInterFreq },
             { id: 'twin_beam_sectors', category: 'Power & Coverage', icon: 'bolt', title: 'Twin Beam Sector Detection', run: checkTwinBeamSectors },
