@@ -640,7 +640,7 @@
     <!-- LINE 1: MAIN BRANDING & FILE ACTIONS HEADER -->
     <header>
         <div class="logo-area">
-            <h1>SCF Nokia Analytics <span class="logo-badge">Pro Suite</span> <span class="logo-badge" style="background:rgba(255,255,255,0.1); font-weight:600;">v2.06</span></h1>
+            <h1>SCF Nokia Analytics <span class="logo-badge">Pro Suite</span> <span class="logo-badge" style="background:rgba(255,255,255,0.1); font-weight:600;">v2.07</span></h1>
         </div>
         <div class="upload-area">
             <span class="summary-badge" id="site-summary">No SCF file loaded</span>
@@ -4535,7 +4535,8 @@
                         if (!nrcellRfParams[nrcellParent]) nrcellRfParams[nrcellParent] = {};
                         if (getParamCaseInsensitive(params, "ssbFrequency")) nrcellRfParams[nrcellParent].ssbFrequency = getParamCaseInsensitive(params, "ssbFrequency");
                         if (getParamCaseInsensitive(params, "nrARFCN")) nrcellRfParams[nrcellParent].nrARFCN = getParamCaseInsensitive(params, "nrARFCN");
-                        if (getParamCaseInsensitive(params, "chBw")) nrcellRfParams[nrcellParent].chBw = getParamCaseInsensitive(params, "chBw");
+                        // chBwDl lives on NRCELL_FDD (downlink channel bandwidth) — "chBw" is not a real SCF param and was always undefined.
+                        if (getParamCaseInsensitive(params, "chBwDl")) nrcellRfParams[nrcellParent].chBw = getParamCaseInsensitive(params, "chBwDl");
                     }
                 }
 
