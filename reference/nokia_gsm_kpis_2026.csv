@@ -1,0 +1,1855 @@
+﻿"Kpi Id";"Abbreviation";"Name";"Description";"Official Notes";"Category";"Status";"Version";"Original Release";"Start Release";"End Release";"Unit";"Kpi Class";"Kpi Category";"Kpi Subcategory";"Updating process name (from counters)";"Logical Formula";"Summarisation Formula";"Summarisation Formula With PI Abbr";"Summarisation Formula with NE Name";"Summarisation Formula With Netact Name";"Formula Notes";"Kpi Groups";"Features";"Origin";"Object Summary Levels";"Time Summary Levels";"Extra Textual Information";"Product Type";"Deployment";"Comments";"Network Element";"Customer Related Internal Information";"Reason for Change";"KPI Formula Change Description";"Expected Impact on Kpi Value";"NetEng Features";"NetEng Comment";"Source"
+"trf_11b";"Avg SDCCH traf, samples";"Average SDCCH traffic, based in sampling";"This KPI is used on the BTS level. For area (or segment) level, first use the formula for
+all the BTSs and then sum this formula over all underlying BTSs.";"";"Customer";"Published";"7.00";"S2";"";"";"E";"Network Usage";"";"";"";"";"(SUM([002030]) / SUM([002031]))";"(SUM([AVE_BUSY_SDCCH_SUB_CH]) / SUM([RES_AVAIL_DENOMINATOR_15]))";"(SUM([AVE BUSY SDCCH SUB CHANNEL]) / SUM([RES AVAIL DENOMINATOR 15]))";"(SUM([AVE_BUSY_SDCCH]) / SUM([RES_AV_DENOM15]))";"Known problems: SDCCH seizures are too short to be counted using 20 s sampling if traffic is low (less than 0.5 Erl).";"RG30_BM";"";"J.Neva";"PLMN; BSC; SEG; BTS";"Total; week; weeklyBH; day; dailyBH; hour";"";"";"";"";"BSC";"";"";"";"";"";"";"nidd"
+"trf_496a";"TCH traffic sum in time";"TCH traffic sum in time";"TCH traffic sum in time, based in trf_492 this KPI presents the sum in objects and in the time interval selected.";"";"Customer";"Published";"9.00";"S16.1";"";"";"erlangs";"Network Usage";"";"";"";"";"((SUM([002027]) /AVG([002028])  
+ + 
+SUM((0.5*[105012] + [105011]) /100) /AVG(PERIOD_DURATION*60)))";"((SUM([AVE_BUSY_TCH]) /AVG([RES_AVAIL_DENOMINATOR_14])  
+ + 
+SUM((0.5*[DTM_DURATION_SUM_HR] + [DTM_DURATION_SUM_FR]) /100) /AVG(PERIOD_DURATION*60)))";"((SUM([AVE BUSY TCH]) /AVG([RES AVAIL DENOMINATOR 14])  
+ + 
+SUM((0.5*[DTM DURATION SUM HR] + [DTM DURATION SUM FR]) /100) /AVG(PERIOD_DURATION*60)))";"((SUM([AVE_BUSY_TCH]) /AVG([RES_AV_DENOM14])  
+ + 
+SUM((0.5*[DTM_DURATION_SUM_HR] + [DTM_DURATION_SUM_FR]) /100) /AVG(PERIOD_DURATION*60)))";"DTM is not supporting HR yet in S14. Counter was made because HR may be supported later. KPIs using this counter are ok even though HR counter is currently always zero. ";"";"BSS20088";"";"PLMN; BSC; SEG; BTS";"Total; week; weeklyBH; day; dailyBH; hour";"";"";"";"";"";"";"";"";"";"";"";"nidd"
+"dcr_5b";"TCH drop conv R re-estab cons";"TCH dropped conversation ratio, with RE";"This KPI tells the ratio of calls dropped while A and B are talking, that is after conn_ack.
+Inter-BSC handovers are subtracted in the denominator because they trigger
+conver_started. Compensation is 100% true only if the area has no inter-BSC HOs from
+outside the area.";"";"Customer";"Published";"7.00";"S7";"";"";"%";"Retainability";"";"";"";"";"(100*((SUM([057007]) - SUM([057037]))/(SUM([057015]) - SUM([004043]))))";"(100*((SUM([SE_DROPPED_CALL]) - SUM([SE_TCH_RE_EST_RELEASE]))/(SUM([SE_CONVERSATION_STARTED]) - SUM([MSC_I_SUCC_TCH_TCH_HO]))))";"(100*((SUM([DROPPED CALL]) - SUM([TCH RE EST RELEASE]))/(SUM([CONVERSATION STARTED]) - SUM([MSC I TCH TCH]))))";"(100*((SUM([DROPPED_CALLS]) - SUM([TCH_RE_EST_RELEASE]))/(SUM([CONVER_STARTED]) - SUM([MSC_I_TCH_TCH]))))";"Known problems: See dcr_5.
+1) conver_started is not triggered for call re-establishments.
+dropped_calls is triggered once for the first re-establishment. After that setup_failure is triggered if the  call is a dropped call.
+ If a call is ?saved? by re-establishment multiple times, setup_failure will be triggered several times accordingly.
+2) Drop call by pre-emption (first priority call request to be established, all TCH seized, lower priority calls on) triggers 
+dropped_calls. Therefore this counter does not indicate only technical drops.";"RG30_BM";"BSS7089";"";"PLMN; BSC; SEG; BTS";"Total; week; weeklyBH; day; dailyBH; hour";"";"";"";"";"BSC";"";"";"";"";"";"";"nidd"
+"tbf_38d";"Avg DL TBF per TSL";"Average DL TBF per timeslot";"Indicates how many downlink TBFs there are, on average, per timeslot.";"";"Customer";"Published";"7.00";"S11.5";"";"";"#";"Network Usage";"";"";"";"";"(SUM([]) / (SUM([]) * 100))";"(SUM([]) / (SUM([]) * 100))";"(SUM([AVE DL TBFS PER USED TSL:]) / (SUM([AVER TBFS PER TSL DL DEN:]) * 100))";"(SUM([]) / (SUM([]) * 100))";"";"RG30_BM";"";"Poul Larsen 7.7.2005 deduced from tbf_38c to replace the used counters with the new one implemented in S11.5";"PLMN; BSC; SEG; BCF; BTS; TRXTP";"Total; week; weeklyBH; day; dailyBH; hour";"";"";"";"";"BSC";"";"";"";"";"";"";"nidd"
+"trf_1d";"TCH traffic sum";"Average CS traffic per BTS";"This KPI is used on the BTS and area level.";"";"Customer";"Published";"10.00";"S12";"";"";"E";"Network Usage";"";"";"";"";"((SUM(((0.5*[105012] + [105011]) /100) 
+/ SUM (PERIOD_DURATION*60)) + (SUM([002027])/SUM([002028]))))";"((SUM(((0.5*[DTM_DURATION_SUM_HR] + [DTM_DURATION_SUM_FR]) /100) 
+/ SUM (PERIOD_DURATION*60)) + (SUM([AVE_BUSY_TCH])/SUM([RES_AVAIL_DENOMINATOR_14]))))";"((SUM(((0.5*[DTM DURATION SUM HR] + [DTM DURATION SUM FR]) /100) 
+/ SUM (PERIOD_DURATION*60)) + (SUM([AVE BUSY TCH])/SUM([RES AVAIL DENOMINATOR 14]))))";"((SUM(((0.5*[DTM_DURATION_SUM_HR] + [DTM_DURATION_SUM_FR]) /100) 
+/ SUM (PERIOD_DURATION*60)) + (SUM([AVE_BUSY_TCH])/SUM([RES_AV_DENOM14]))))";"";"RG30_BM";"BSS20088";"PMWG 17.1.2006 deduced from trf_1a to include DTM";"PLMN; BSC; SEG; BTS";"Total; week; weeklyBH; day; dailyBH; hour";"";"";"";"";"BSC";"";"";"";"";"";"";"nidd"
+"trf_473";"DHR Usage";"DHR Usage";"This KPI indicates TCH use % of DHR TCH.";"";"Customer";"Published";"10.00";"S15";"";"";"#";"Network Usage";"";"";"";"";"(((2*SUM([002094])/SUM([002095]))
+/(SUM([002027])/SUM([002028]))))";"(((2*SUM([AVE_BUSY_DHR_TCH])/SUM([AVE_BUSY_DHR_TCH_DENOM]))
+/(SUM([AVE_BUSY_TCH])/SUM([RES_AVAIL_DENOMINATOR_14]))))";"(((2*SUM([AVE BUSY OSC DHR TCH PAIR])/SUM([AVE BUSY OSC DHR TCH PAIR DENOMINATOR]))
+/(SUM([AVE BUSY TCH])/SUM([RES AVAIL DENOMINATOR 14]))))";"(((2*SUM([AVE_BUSY_DHR_TCH])/SUM([AVE_BUSY_DHR_TCH_DENOM]))
+/(SUM([AVE_BUSY_TCH])/SUM([RES_AV_DENOM14]))))";"";"RG30_BM";"BSS21309";"";"PLMN; BSC; SEG; BCF; BTS; TRXTP";"Total; week; weeklyBH; day; dailyBH; hour";"";"";"";"";"BSC";"";"";"";"";"";"";"nidd"
+"ava_1g";"TCH avail ratio";"TCH availability ratio";"Failures (downtime) of TRXs cause loss of TCH and affect this KPI.
+Notes:
+1. The KPI has to be counted separately for extended and normal area (trx_type: 0 =normal, 1 = extended).
+2. If TRXs are locked and BTSs and BCFs are unlocked, the TCHs appear as unavailable.
+This means that both the system and the user can affect this KPI and make it
+less useful.";"";"Customer";"Published";"8.03";"S11.5";"";"";"%";"Accessibility";"";"";"";"available TCH 
+100 * -------------------------  
+      all TCH (traffic and GPRS)";"100*(
+((SUM([002059]) / SUM([002060])) + (SUM([002061]) / SUM([002062])))
+/
+((SUM([002059]) / SUM([002060])) + (SUM([002061]) / SUM([002062])) + (SUM([002069]) / SUM([002070]))))";"100*(
+((SUM([AVE_AVAIL_TCH_TIMESLOT]) / SUM([RES_AVAIL_DENOMINATOR_26])) + (SUM([AVE_GPRS_CHANNELS]) / SUM([RES_AVAIL_DENOMINATOR_2])))
+/
+((SUM([AVE_AVAIL_TCH_TIMESLOT]) / SUM([RES_AVAIL_DENOMINATOR_26])) + (SUM([AVE_GPRS_CHANNELS]) / SUM([RES_AVAIL_DENOMINATOR_2])) + (SUM([AVE_NON_AVAIL_TCH_TIMESLOT]) / SUM([NON_AVAIL_TCH_DENOMINATOR]))))";"100*(
+((SUM([AVE AVAIL TCH TIMESLOT]) / SUM([RES AVAIL DENOMINATOR 26])) + (SUM([AVE GPRS CHANNELS]) / SUM([RES AVAIL DENOMINATOR 27])))
+/
+((SUM([AVE AVAIL TCH TIMESLOT]) / SUM([RES AVAIL DENOMINATOR 26])) + (SUM([AVE GPRS CHANNELS]) / SUM([RES AVAIL DENOMINATOR 27])) + (SUM([AVE NON AVAIL TCH TIMESLOT]) / SUM([NON AVAIL TCH DENOMINATOR]))))";"100*(
+((SUM([AVE_AVAIL_TCH_SUM]) / SUM([AVE_AVAIL_TCH_DEN])) + (SUM([AVE_GPRS_CHANNELS_SUM]) / SUM([AVE_GPRS_CHANNELS_DEN])))
+/
+((SUM([AVE_AVAIL_TCH_SUM]) / SUM([AVE_AVAIL_TCH_DEN])) + (SUM([AVE_GPRS_CHANNELS_SUM]) / SUM([AVE_GPRS_CHANNELS_DEN])) + (SUM([AVE_NON_AVAIL_TCH_TIMESLOT]) / SUM([NON_AVAIL_TCH_DENOM]))))";"Use: Failures (downtime) of TRXs cause loss of TCH and affect this KPI.
+Note: The KPI has to be counted separately for extended and normal area (trx_type: 0 = normal, 1 = extended). 
+Known problems: If TRXs are locked and BTSs and BCFs are unlocked, the TCHs appear as unavailable. This means that both the system and
+the user can affect this KPI and make it less useful.";"RG30_BM";"BSS09006";"Vesa Nippala 27.4.2005 deduced from ava_1f to use real counters instead of spares used in previous version.";"PLMN; BSC; SEG; BTS";"Total; week; weeklyBH; day; dailyBH; hour";"";"";"";"First version";"BSC";"";"";"";"";"";"";"nidd"
+"ava_68";"Data service avail ratio";"Data service availability ratio";"Data service availability (DSA) gives the estimated percentage of on-air GPRS-capable
+BTSs that are able to provide the GPRS service. Detects outages in the GPRS and
+EGPRS services. Outages may be caused by a fault in hardware or software.";"";"Customer";"Published";"10.00";"S9";"";"";"%";"Accessibility";"";"";"";"100 * ((1 - Subscriber access outage rate) * (1 - Number of no data activity case))";"((100 *( 1-( COUNT (*) WHERE ([072082] >100 AND ([072000]+[072079]) >80 AND ([072003] =0 OR [072008] =0)) /COUNT(*) WHERE ([072082] >= 100))
+*  1-( COUNT (*) WHERE (([002046_1]+[002048_1]) >=0.2 AND ([002061] >0) AND ([072082] =0 OR [001026] >10)) / COUNT(*) WHERE (([002046_1] + [002048_1]) >= 0.2) AND [002061] > 0) AND ([001026] > 10))))";"((100 *( 1-( COUNT (*) WHERE ([PACKET_CH_REQ] >100 AND ([UPLINK_TBF]+[NO_RADIO_RES_AVA_UL_TBF]) >80 AND ([AVE_DUR_UL_TBF] =0 OR [AVE_DUR_DL_TBF] =0)) /COUNT(*) WHERE ([PACKET_CH_REQ] >= 100))
+*  1-( COUNT (*) WHERE (([]+[]) >=0.2 AND ([AVE_GPRS_CHANNELS] >0) AND ([PACKET_CH_REQ] =0 OR [TCH_REQ_CALL_SUCC_AND_UNSUCC] >10)) / COUNT(*) WHERE (([] + []) >= 0.2) AND [AVE_GPRS_CHANNELS] > 0) AND ([TCH_REQ_CALL_SUCC_AND_UNSUCC] > 10))))";"((100 *( 1-( COUNT (*) WHERE ([PACKET CH REQ] >100 AND ([NBR OF UL TBF]+[NO RADIO RES AVA UL TBF]) >80 AND ([AVE DUR UL TBF] =0 OR [AVE DUR DL TBF] =0)) /COUNT(*) WHERE ([PACKET CH REQ] >= 100))
+*  1-( COUNT (*) WHERE (([AVERAGE BUSY FULL RATE TCH DIVIDED BY DENOMINATOR]+[AVERAGE BUSY HALF RATE TCH DIVIDED BY DENOMINATOR]) >=0.2 AND ([AVE GPRS CHANNELS] >0) AND ([PACKET CH REQ] =0 OR [TCH CALL REQ] >10)) / COUNT(*) WHERE (([AVERAGE BUSY FULL RATE TCH DIVIDED BY DENOMINATOR] + [AVERAGE BUSY HALF RATE TCH DIVIDED BY DENOMINATOR]) >= 0.2) AND [AVE GPRS CHANNELS] > 0) AND ([TCH CALL REQ] > 10))))";"((100 *( 1-( COUNT (*) WHERE ([PACKET_CH_REQ] >100 AND ([NBR_OF_UL_TBF]+[NO_RADIO_RES_AVA_UL_TBF]) >80 AND ([AVE_DUR_UL_TBF_SUM] =0 OR [AVE_DUR_DL_TBF_SUM] =0)) /COUNT(*) WHERE ([PACKET_CH_REQ] >= 100))
+*  1-( COUNT (*) WHERE (([AVE_TCH_BUSY_FULL]+[AVE_TCH_BUSY_HALF]) >=0.2 AND ([AVE_GPRS_CHANNELS_SUM] >0) AND ([PACKET_CH_REQ] =0 OR [TCH_CALL_REQ] >10)) / COUNT(*) WHERE (([AVE_TCH_BUSY_FULL] + [AVE_TCH_BUSY_HALF]) >= 0.2) AND [AVE_GPRS_CHANNELS_SUM] > 0) AND ([TCH_CALL_REQ] > 10))))";"Known problems:In some situations base station can receive 11-bit RACH burst having legal establishment cause but no real mobile on cell  (e.g. noise). This will cause TBF establishments in BSC and also increment of packet_ch_req counter. In bad radio condition this amount can be more than 100. Official statement is that the number of ghost packet channel request messages cannot be bigger than 100 during one measurement period but it has been noticed that this limit can be exceed in some situations. It is proposed that the limit used in this condition ""packet_ch_req >= 100"" shall be set (bigger than 100) based on the real network conditions. 100 will be enough in many cases, however.";"RG30_BM";"BSS09006,BSS11156,BSS20094,BSS21270";"Craig M Allen/Nokia 29.6.2005";"PLMN; BSC; SEG; BTS";"Total; week; weeklyBH; day; dailyBH; hour";"";"";"";"";"BSC";"";"";"";"";"";"";"nidd"
+"ava_129";"TCH avail ratio power down TRX excluded";"TCH availability ratio power down TRX excluded";"Traffic channel timeslot availability as the percentage of configured resources. Includes both circuit switched and packet switched TSLs.
+Timeslots locked by power save features RG301936 Intelligent MCPA TRX Power Down or BSS20984 2G TRX Automatic Power Down are excluded in denominator AVE_TCH_TSL_LOCKED_POWER_DOWN, because timeslots locked by these features are not counted as available but are counted in the total timeslot unavailable counter (ave_non_avail_tch_timeslot).
+
+The counters in this formula are sampled every 20 seconds. It is normal that during the shutdown or powerup of the TRXs due to the Power Save Features a discrepancy occurs between the total time slots unavailable and the ones locked by the feature originating a slight and sporadic decrease in the KPI (close to 100%, but not 100%).
+
+If TRXs are locked and BTSs and BCFs are unlocked, the TCH TSLs appear as unavailable. Thus both the system and the user can affect this KPI.
+The KPI has to be counted separately different TRX types (trx_type: 0 = normal area ,1 = extended area, 2 = super-extended area).";"";"Customer";"Published";"3.03";"S11.5";"";"";"%";"Accessibility";"";"";"";"available TCH 
+100 * -------------------------  
+      all TCH (traffic and GPRS)";"100*( (Sum([002059])/Sum([002060])) + (Sum([002061])/Sum([002062])))
+		/ 
+		(Sum([002059])/Sum([002060]) + Sum([002061])/Sum([002062]) + Sum([002069])/Sum([002070]) - (Sum([002088])/Sum([002070])))";"100*( (Sum([AVE_AVAIL_TCH_TIMESLOT])/Sum([RES_AVAIL_DENOMINATOR_26])) + (Sum([AVE_GPRS_CHANNELS])/Sum([RES_AVAIL_DENOMINATOR_2])))
+		/ 
+		(Sum([AVE_AVAIL_TCH_TIMESLOT])/Sum([RES_AVAIL_DENOMINATOR_26]) + Sum([AVE_GPRS_CHANNELS])/Sum([RES_AVAIL_DENOMINATOR_2]) + Sum([AVE_NON_AVAIL_TCH_TIMESLOT])/Sum([NON_AVAIL_TCH_DENOMINATOR]) - (Sum([AVE_TCH_TSL_LOCKED_POWER_DOWN])/Sum([NON_AVAIL_TCH_DENOMINATOR])))";"100*( (Sum([AVE AVAIL TCH TIMESLOT])/Sum([RES AVAIL DENOMINATOR 26])) + (Sum([AVE GPRS CHANNELS])/Sum([RES AVAIL DENOMINATOR 27])))
+		/ 
+		(Sum([AVE AVAIL TCH TIMESLOT])/Sum([RES AVAIL DENOMINATOR 26]) + Sum([AVE GPRS CHANNELS])/Sum([RES AVAIL DENOMINATOR 27]) + Sum([AVE NON AVAIL TCH TIMESLOT])/Sum([NON AVAIL TCH DENOMINATOR]) - (Sum([AVE TCH TSL LOCKED POWER DOWN])/Sum([NON AVAIL TCH DENOMINATOR])))";"100*( (Sum([AVE_AVAIL_TCH_SUM])/Sum([AVE_AVAIL_TCH_DEN])) + (Sum([AVE_GPRS_CHANNELS_SUM])/Sum([AVE_GPRS_CHANNELS_DEN])))
+		/ 
+		(Sum([AVE_AVAIL_TCH_SUM])/Sum([AVE_AVAIL_TCH_DEN]) + Sum([AVE_GPRS_CHANNELS_SUM])/Sum([AVE_GPRS_CHANNELS_DEN]) + Sum([AVE_NON_AVAIL_TCH_TIMESLOT])/Sum([NON_AVAIL_TCH_DENOM]) - (Sum([AVE_TCH_TSL_LOCKED_POWER_DOWN])/Sum([NON_AVAIL_TCH_DENOM])))";"Use: Failures (downtime) of TRXs cause loss of TCH and affect this KPI.
+Note: The KPI has to be counted separately for extended and normal area (trx_type: 0 = normal, 1 = extended). 
+Known problems: If TRXs are locked and BTSs and BCFs are unlocked, the TCHs appear as unavailable. This means that both the system and
+the user can affect this KPI and make it less useful.";"RG30_BM";"BSS09006,RG301603";"Hannu Markkonen. Approved in PMWG in 2.10.2015";"PLMN; BSC; SEG; BTS";"Total; week; weeklyBH; day; dailyBH; hour";"";"";"";"First version";"BSC";"";"";"";"";"";"";"nidd"
+"blck_5b";"SDCCH block before FCS";"SDCCH blocking on, before FCS";"Gives the probability to access SDCCH considering the effect of FCS. Applicable for
+area and BTS level.";"";"Customer";"Published";"7.00";"S1";"";"";"%";"Accessibility";"";"";"";"";"(100 * (SUM([001001] - [001098])/SUM([001000])))";"(100 * (SUM([SEIZ_ATTEMPTS_WITH_BUSY_SDCCH] - [TCH_SEIZ_ATT_DUE_SDCCH_CON])/SUM([SEIZ_ATTEMPTS])))";"(100 * (SUM([SEIZURE ATTEMPTS WITH BUSY SDCCH] - [TCH SEIZ ATT DUE SDCCH CON])/SUM([SEIZURE ATTEMPTS])))";"(100 * (SUM([SDCCH_BUSY_ATT] - [TCH_SEIZ_ATT_DUE_SDCCH_CON])/SUM([SDCCH_SEIZ_ATT])))";"";"RG30_BM";"BSS20003,BSS5290";"J.Neva 12.6.97";"PLMN; BSC; SEG; BTS";"Total; week; weeklyBH; day; dailyBH; hour";"";"";"";"";"BSC";"";"";"";"";"";"";"nidd"
+"blck_8i";"TCH call blck DR compensa";"TCH call blocking, DR compensated";"This KPI measures the traffic channel congestion.
+Use:
+This KPI counts the impact of lacking TCH resources on call setup after the SDCCH phase. Soft blocking increases the value. Directed retry is not real blocking for the end user and therefore it is excluded. Also, the A-interface circuit type mismatch caused requests are not visible to end user and are therefore excluded. Use: Applicable on
+BTS level even the BTS is part of multi-BTS segment.";"";"Customer";"Published";"7.00";"S12";"";"";"%";"Retainability";"";"";"";"";"(100 * (SUM([001192] - [001193])/SUM([001192])))";"(100 * (SUM([TCH_REQUESTS_CALL_ATTEMPT] - [SUCC_TCH_SEIZ_CALL_ATTEMPT])/SUM([TCH_REQUESTS_CALL_ATTEMPT])))";"(100 * (SUM([TCH REQUESTS FOR CALL ATTEMPT] - [SUCCESSFUL TCH SEIZURES FOR CALL ATTEMPT])/SUM([TCH REQUESTS FOR CALL ATTEMPT])))";"(100 * (SUM([TCH_REQUESTS_CALL_ATTEMPT] - [SUCC_TCH_SEIZ_CALL_ATTEMPT])/SUM([TCH_REQUESTS_CALL_ATTEMPT])))";"";"RG30_BM";"BSS09006,BSS10004,BSS10101,BSS11083,BSS11107,BSS115172,BSS21228,BSS6114,BSS6115,BSS7057,BSS7089";"BSS PMWG 14.9.2005 Deduced from blck_8h to replace spare001192 and spare001193 with the official counters";"PLMN; BSC; SEG; BTS";"Total; week; weeklyBH; day; dailyBH; hour";"";"";"";"";"BSC";"";"";"";"";"";"";"nidd"
+"blck_33b";"DL multislot soft block";"Downlink multislot soft blocking";"Indicates the ratio of unserved timeslots requests to all requests in downlink. However, the old formula cannot distinguish soft blocking of MSS which have higher multislot class than network can support.";"";"Customer";"Published";"7.00";"S14";"";"";"%";"Retainability";"";"";"";"";"(100 - (100* (SUM([072049]+2*[072050]+3*[072051] +4*[072052]
++ 5*[072137]+6*[072138]+7*[072139] +8*[072140]
++ 9*[072254]+10*[072255]))
+/
+(SUM([072039]+2*[072040]+3*[072041] +4*[072042]
++ 5*[072129]+6*[072130]+7*[072131] +8*[072132]
++ 9*[072250] + 10*[072251] + 11*[072252] + 12*[072253]))))";"(100 - (100* (SUM([ALLOC_1_TSL_DL]+2*[ALLOC_2_TSL_DL]+3*[ALLOC_3_TSL_DL] +4*[ALLOC_4_TSL_DL]
++ 5*[ALLOC_5_TSL_DL]+6*[ALLOC_6_TSL_DL]+7*[ALLOC_7_TSL_DL] +8*[ALLOC_8_TSL_DL]
++ 9*[ALLOC_9_TSL_DL]+10*[ALLOC_10_TSL_DL]))
+/
+(SUM([REQ_1_TSL_DL]+2*[REQ_2_TSL_DL]+3*[REQ_3_TSL_DL] +4*[REQ_4_TSL_DL]
++ 5*[REQ_5_TSL_DL]+6*[REQ_6_TSL_DL]+7*[REQ_7_TSL_DL] +8*[REQ_8_TSL_DL]
++ 9*[REQ_9_TSL_DL] + 10*[REQ_10_TSL_DL] + 11*[REQ_11_TSL_DL] + 12*[REQ_12_TSL_DL]))))";"(100 - (100* (SUM([ALLOC 1 TSL DL]+2*[ALLOC 2 TSL DL]+3*[ALLOC 3 TSL DL] +4*[ALLOC 4 TSL DL]
++ 5*[ALLOC 5 TSL DL]+6*[ALLOC 6 TSL DL]+7*[ALLOC 7 TSL DL] +8*[ALLOC 8 TSL DL]
++ 9*[ALLOC 9 TSL DL]+10*[ALLOC 10 TSL DL]))
+/
+(SUM([REQ 1 TSL DL]+2*[REQ 2 TSL DL]+3*[REQ 3 TSL DL] +4*[REQ 4 TSL DL]
++ 5*[REQ 5 TSL DL]+6*[REQ 6 TSL DL]+7*[REQ 7 TSL DL] +8*[REQ 8 TSL DL]
++ 9*[REQ 9 TSL DL] + 10*[REQ 10 TSL DL] + 11*[REQ 11 TSL DL] + 12*[REQ 12 TSL DL]))))";"(100 - (100* (SUM([ALLOC_1_TSL_DL]+2*[ALLOC_2_TSL_DL]+3*[ALLOC_3_TSL_DL] +4*[ALLOC_4_TSL_DL]
++ 5*[ALLOC_5_TSL_DL]+6*[ALLOC_6_TSL_DL]+7*[ALLOC_7_TSL_DL] +8*[ALLOC_8_TSL_DL]
++ 9*[ALLOC_9_TSL_DL]+10*[ALLOC_10_TSL_DL]))
+/
+(SUM([REQ_1_TSL_DL]+2*[REQ_2_TSL_DL]+3*[REQ_3_TSL_DL] +4*[REQ_4_TSL_DL]
++ 5*[REQ_5_TSL_DL]+6*[REQ_6_TSL_DL]+7*[REQ_7_TSL_DL] +8*[REQ_8_TSL_DL]
++ 9*[REQ_9_TSL_DL] + 10*[REQ_10_TSL_DL] + 11*[REQ_11_TSL_DL] + 12*[REQ_12_TSL_DL]))))";"Known problems: BSC Technical Note TN_BSC_SW_825_2005 (Changes in TBF allocation request counters) defines in detail the changes that happen with S11 CD6.0 and S11.5 CD 2.0. After the counters correction it is possible to get negative blocking because both the request and allocation counters are updated according to real allocation (it is possible that MS requested less timeslots that allocated). However, in practice, this problem is likely to only affect the UL blocking (blck_34), and it is recommended to continue to use blck_33b to measure DL soft blocking.";"RG30_BM";"BSS09006,BSS115172,BSS21228";"Nokia/Ari Saarinen - deduced from blck_33a updated for S14";"PLMN; BSC; SEG; BCF; BTS; TRXTP";"Total; week; weeklyBH; day; dailyBH; hour";"";"";"";"";"BSC";"";"";"";"";"";"";"nidd"
+"dap_7a";"Indqt EDAP res DL lmt EDAP sz";"Inadequate EDAP resources in DL limited by EDAP size";"Indicates the time per gigabytes when the available downlink EDAP resources are inadequate
+because of the size of the EDAP. The formula may not give correct values if:
+ the object aggregation level is smaller than the BSC level, and
+ one or more BTSs in the area has more than one dynamic Abis pool connected.
+
+EGENA: CM parameter.
+Definition: Attribute enables or disables EGPRS on BTS level. All GPRS-enabled TRXs of the BTS have to be EDGE capable.The GPRS must be enabled in the segment in order to enable EGPRS in the BTS.
+Parameter id = 5051";"";"Customer";"Published";"11.00";"S11.5";"";"";"min/GB";"Retainability";"";"";"";"(DL Indadeq Time minutes)
+---------------------------------------------------
+(DL GPRS payload Gbyte) + (DL EGPRS payload Gbyte)";"((SUM( [076008] - [076020]) / (50 * 60))
+/
+(SUM OVER BTS WITH EGENA = Y 
+ (  [072063] *20 
+  + [072065] *30 
+  + SUM OVER MCS-1 ([079000] + [079001]) * 22 
+  + SUM OVER MCS-2 ([079000] + [079001]) * 28 
+  + SUM OVER MCS-3 ([079000] + [079001]) * 37 
+  + SUM OVER MCS-4 ([079000] + [079001]) * 44 
+  + SUM OVER MCS-5 ([079000] + [079001]) * 56 
+  + SUM OVER MCS-6 ([079000] + [079001]) * 74 
+  + SUM OVER MCS-7 (([079000] + [079001]) /2)*112 
+  + SUM OVER MCS-8 (([079000] + [079001]) /2)*136 
+  + SUM OVER MCS-9 (([079000] + [079001]) /2)*148 
+  + SUM OVER MCS-11([079000] + [079001]) *36  
+  + SUM OVER MCS-12([079000] + [079001]) *50 
+ ) / (1024*1024*1024)))";"((SUM( [DL_TBFS_WITH_INADEQ_EDAP_RES] - [DL_MCS_LIMITED_BY_PCU]) / (50 * 60))
+/
+(SUM OVER BTS WITH EGENA = Y 
+ (  [RLC_DATA_BLOCKS_DL_CS1] *20 
+  + [RLC_DATA_BLOCKS_DL_CS2] *30 
+  + SUM OVER MCS-1 ([NBR_OF_DL_RLC_BL_IN_ACK_MODE] + [NBR_OF_DL_RLC_BL_IN_UNA_MODE]) * 22 
+  + SUM OVER MCS-2 ([NBR_OF_DL_RLC_BL_IN_ACK_MODE] + [NBR_OF_DL_RLC_BL_IN_UNA_MODE]) * 28 
+  + SUM OVER MCS-3 ([NBR_OF_DL_RLC_BL_IN_ACK_MODE] + [NBR_OF_DL_RLC_BL_IN_UNA_MODE]) * 37 
+  + SUM OVER MCS-4 ([NBR_OF_DL_RLC_BL_IN_ACK_MODE] + [NBR_OF_DL_RLC_BL_IN_UNA_MODE]) * 44 
+  + SUM OVER MCS-5 ([NBR_OF_DL_RLC_BL_IN_ACK_MODE] + [NBR_OF_DL_RLC_BL_IN_UNA_MODE]) * 56 
+  + SUM OVER MCS-6 ([NBR_OF_DL_RLC_BL_IN_ACK_MODE] + [NBR_OF_DL_RLC_BL_IN_UNA_MODE]) * 74 
+  + SUM OVER MCS-7 (([NBR_OF_DL_RLC_BL_IN_ACK_MODE] + [NBR_OF_DL_RLC_BL_IN_UNA_MODE]) /2)*112 
+  + SUM OVER MCS-8 (([NBR_OF_DL_RLC_BL_IN_ACK_MODE] + [NBR_OF_DL_RLC_BL_IN_UNA_MODE]) /2)*136 
+  + SUM OVER MCS-9 (([NBR_OF_DL_RLC_BL_IN_ACK_MODE] + [NBR_OF_DL_RLC_BL_IN_UNA_MODE]) /2)*148 
+  + SUM OVER MCS-11([NBR_OF_DL_RLC_BL_IN_ACK_MODE] + [NBR_OF_DL_RLC_BL_IN_UNA_MODE]) *36  
+  + SUM OVER MCS-12([NBR_OF_DL_RLC_BL_IN_ACK_MODE] + [NBR_OF_DL_RLC_BL_IN_UNA_MODE]) *50 
+ ) / (1024*1024*1024)))";"((SUM( [DL TBFS WITH INADEQUATE EDAP RES] - [DL MCS LIMITED BY PCU]) / (50 * 60))
+/
+(SUM OVER BTS WITH EGENA = Y 
+ (  [RLC DATA BLOCKS DL CS1] *20 
+  + [RLC DATA BLOCKS DL CS2] *30 
+  + SUM OVER MCS-1 ([NUMBER OF DL RLC BLOCKS IN ACKNOWLEDGED MODE] + [NUMBER OF DL RLC BLOCKS IN UNACKNOWLEDGED MODE]) * 22 
+  + SUM OVER MCS-2 ([NUMBER OF DL RLC BLOCKS IN ACKNOWLEDGED MODE] + [NUMBER OF DL RLC BLOCKS IN UNACKNOWLEDGED MODE]) * 28 
+  + SUM OVER MCS-3 ([NUMBER OF DL RLC BLOCKS IN ACKNOWLEDGED MODE] + [NUMBER OF DL RLC BLOCKS IN UNACKNOWLEDGED MODE]) * 37 
+  + SUM OVER MCS-4 ([NUMBER OF DL RLC BLOCKS IN ACKNOWLEDGED MODE] + [NUMBER OF DL RLC BLOCKS IN UNACKNOWLEDGED MODE]) * 44 
+  + SUM OVER MCS-5 ([NUMBER OF DL RLC BLOCKS IN ACKNOWLEDGED MODE] + [NUMBER OF DL RLC BLOCKS IN UNACKNOWLEDGED MODE]) * 56 
+  + SUM OVER MCS-6 ([NUMBER OF DL RLC BLOCKS IN ACKNOWLEDGED MODE] + [NUMBER OF DL RLC BLOCKS IN UNACKNOWLEDGED MODE]) * 74 
+  + SUM OVER MCS-7 (([NUMBER OF DL RLC BLOCKS IN ACKNOWLEDGED MODE] + [NUMBER OF DL RLC BLOCKS IN UNACKNOWLEDGED MODE]) /2)*112 
+  + SUM OVER MCS-8 (([NUMBER OF DL RLC BLOCKS IN ACKNOWLEDGED MODE] + [NUMBER OF DL RLC BLOCKS IN UNACKNOWLEDGED MODE]) /2)*136 
+  + SUM OVER MCS-9 (([NUMBER OF DL RLC BLOCKS IN ACKNOWLEDGED MODE] + [NUMBER OF DL RLC BLOCKS IN UNACKNOWLEDGED MODE]) /2)*148 
+  + SUM OVER MCS-11([NUMBER OF DL RLC BLOCKS IN ACKNOWLEDGED MODE] + [NUMBER OF DL RLC BLOCKS IN UNACKNOWLEDGED MODE]) *36  
+  + SUM OVER MCS-12([NUMBER OF DL RLC BLOCKS IN ACKNOWLEDGED MODE] + [NUMBER OF DL RLC BLOCKS IN UNACKNOWLEDGED MODE]) *50 
+ ) / (1024*1024*1024)))";"((SUM( [DL_TBFS_WITH_INADEQ_EDAP_RES] - [DL_MCS_LIMITED_BY_PCU]) / (50 * 60))
+/
+(SUM OVER BTS WITH EGENA = Y 
+ (  [RLC_DATA_BLOCKS_DL_CS1] *20 
+  + [RLC_DATA_BLOCKS_DL_CS2] *30 
+  + SUM OVER MCS-1 ([DL_RLC_BLOCKS_IN_ACK_MODE] + [DL_RLC_BLOCKS_IN_UNACK_MODE]) * 22 
+  + SUM OVER MCS-2 ([DL_RLC_BLOCKS_IN_ACK_MODE] + [DL_RLC_BLOCKS_IN_UNACK_MODE]) * 28 
+  + SUM OVER MCS-3 ([DL_RLC_BLOCKS_IN_ACK_MODE] + [DL_RLC_BLOCKS_IN_UNACK_MODE]) * 37 
+  + SUM OVER MCS-4 ([DL_RLC_BLOCKS_IN_ACK_MODE] + [DL_RLC_BLOCKS_IN_UNACK_MODE]) * 44 
+  + SUM OVER MCS-5 ([DL_RLC_BLOCKS_IN_ACK_MODE] + [DL_RLC_BLOCKS_IN_UNACK_MODE]) * 56 
+  + SUM OVER MCS-6 ([DL_RLC_BLOCKS_IN_ACK_MODE] + [DL_RLC_BLOCKS_IN_UNACK_MODE]) * 74 
+  + SUM OVER MCS-7 (([DL_RLC_BLOCKS_IN_ACK_MODE] + [DL_RLC_BLOCKS_IN_UNACK_MODE]) /2)*112 
+  + SUM OVER MCS-8 (([DL_RLC_BLOCKS_IN_ACK_MODE] + [DL_RLC_BLOCKS_IN_UNACK_MODE]) /2)*136 
+  + SUM OVER MCS-9 (([DL_RLC_BLOCKS_IN_ACK_MODE] + [DL_RLC_BLOCKS_IN_UNACK_MODE]) /2)*148 
+  + SUM OVER MCS-11([DL_RLC_BLOCKS_IN_ACK_MODE] + [DL_RLC_BLOCKS_IN_UNACK_MODE]) *36  
+  + SUM OVER MCS-12([DL_RLC_BLOCKS_IN_ACK_MODE] + [DL_RLC_BLOCKS_IN_UNACK_MODE]) *50 
+ ) / (1024*1024*1024)))";"";"RG30_BM";"BSS09006,BSS10045,BSS10083,BSS10091,BSS115171,BSS20094,BSS21270";"Poul Larsen 31.5.2005. Deduced from dap_7 to add S11.5 counters, the unit has been changed and CS3 and CS4 added";"BSC";"Raw, Hourly, Daily, Weekly";"";"";"";"";"BSC";"";"";"";"";"";"";"nidd"
+"dap_9";"DL MCS selec limit PCU";"Downlink MCS selection limited by PCU";"Indicates the time per gigabytes when the available downlink EDAP resources are inadequate
+(for a scheduled downlink TBF in BTSs where EGPRS is enabled) because of
+PCU capacity. The formula may not give correct values if:
+ the object aggregation level is smaller than the BSC level, and
+ one or more BTSs in the area has more than one dynamic Abis pool connected.
+
+EGENA: CM parameter.
+Definition: Attribute enables or disables EGPRS on BTS level. All GPRS-enabled TRXs of the BTS have to be EDGE capable.The GPRS must be enabled in the segment in order to enable EGPRS in the BTS.
+Parameter id = 5051";"";"Customer";"Published";"11.00";"S11.5";"";"";"min/GB";"Retainability";"";"";"";"(DL Indadeq Time minutes)
+-------------------------------------------------
+ (DL GPRS payload_Gbyte) + (DL EGPRS payload_Gbyte)";"((SUM([076020]) / (50 * 60)) /
+(SUM OVER BTS WITH EGENA = Y 
+ (  [072063] *20 
+  + [072065] *30 
+  + SUM OVER MCS-1 ([079000]+[079001]) * 22 
+  + SUM OVER MCS-2 ([079000]+[079001]) * 28 
+  + SUM OVER MCS-3 ([079000]+[079001]) * 37 
+  + SUM OVER MCS-4 ([079000]+[079001]) * 44 
+  + SUM OVER MCS-5 ([079000]+[079001]) * 56 
+  + SUM OVER MCS-6 ([079000]+[079001]) * 74 
+  + SUM OVER MCS-7 (([079000]+[079001]) /2)*112 
+  + SUM OVER MCS-8 (([079000]+[079001]) /2)*136 
+  + SUM OVER MCS-9 (([079000]+[079001]) /2)*148 
+  + SUM OVER MCS-11([079000]+[079001]) *36 
+  + SUM OVER MCS-12([079000]+[079001]) *50
+ ) / (1024*1024*1024)))";"((SUM([DL_MCS_LIMITED_BY_PCU]) / (50 * 60)) /
+(SUM OVER BTS WITH EGENA = Y 
+ (  [RLC_DATA_BLOCKS_DL_CS1] *20 
+  + [RLC_DATA_BLOCKS_DL_CS2] *30 
+  + SUM OVER MCS-1 ([NBR_OF_DL_RLC_BL_IN_ACK_MODE]+[NBR_OF_DL_RLC_BL_IN_UNA_MODE]) * 22 
+  + SUM OVER MCS-2 ([NBR_OF_DL_RLC_BL_IN_ACK_MODE]+[NBR_OF_DL_RLC_BL_IN_UNA_MODE]) * 28 
+  + SUM OVER MCS-3 ([NBR_OF_DL_RLC_BL_IN_ACK_MODE]+[NBR_OF_DL_RLC_BL_IN_UNA_MODE]) * 37 
+  + SUM OVER MCS-4 ([NBR_OF_DL_RLC_BL_IN_ACK_MODE]+[NBR_OF_DL_RLC_BL_IN_UNA_MODE]) * 44 
+  + SUM OVER MCS-5 ([NBR_OF_DL_RLC_BL_IN_ACK_MODE]+[NBR_OF_DL_RLC_BL_IN_UNA_MODE]) * 56 
+  + SUM OVER MCS-6 ([NBR_OF_DL_RLC_BL_IN_ACK_MODE]+[NBR_OF_DL_RLC_BL_IN_UNA_MODE]) * 74 
+  + SUM OVER MCS-7 (([NBR_OF_DL_RLC_BL_IN_ACK_MODE]+[NBR_OF_DL_RLC_BL_IN_UNA_MODE]) /2)*112 
+  + SUM OVER MCS-8 (([NBR_OF_DL_RLC_BL_IN_ACK_MODE]+[NBR_OF_DL_RLC_BL_IN_UNA_MODE]) /2)*136 
+  + SUM OVER MCS-9 (([NBR_OF_DL_RLC_BL_IN_ACK_MODE]+[NBR_OF_DL_RLC_BL_IN_UNA_MODE]) /2)*148 
+  + SUM OVER MCS-11([NBR_OF_DL_RLC_BL_IN_ACK_MODE]+[NBR_OF_DL_RLC_BL_IN_UNA_MODE]) *36 
+  + SUM OVER MCS-12([NBR_OF_DL_RLC_BL_IN_ACK_MODE]+[NBR_OF_DL_RLC_BL_IN_UNA_MODE]) *50
+ ) / (1024*1024*1024)))";"((SUM([DL MCS LIMITED BY PCU]) / (50 * 60)) /
+(SUM OVER BTS WITH EGENA = Y 
+ (  [RLC DATA BLOCKS DL CS1] *20 
+  + [RLC DATA BLOCKS DL CS2] *30 
+  + SUM OVER MCS-1 ([NUMBER OF DL RLC BLOCKS IN ACKNOWLEDGED MODE]+[NUMBER OF DL RLC BLOCKS IN UNACKNOWLEDGED MODE]) * 22 
+  + SUM OVER MCS-2 ([NUMBER OF DL RLC BLOCKS IN ACKNOWLEDGED MODE]+[NUMBER OF DL RLC BLOCKS IN UNACKNOWLEDGED MODE]) * 28 
+  + SUM OVER MCS-3 ([NUMBER OF DL RLC BLOCKS IN ACKNOWLEDGED MODE]+[NUMBER OF DL RLC BLOCKS IN UNACKNOWLEDGED MODE]) * 37 
+  + SUM OVER MCS-4 ([NUMBER OF DL RLC BLOCKS IN ACKNOWLEDGED MODE]+[NUMBER OF DL RLC BLOCKS IN UNACKNOWLEDGED MODE]) * 44 
+  + SUM OVER MCS-5 ([NUMBER OF DL RLC BLOCKS IN ACKNOWLEDGED MODE]+[NUMBER OF DL RLC BLOCKS IN UNACKNOWLEDGED MODE]) * 56 
+  + SUM OVER MCS-6 ([NUMBER OF DL RLC BLOCKS IN ACKNOWLEDGED MODE]+[NUMBER OF DL RLC BLOCKS IN UNACKNOWLEDGED MODE]) * 74 
+  + SUM OVER MCS-7 (([NUMBER OF DL RLC BLOCKS IN ACKNOWLEDGED MODE]+[NUMBER OF DL RLC BLOCKS IN UNACKNOWLEDGED MODE]) /2)*112 
+  + SUM OVER MCS-8 (([NUMBER OF DL RLC BLOCKS IN ACKNOWLEDGED MODE]+[NUMBER OF DL RLC BLOCKS IN UNACKNOWLEDGED MODE]) /2)*136 
+  + SUM OVER MCS-9 (([NUMBER OF DL RLC BLOCKS IN ACKNOWLEDGED MODE]+[NUMBER OF DL RLC BLOCKS IN UNACKNOWLEDGED MODE]) /2)*148 
+  + SUM OVER MCS-11([NUMBER OF DL RLC BLOCKS IN ACKNOWLEDGED MODE]+[NUMBER OF DL RLC BLOCKS IN UNACKNOWLEDGED MODE]) *36 
+  + SUM OVER MCS-12([NUMBER OF DL RLC BLOCKS IN ACKNOWLEDGED MODE]+[NUMBER OF DL RLC BLOCKS IN UNACKNOWLEDGED MODE]) *50
+ ) / (1024*1024*1024)))";"((SUM([DL_MCS_LIMITED_BY_PCU]) / (50 * 60)) /
+(SUM OVER BTS WITH EGENA = Y 
+ (  [RLC_DATA_BLOCKS_DL_CS1] *20 
+  + [RLC_DATA_BLOCKS_DL_CS2] *30 
+  + SUM OVER MCS-1 ([DL_RLC_BLOCKS_IN_ACK_MODE]+[DL_RLC_BLOCKS_IN_UNACK_MODE]) * 22 
+  + SUM OVER MCS-2 ([DL_RLC_BLOCKS_IN_ACK_MODE]+[DL_RLC_BLOCKS_IN_UNACK_MODE]) * 28 
+  + SUM OVER MCS-3 ([DL_RLC_BLOCKS_IN_ACK_MODE]+[DL_RLC_BLOCKS_IN_UNACK_MODE]) * 37 
+  + SUM OVER MCS-4 ([DL_RLC_BLOCKS_IN_ACK_MODE]+[DL_RLC_BLOCKS_IN_UNACK_MODE]) * 44 
+  + SUM OVER MCS-5 ([DL_RLC_BLOCKS_IN_ACK_MODE]+[DL_RLC_BLOCKS_IN_UNACK_MODE]) * 56 
+  + SUM OVER MCS-6 ([DL_RLC_BLOCKS_IN_ACK_MODE]+[DL_RLC_BLOCKS_IN_UNACK_MODE]) * 74 
+  + SUM OVER MCS-7 (([DL_RLC_BLOCKS_IN_ACK_MODE]+[DL_RLC_BLOCKS_IN_UNACK_MODE]) /2)*112 
+  + SUM OVER MCS-8 (([DL_RLC_BLOCKS_IN_ACK_MODE]+[DL_RLC_BLOCKS_IN_UNACK_MODE]) /2)*136 
+  + SUM OVER MCS-9 (([DL_RLC_BLOCKS_IN_ACK_MODE]+[DL_RLC_BLOCKS_IN_UNACK_MODE]) /2)*148 
+  + SUM OVER MCS-11([DL_RLC_BLOCKS_IN_ACK_MODE]+[DL_RLC_BLOCKS_IN_UNACK_MODE]) *36 
+  + SUM OVER MCS-12([DL_RLC_BLOCKS_IN_ACK_MODE]+[DL_RLC_BLOCKS_IN_UNACK_MODE]) *50
+ ) / (1024*1024*1024)))";"";"RG30_BM";"BSS09006,BSS10083,BSS10091,BSS115171,BSS20094,BSS21270";"Poul Larsen 31.5.2005";"BSC";"Raw, Hourly, Daily, Weekly";"";"";"";"";"BSC";"";"";"";"";"";"";"nidd"
+"dcr_5a";"TCH drop conv";"TCH dropped conversation ratio without RE";"This KPI tells the ratio of calls dropped while A and B are talking, that is after conn_ack.
+Inter-BSC handovers are subtracted in the denominator because they trigger
+conver_started. Compensation is 100% true only if the area has no inter-BSC HOs from
+outside the area.";"";"Customer";"Published";"7.00";"S4";"";"";"%";"Retainability";"";"";"";"";"(100 * (SUM([057007])/( SUM([057015]) - SUM([004043]))))";"(100 * (SUM([SE_DROPPED_CALL])/( SUM([SE_CONVERSATION_STARTED]) - SUM([MSC_I_SUCC_TCH_TCH_HO]))))";"(100 * (SUM([DROPPED CALL])/( SUM([CONVERSATION STARTED]) - SUM([MSC I TCH TCH]))))";"(100 * (SUM([DROPPED_CALLS])/( SUM([CONVER_STARTED]) - SUM([MSC_I_TCH_TCH]))))";"Known problems:  See dcr_5.
+1)conver_started is not triggered for call re-establishments.
+dropped_calls is triggered once for the first re-establishment. After that setup_failure is triggered if the call is a dropped call.If a call is ?saved? by re-establishment multiple times, setup_failure will be triggered several times accordingly.
+2) Drop call by pre-emption (first priority call request to be established, all TCH seized, lower priority calls on) triggers 
+dropped_calls. Therefore this counter does not indicate only technical drops.
+Future: In S7 re-establishments can be compensated.";"RG30_BM";"";"";"PLMN; BSC; SEG; BTS";"Total; week; weeklyBH; day; dailyBH; hour";"";"";"";"";"BSC";"";"";"";"";"";"";"nidd"
+"dcr_8i";"TCH DR aft TCH ass wo RE";"TCH drop call ratio, after TCH assignment, without RE";"TCH drop call %, after TCH assignment, without considering re-establishments. Use: This formula considers TCH assigments including incoming TCH to TCH handovers.";"";"Customer";"Published";"6.00";"S16.1";"";"";"%";"Retainability";"";"";"";"";"(100 * SUM([001202])  / SUM([057033] + [057032] + [057034] - [004073] ))";"(100 * SUM([DROP_AFTER_TCH_ASSIGN])  / SUM([SE_TCH_NEW_CALL_ASSIGN] + [SE_TCH_RE_EST_ASSIGN] + [SE_TCH_HO_ASSIGN] - [INT_C_SUCC_TCH_TCH_HO] ))";"(100 * SUM([DROP AFTER TCH ASSIGN])  / SUM([TCH NEW CALL ASSIGN] + [TCH RE EST ASSIGN] + [TCH HO ASSIGN] - [CELL TCH TCH] ))";"(100 * SUM([DROP_AFTER_TCH_ASSIGN])  / SUM([TCH_NEW_CALL_ASSIGN] + [TCH_RE_EST_ASSIGN] + [TCH_HO_ASSIGN] - [CELL_TCH_TCH] ))";"";"";"BSS11083,BSS7089";"";"PLMN; BSC; SEG; BTS";"Total; week; weeklyBH; day; dailyBH; hour";"";"";"";"";"";"";"";"";"";"";"";"nidd"
+"dlq_2a, x=5";"DL cumul lev R in cl 5";"DL cumulative level ratio in class 5";"This KPI gives a cumulative percentage of call samples (AMR, non-AMR) in classes 0
+to X. X = 5 is normally used as a quality indicator. If X = 5 and this figure is 100%, then
+the MS users obviously have not perceived any quality problems.";"";"Customer";"Published";"7.00";"S1";"";"";"%";"Quality";"";"";"";"";"(100 * (SUM([053055_060]+[053061_066]+[053067_072]+[053073_078]+[053079_084]+[053085_090])
+/SUM([053055_060]+[053061_066]+[053067_072]+[053073_078]+[053079_084]+[053085_090]+[053091_096]+[053097_102])))";"(100 * (SUM([]+[]+[]+[]+[]+[])
+/SUM([]+[]+[]+[]+[]+[]+[]+[])))";"(100 * (SUM([DOWNLINK QUALITY 0 IN RXL 0-5]+[DOWNLINK QUALITY 1 IN RXL 0-5]+[DOWNLINK QUALITY 2 IN RXL 0-5]+[DOWNLINK QUALITY 3 IN RXL 0-5]+[DOWNLINK QUALITY 4 IN RXL 0-5]+[DOWNLINK QUALITY 5 IN RXL 0-5])
+/SUM([DOWNLINK QUALITY 0 IN RXL 0-5]+[DOWNLINK QUALITY 1 IN RXL 0-5]+[DOWNLINK QUALITY 2 IN RXL 0-5]+[DOWNLINK QUALITY 3 IN RXL 0-5]+[DOWNLINK QUALITY 4 IN RXL 0-5]+[DOWNLINK QUALITY 5 IN RXL 0-5]+[DOWNLINK QUALITY 6 IN RXL 0-5]+[DOWNLINK QUALITY 7 IN RXL 0-5])))";"(100 * (SUM([FREQ_DL_QUAL0]+[FREQ_DL_QUAL1]+[FREQ_DL_QUAL2]+[FREQ_DL_QUAL3]+[FREQ_DL_QUAL4]+[FREQ_DL_QUAL5])
+/SUM([FREQ_DL_QUAL0]+[FREQ_DL_QUAL1]+[FREQ_DL_QUAL2]+[FREQ_DL_QUAL3]+[FREQ_DL_QUAL4]+[FREQ_DL_QUAL5]+[FREQ_DL_QUAL6]+[FREQ_DL_QUAL7])))";"Known problems: If DL DTX is used, there is a shift to a worse quality %, but a MS does not perceive this.";"RG30_BM";"";"Nokia / J.Neva";"PLMN; BSC; SEG; BCF; BTS; TRXTP";"Total; week; weeklyBH; day; dailyBH; hour";"";"";"";"";"BSC";"";"";"";"";"";"";"nidd"
+"dtm_2";"DTM CS traffic ratio";"DTM CS traffic ratio";"DTM is an application software that allows simultaneous CS and PS use. This KPI
+defines the ratio of DTM CS traffic (in Erlang) to all CS traffic.";"";"Customer";"Published";"9.01";"S12";"";"";"%";"Network Usage";"";"";"";"DTM CS Erlangs / (DTM CS Erlangs + non-DTM CS Erlangs)";"((100*((SUM((0.5*[105012] + [105011]) / 100) / SUM(PERIOD_DURATION*60))
+/((SUM((0.5*[105012] + [105011]) / 100) 
+/ SUM(PERIOD_DURATION*60))+ SUM(PERIOD_DURATION * (0.5 * [002048_1] + [002046_1]) /60)))))";"((100*((SUM((0.5*[DTM_DURATION_SUM_HR] + [DTM_DURATION_SUM_FR]) / 100) / SUM(PERIOD_DURATION*60))
+/((SUM((0.5*[DTM_DURATION_SUM_HR] + [DTM_DURATION_SUM_FR]) / 100) 
+/ SUM(PERIOD_DURATION*60))+ SUM(PERIOD_DURATION * (0.5 * [] + []) /60)))))";"((100*((SUM((0.5*[DTM DURATION SUM HR] + [DTM DURATION SUM FR]) / 100) / SUM(PERIOD_DURATION*60))
+/((SUM((0.5*[DTM DURATION SUM HR] + [DTM DURATION SUM FR]) / 100) 
+/ SUM(PERIOD_DURATION*60))+ SUM(PERIOD_DURATION * (0.5 * [AVERAGE BUSY HALF RATE TCH DIVIDED BY DENOMINATOR] + [AVERAGE BUSY FULL RATE TCH DIVIDED BY DENOMINATOR]) /60)))))";"((100*((SUM((0.5*[DTM_DURATION_SUM_HR] + [DTM_DURATION_SUM_FR]) / 100) / SUM(PERIOD_DURATION*60))
+/((SUM((0.5*[DTM_DURATION_SUM_HR] + [DTM_DURATION_SUM_FR]) / 100) 
+/ SUM(PERIOD_DURATION*60))+ SUM(PERIOD_DURATION * (0.5 * [AVE_TCH_BUSY_HALF] + [AVE_TCH_BUSY_FULL]) /60)))))";"BSC has two counters (c2046 as numerator, c2047 as denominator) for
+busy full rate TCH and two counters (c2048 as numerator, c2049 as denominator) for
+busy half rate TCH. NMS stores the division results as counter c2046
+(ave_tch_busy_full) and c2048 (ave_tch_busy_half). Therefore counters c2047 and
+c2049 are redundant and not visible in the NMS.";"RG30_BM";"BSS20088";"26.9.2005 PMWG";"PLMN; BSC; SEG; BTS";"Total; week; weeklyBH; day; dailyBH; hour";"";"";"";"";"BSC";"";"";"";"";"";"";"nidd"
+"dtm_3";"DTM PS payload ratio";"DTM PS payload ratio";"Ratio of DTM PS payload (UL plus DL) to all PS payload.";"";"Customer";"Published";"10.00";"S12";"";"";"%";"Network Usage";"";"";"";"PS payload generated by DTM MSs / (Total PS payload)";"((100* (
+((SUM([072205] *20 + [072206] *30) +
+SUM OVER MCS-1 ([079011] *22) +
+SUM OVER MCS-2 ([079011] *28) +
+SUM OVER MCS-3 ([079011] *37) +
+SUM OVER MCS-4 ([079011] *44) +
+SUM OVER MCS-5 ([079011] *56) +
+SUM OVER MCS-6 ([079011] *74) +
+SUM OVER MCS-7 ([079011] /2) * 112 +
+SUM OVER MCS-8 ([079011] /2) * 136 +
+SUM OVER MCS-9 ([079011] /2) * 148 +
+SUM OVER MCS-11 ([079011] *36) + 
+SUM OVER MCS-12 ([079011] *50))/1024) 
++
+((SUM([072203] *20 + [072204] *30) +
+SUM OVER MCS-1 ([079010] *22) +
+SUM OVER MCS-2 ([079010] *28) +
+SUM OVER MCS-3 ([079010] *37) +
+SUM OVER MCS-4 ([079010] *44) +
+SUM OVER MCS-5 ([079010] *56) +
+SUM OVER MCS-6 ([079010] *74) +
+SUM OVER MCS-7 ([079010] /2) * 112 +
+SUM OVER MCS-8 ([079010] /2) * 136 +
+SUM OVER MCS-9 ([079010] /2) * 148 +
+SUM OVER MCS-11 ([079010] *36) + 
+SUM OVER MCS-12 ([079010] *50))/1024)
+) / (
+(SUM([072062] *20 + [072064] *30 + 
+SUM OVER MCS-11([079002] + [079003]) *36 + 
+SUM OVER MCS-12([079002] + [079003]) *50)/1024)
++
+(SUM([072063] *20 + [072065] *30 + 
+SUM OVER MCS-11 ([079000] + [079001]) *36 + 
+SUM OVER MCS-12 ([079000] + [079001]) *50)/1024)
++
+((SUM OVER MCS-1 ([079003] + [079002]) * 22+
+SUM OVER MCS-2 ([079003] + [079002]) * 28+
+SUM OVER MCS-3 ([079003] + [079002]) * 37+
+SUM OVER MCS-4 ([079003] + [079002]) * 44+
+SUM OVER MCS-5 ([079003] + [079002]) * 56+
+SUM OVER MCS-6 ([079003] + [079002]) * 74+
+SUM OVER MCS-7 (([079003] + [079002]) /2)*112+
+SUM OVER MCS-8 (([079003] + [079002]) /2)*136+
+SUM OVER MCS-9 (([079003] + [079002]) /2)*148)/1024)
++
+((SUM OVER MCS-1 ([079001] + [079000]) * 22+
+SUM OVER MCS-2 ([079001] + [079000]) * 28+
+SUM OVER MCS-3 ([079001] + [079000]) * 37+
+SUM OVER MCS-4 ([079001] + [079000]) * 44+
+SUM OVER MCS-5 ([079001] + [079000]) * 56+
+SUM OVER MCS-6 ([079001] + [079000]) * 74+
+SUM OVER MCS-7 (([079001] + [079000]) /2)*112+
+SUM OVER MCS-8 (([079001] + [079000]) /2)*136+
+SUM OVER MCS-9 (([079001] + [079000]) /2)*148)/1024)))
+)";"((100* (
+((SUM([UL_RLC_CS1_BLKS_FROM_DTM] *20 + [UL_RLC_CS2_BLKS_FROM_DTM] *30) +
+SUM OVER MCS-1 ([UL_RLC_MCS_N_BLKS_FR_DTM_MS] *22) +
+SUM OVER MCS-2 ([UL_RLC_MCS_N_BLKS_FR_DTM_MS] *28) +
+SUM OVER MCS-3 ([UL_RLC_MCS_N_BLKS_FR_DTM_MS] *37) +
+SUM OVER MCS-4 ([UL_RLC_MCS_N_BLKS_FR_DTM_MS] *44) +
+SUM OVER MCS-5 ([UL_RLC_MCS_N_BLKS_FR_DTM_MS] *56) +
+SUM OVER MCS-6 ([UL_RLC_MCS_N_BLKS_FR_DTM_MS] *74) +
+SUM OVER MCS-7 ([UL_RLC_MCS_N_BLKS_FR_DTM_MS] /2) * 112 +
+SUM OVER MCS-8 ([UL_RLC_MCS_N_BLKS_FR_DTM_MS] /2) * 136 +
+SUM OVER MCS-9 ([UL_RLC_MCS_N_BLKS_FR_DTM_MS] /2) * 148 +
+SUM OVER MCS-11 ([UL_RLC_MCS_N_BLKS_FR_DTM_MS] *36) + 
+SUM OVER MCS-12 ([UL_RLC_MCS_N_BLKS_FR_DTM_MS] *50))/1024) 
++
+((SUM([DL_RLC_CS1_BLKS_TO_DTM] *20 + [DL_RLC_CS2_BLKS_TO_DTM] *30) +
+SUM OVER MCS-1 ([DL_RLC_MCS_N_BLKS_TO_DTM_MS] *22) +
+SUM OVER MCS-2 ([DL_RLC_MCS_N_BLKS_TO_DTM_MS] *28) +
+SUM OVER MCS-3 ([DL_RLC_MCS_N_BLKS_TO_DTM_MS] *37) +
+SUM OVER MCS-4 ([DL_RLC_MCS_N_BLKS_TO_DTM_MS] *44) +
+SUM OVER MCS-5 ([DL_RLC_MCS_N_BLKS_TO_DTM_MS] *56) +
+SUM OVER MCS-6 ([DL_RLC_MCS_N_BLKS_TO_DTM_MS] *74) +
+SUM OVER MCS-7 ([DL_RLC_MCS_N_BLKS_TO_DTM_MS] /2) * 112 +
+SUM OVER MCS-8 ([DL_RLC_MCS_N_BLKS_TO_DTM_MS] /2) * 136 +
+SUM OVER MCS-9 ([DL_RLC_MCS_N_BLKS_TO_DTM_MS] /2) * 148 +
+SUM OVER MCS-11 ([DL_RLC_MCS_N_BLKS_TO_DTM_MS] *36) + 
+SUM OVER MCS-12 ([DL_RLC_MCS_N_BLKS_TO_DTM_MS] *50))/1024)
+) / (
+(SUM([RLC_DATA_BLOCKS_UL_CS1] *20 + [RLC_DATA_BLOCKS_UL_CS2] *30 + 
+SUM OVER MCS-11([NBR_OF_UL_RLC_BL_IN_ACK_MODE] + [NBR_OF_UL_RLC_BL_IN_UNA_MODE]) *36 + 
+SUM OVER MCS-12([NBR_OF_UL_RLC_BL_IN_ACK_MODE] + [NBR_OF_UL_RLC_BL_IN_UNA_MODE]) *50)/1024)
++
+(SUM([RLC_DATA_BLOCKS_DL_CS1] *20 + [RLC_DATA_BLOCKS_DL_CS2] *30 + 
+SUM OVER MCS-11 ([NBR_OF_DL_RLC_BL_IN_ACK_MODE] + [NBR_OF_DL_RLC_BL_IN_UNA_MODE]) *36 + 
+SUM OVER MCS-12 ([NBR_OF_DL_RLC_BL_IN_ACK_MODE] + [NBR_OF_DL_RLC_BL_IN_UNA_MODE]) *50)/1024)
++
+((SUM OVER MCS-1 ([NBR_OF_UL_RLC_BL_IN_UNA_MODE] + [NBR_OF_UL_RLC_BL_IN_ACK_MODE]) * 22+
+SUM OVER MCS-2 ([NBR_OF_UL_RLC_BL_IN_UNA_MODE] + [NBR_OF_UL_RLC_BL_IN_ACK_MODE]) * 28+
+SUM OVER MCS-3 ([NBR_OF_UL_RLC_BL_IN_UNA_MODE] + [NBR_OF_UL_RLC_BL_IN_ACK_MODE]) * 37+
+SUM OVER MCS-4 ([NBR_OF_UL_RLC_BL_IN_UNA_MODE] + [NBR_OF_UL_RLC_BL_IN_ACK_MODE]) * 44+
+SUM OVER MCS-5 ([NBR_OF_UL_RLC_BL_IN_UNA_MODE] + [NBR_OF_UL_RLC_BL_IN_ACK_MODE]) * 56+
+SUM OVER MCS-6 ([NBR_OF_UL_RLC_BL_IN_UNA_MODE] + [NBR_OF_UL_RLC_BL_IN_ACK_MODE]) * 74+
+SUM OVER MCS-7 (([NBR_OF_UL_RLC_BL_IN_UNA_MODE] + [NBR_OF_UL_RLC_BL_IN_ACK_MODE]) /2)*112+
+SUM OVER MCS-8 (([NBR_OF_UL_RLC_BL_IN_UNA_MODE] + [NBR_OF_UL_RLC_BL_IN_ACK_MODE]) /2)*136+
+SUM OVER MCS-9 (([NBR_OF_UL_RLC_BL_IN_UNA_MODE] + [NBR_OF_UL_RLC_BL_IN_ACK_MODE]) /2)*148)/1024)
++
+((SUM OVER MCS-1 ([NBR_OF_DL_RLC_BL_IN_UNA_MODE] + [NBR_OF_DL_RLC_BL_IN_ACK_MODE]) * 22+
+SUM OVER MCS-2 ([NBR_OF_DL_RLC_BL_IN_UNA_MODE] + [NBR_OF_DL_RLC_BL_IN_ACK_MODE]) * 28+
+SUM OVER MCS-3 ([NBR_OF_DL_RLC_BL_IN_UNA_MODE] + [NBR_OF_DL_RLC_BL_IN_ACK_MODE]) * 37+
+SUM OVER MCS-4 ([NBR_OF_DL_RLC_BL_IN_UNA_MODE] + [NBR_OF_DL_RLC_BL_IN_ACK_MODE]) * 44+
+SUM OVER MCS-5 ([NBR_OF_DL_RLC_BL_IN_UNA_MODE] + [NBR_OF_DL_RLC_BL_IN_ACK_MODE]) * 56+
+SUM OVER MCS-6 ([NBR_OF_DL_RLC_BL_IN_UNA_MODE] + [NBR_OF_DL_RLC_BL_IN_ACK_MODE]) * 74+
+SUM OVER MCS-7 (([NBR_OF_DL_RLC_BL_IN_UNA_MODE] + [NBR_OF_DL_RLC_BL_IN_ACK_MODE]) /2)*112+
+SUM OVER MCS-8 (([NBR_OF_DL_RLC_BL_IN_UNA_MODE] + [NBR_OF_DL_RLC_BL_IN_ACK_MODE]) /2)*136+
+SUM OVER MCS-9 (([NBR_OF_DL_RLC_BL_IN_UNA_MODE] + [NBR_OF_DL_RLC_BL_IN_ACK_MODE]) /2)*148)/1024)))
+)";"((100* (
+((SUM([UL RLC CS1 BLOCKS FROM DTM MS] *20 + [UL RLC CS2 BLOCKS FROM DTM MS] *30) +
+SUM OVER MCS-1 ([UL RLC MCS-N BLOCKS FROM DTM MS] *22) +
+SUM OVER MCS-2 ([UL RLC MCS-N BLOCKS FROM DTM MS] *28) +
+SUM OVER MCS-3 ([UL RLC MCS-N BLOCKS FROM DTM MS] *37) +
+SUM OVER MCS-4 ([UL RLC MCS-N BLOCKS FROM DTM MS] *44) +
+SUM OVER MCS-5 ([UL RLC MCS-N BLOCKS FROM DTM MS] *56) +
+SUM OVER MCS-6 ([UL RLC MCS-N BLOCKS FROM DTM MS] *74) +
+SUM OVER MCS-7 ([UL RLC MCS-N BLOCKS FROM DTM MS] /2) * 112 +
+SUM OVER MCS-8 ([UL RLC MCS-N BLOCKS FROM DTM MS] /2) * 136 +
+SUM OVER MCS-9 ([UL RLC MCS-N BLOCKS FROM DTM MS] /2) * 148 +
+SUM OVER MCS-11 ([UL RLC MCS-N BLOCKS FROM DTM MS] *36) + 
+SUM OVER MCS-12 ([UL RLC MCS-N BLOCKS FROM DTM MS] *50))/1024) 
++
+((SUM([DL RLC CS1 BLOCKS TO DTM MS] *20 + [DL RLC CS2 BLOCKS TO DTM MS] *30) +
+SUM OVER MCS-1 ([DL RLC MCS-N BLOCKS TO DTM MS] *22) +
+SUM OVER MCS-2 ([DL RLC MCS-N BLOCKS TO DTM MS] *28) +
+SUM OVER MCS-3 ([DL RLC MCS-N BLOCKS TO DTM MS] *37) +
+SUM OVER MCS-4 ([DL RLC MCS-N BLOCKS TO DTM MS] *44) +
+SUM OVER MCS-5 ([DL RLC MCS-N BLOCKS TO DTM MS] *56) +
+SUM OVER MCS-6 ([DL RLC MCS-N BLOCKS TO DTM MS] *74) +
+SUM OVER MCS-7 ([DL RLC MCS-N BLOCKS TO DTM MS] /2) * 112 +
+SUM OVER MCS-8 ([DL RLC MCS-N BLOCKS TO DTM MS] /2) * 136 +
+SUM OVER MCS-9 ([DL RLC MCS-N BLOCKS TO DTM MS] /2) * 148 +
+SUM OVER MCS-11 ([DL RLC MCS-N BLOCKS TO DTM MS] *36) + 
+SUM OVER MCS-12 ([DL RLC MCS-N BLOCKS TO DTM MS] *50))/1024)
+) / (
+(SUM([RLC DATA BLOCKS UL CS1] *20 + [RLC DATA BLOCKS UL CS2] *30 + 
+SUM OVER MCS-11([NUMBER OF UL RLC BLOCKS IN ACKNOWLEDGED MODE] + [NUMBER OF UL RLC BLOCKS IN UNACKNOWLEDGED MODE]) *36 + 
+SUM OVER MCS-12([NUMBER OF UL RLC BLOCKS IN ACKNOWLEDGED MODE] + [NUMBER OF UL RLC BLOCKS IN UNACKNOWLEDGED MODE]) *50)/1024)
++
+(SUM([RLC DATA BLOCKS DL CS1] *20 + [RLC DATA BLOCKS DL CS2] *30 + 
+SUM OVER MCS-11 ([NUMBER OF DL RLC BLOCKS IN ACKNOWLEDGED MODE] + [NUMBER OF DL RLC BLOCKS IN UNACKNOWLEDGED MODE]) *36 + 
+SUM OVER MCS-12 ([NUMBER OF DL RLC BLOCKS IN ACKNOWLEDGED MODE] + [NUMBER OF DL RLC BLOCKS IN UNACKNOWLEDGED MODE]) *50)/1024)
++
+((SUM OVER MCS-1 ([NUMBER OF UL RLC BLOCKS IN UNACKNOWLEDGED MODE] + [NUMBER OF UL RLC BLOCKS IN ACKNOWLEDGED MODE]) * 22+
+SUM OVER MCS-2 ([NUMBER OF UL RLC BLOCKS IN UNACKNOWLEDGED MODE] + [NUMBER OF UL RLC BLOCKS IN ACKNOWLEDGED MODE]) * 28+
+SUM OVER MCS-3 ([NUMBER OF UL RLC BLOCKS IN UNACKNOWLEDGED MODE] + [NUMBER OF UL RLC BLOCKS IN ACKNOWLEDGED MODE]) * 37+
+SUM OVER MCS-4 ([NUMBER OF UL RLC BLOCKS IN UNACKNOWLEDGED MODE] + [NUMBER OF UL RLC BLOCKS IN ACKNOWLEDGED MODE]) * 44+
+SUM OVER MCS-5 ([NUMBER OF UL RLC BLOCKS IN UNACKNOWLEDGED MODE] + [NUMBER OF UL RLC BLOCKS IN ACKNOWLEDGED MODE]) * 56+
+SUM OVER MCS-6 ([NUMBER OF UL RLC BLOCKS IN UNACKNOWLEDGED MODE] + [NUMBER OF UL RLC BLOCKS IN ACKNOWLEDGED MODE]) * 74+
+SUM OVER MCS-7 (([NUMBER OF UL RLC BLOCKS IN UNACKNOWLEDGED MODE] + [NUMBER OF UL RLC BLOCKS IN ACKNOWLEDGED MODE]) /2)*112+
+SUM OVER MCS-8 (([NUMBER OF UL RLC BLOCKS IN UNACKNOWLEDGED MODE] + [NUMBER OF UL RLC BLOCKS IN ACKNOWLEDGED MODE]) /2)*136+
+SUM OVER MCS-9 (([NUMBER OF UL RLC BLOCKS IN UNACKNOWLEDGED MODE] + [NUMBER OF UL RLC BLOCKS IN ACKNOWLEDGED MODE]) /2)*148)/1024)
++
+((SUM OVER MCS-1 ([NUMBER OF DL RLC BLOCKS IN UNACKNOWLEDGED MODE] + [NUMBER OF DL RLC BLOCKS IN ACKNOWLEDGED MODE]) * 22+
+SUM OVER MCS-2 ([NUMBER OF DL RLC BLOCKS IN UNACKNOWLEDGED MODE] + [NUMBER OF DL RLC BLOCKS IN ACKNOWLEDGED MODE]) * 28+
+SUM OVER MCS-3 ([NUMBER OF DL RLC BLOCKS IN UNACKNOWLEDGED MODE] + [NUMBER OF DL RLC BLOCKS IN ACKNOWLEDGED MODE]) * 37+
+SUM OVER MCS-4 ([NUMBER OF DL RLC BLOCKS IN UNACKNOWLEDGED MODE] + [NUMBER OF DL RLC BLOCKS IN ACKNOWLEDGED MODE]) * 44+
+SUM OVER MCS-5 ([NUMBER OF DL RLC BLOCKS IN UNACKNOWLEDGED MODE] + [NUMBER OF DL RLC BLOCKS IN ACKNOWLEDGED MODE]) * 56+
+SUM OVER MCS-6 ([NUMBER OF DL RLC BLOCKS IN UNACKNOWLEDGED MODE] + [NUMBER OF DL RLC BLOCKS IN ACKNOWLEDGED MODE]) * 74+
+SUM OVER MCS-7 (([NUMBER OF DL RLC BLOCKS IN UNACKNOWLEDGED MODE] + [NUMBER OF DL RLC BLOCKS IN ACKNOWLEDGED MODE]) /2)*112+
+SUM OVER MCS-8 (([NUMBER OF DL RLC BLOCKS IN UNACKNOWLEDGED MODE] + [NUMBER OF DL RLC BLOCKS IN ACKNOWLEDGED MODE]) /2)*136+
+SUM OVER MCS-9 (([NUMBER OF DL RLC BLOCKS IN UNACKNOWLEDGED MODE] + [NUMBER OF DL RLC BLOCKS IN ACKNOWLEDGED MODE]) /2)*148)/1024)))
+)";"((100* (
+((SUM([UL_RLC_CS1_BLKS_FROM_DTM_MS] *20 + [UL_RLC_CS2_BLKS_FROM_DTM_MS] *30) +
+SUM OVER MCS-1 ([UL_RLC_MCSN_BLKS_FROM_DTM_MS] *22) +
+SUM OVER MCS-2 ([UL_RLC_MCSN_BLKS_FROM_DTM_MS] *28) +
+SUM OVER MCS-3 ([UL_RLC_MCSN_BLKS_FROM_DTM_MS] *37) +
+SUM OVER MCS-4 ([UL_RLC_MCSN_BLKS_FROM_DTM_MS] *44) +
+SUM OVER MCS-5 ([UL_RLC_MCSN_BLKS_FROM_DTM_MS] *56) +
+SUM OVER MCS-6 ([UL_RLC_MCSN_BLKS_FROM_DTM_MS] *74) +
+SUM OVER MCS-7 ([UL_RLC_MCSN_BLKS_FROM_DTM_MS] /2) * 112 +
+SUM OVER MCS-8 ([UL_RLC_MCSN_BLKS_FROM_DTM_MS] /2) * 136 +
+SUM OVER MCS-9 ([UL_RLC_MCSN_BLKS_FROM_DTM_MS] /2) * 148 +
+SUM OVER MCS-11 ([UL_RLC_MCSN_BLKS_FROM_DTM_MS] *36) + 
+SUM OVER MCS-12 ([UL_RLC_MCSN_BLKS_FROM_DTM_MS] *50))/1024) 
++
+((SUM([DL_RLC_CS1_BLKS_TO_DTM_MS] *20 + [DL_RLC_CS2_BLKS_TO_DTM_MS] *30) +
+SUM OVER MCS-1 ([DL_RLC_MCSN_BLKS_TO_DTM_MS] *22) +
+SUM OVER MCS-2 ([DL_RLC_MCSN_BLKS_TO_DTM_MS] *28) +
+SUM OVER MCS-3 ([DL_RLC_MCSN_BLKS_TO_DTM_MS] *37) +
+SUM OVER MCS-4 ([DL_RLC_MCSN_BLKS_TO_DTM_MS] *44) +
+SUM OVER MCS-5 ([DL_RLC_MCSN_BLKS_TO_DTM_MS] *56) +
+SUM OVER MCS-6 ([DL_RLC_MCSN_BLKS_TO_DTM_MS] *74) +
+SUM OVER MCS-7 ([DL_RLC_MCSN_BLKS_TO_DTM_MS] /2) * 112 +
+SUM OVER MCS-8 ([DL_RLC_MCSN_BLKS_TO_DTM_MS] /2) * 136 +
+SUM OVER MCS-9 ([DL_RLC_MCSN_BLKS_TO_DTM_MS] /2) * 148 +
+SUM OVER MCS-11 ([DL_RLC_MCSN_BLKS_TO_DTM_MS] *36) + 
+SUM OVER MCS-12 ([DL_RLC_MCSN_BLKS_TO_DTM_MS] *50))/1024)
+) / (
+(SUM([RLC_DATA_BLOCKS_UL_CS1] *20 + [RLC_DATA_BLOCKS_UL_CS2] *30 + 
+SUM OVER MCS-11([UL_RLC_BLOCKS_IN_ACK_MODE] + [UL_RLC_BLOCKS_IN_UNACK_MODE]) *36 + 
+SUM OVER MCS-12([UL_RLC_BLOCKS_IN_ACK_MODE] + [UL_RLC_BLOCKS_IN_UNACK_MODE]) *50)/1024)
++
+(SUM([RLC_DATA_BLOCKS_DL_CS1] *20 + [RLC_DATA_BLOCKS_DL_CS2] *30 + 
+SUM OVER MCS-11 ([DL_RLC_BLOCKS_IN_ACK_MODE] + [DL_RLC_BLOCKS_IN_UNACK_MODE]) *36 + 
+SUM OVER MCS-12 ([DL_RLC_BLOCKS_IN_ACK_MODE] + [DL_RLC_BLOCKS_IN_UNACK_MODE]) *50)/1024)
++
+((SUM OVER MCS-1 ([UL_RLC_BLOCKS_IN_UNACK_MODE] + [UL_RLC_BLOCKS_IN_ACK_MODE]) * 22+
+SUM OVER MCS-2 ([UL_RLC_BLOCKS_IN_UNACK_MODE] + [UL_RLC_BLOCKS_IN_ACK_MODE]) * 28+
+SUM OVER MCS-3 ([UL_RLC_BLOCKS_IN_UNACK_MODE] + [UL_RLC_BLOCKS_IN_ACK_MODE]) * 37+
+SUM OVER MCS-4 ([UL_RLC_BLOCKS_IN_UNACK_MODE] + [UL_RLC_BLOCKS_IN_ACK_MODE]) * 44+
+SUM OVER MCS-5 ([UL_RLC_BLOCKS_IN_UNACK_MODE] + [UL_RLC_BLOCKS_IN_ACK_MODE]) * 56+
+SUM OVER MCS-6 ([UL_RLC_BLOCKS_IN_UNACK_MODE] + [UL_RLC_BLOCKS_IN_ACK_MODE]) * 74+
+SUM OVER MCS-7 (([UL_RLC_BLOCKS_IN_UNACK_MODE] + [UL_RLC_BLOCKS_IN_ACK_MODE]) /2)*112+
+SUM OVER MCS-8 (([UL_RLC_BLOCKS_IN_UNACK_MODE] + [UL_RLC_BLOCKS_IN_ACK_MODE]) /2)*136+
+SUM OVER MCS-9 (([UL_RLC_BLOCKS_IN_UNACK_MODE] + [UL_RLC_BLOCKS_IN_ACK_MODE]) /2)*148)/1024)
++
+((SUM OVER MCS-1 ([DL_RLC_BLOCKS_IN_UNACK_MODE] + [DL_RLC_BLOCKS_IN_ACK_MODE]) * 22+
+SUM OVER MCS-2 ([DL_RLC_BLOCKS_IN_UNACK_MODE] + [DL_RLC_BLOCKS_IN_ACK_MODE]) * 28+
+SUM OVER MCS-3 ([DL_RLC_BLOCKS_IN_UNACK_MODE] + [DL_RLC_BLOCKS_IN_ACK_MODE]) * 37+
+SUM OVER MCS-4 ([DL_RLC_BLOCKS_IN_UNACK_MODE] + [DL_RLC_BLOCKS_IN_ACK_MODE]) * 44+
+SUM OVER MCS-5 ([DL_RLC_BLOCKS_IN_UNACK_MODE] + [DL_RLC_BLOCKS_IN_ACK_MODE]) * 56+
+SUM OVER MCS-6 ([DL_RLC_BLOCKS_IN_UNACK_MODE] + [DL_RLC_BLOCKS_IN_ACK_MODE]) * 74+
+SUM OVER MCS-7 (([DL_RLC_BLOCKS_IN_UNACK_MODE] + [DL_RLC_BLOCKS_IN_ACK_MODE]) /2)*112+
+SUM OVER MCS-8 (([DL_RLC_BLOCKS_IN_UNACK_MODE] + [DL_RLC_BLOCKS_IN_ACK_MODE]) /2)*136+
+SUM OVER MCS-9 (([DL_RLC_BLOCKS_IN_UNACK_MODE] + [DL_RLC_BLOCKS_IN_ACK_MODE]) /2)*148)/1024)))
+)";"Does existing PS RLC block counters include DTM PS blocks??? Formula assumes that the ""double counting of ignored blocks"" problem is solved in S12 (otherwise trf_214b should be referenced)";"RG30_BM";"BSS09006,BSS10083,BSS10091,BSS20088,BSS20094,BSS21270";"26.9.2005 PMWG";"PLMN; BSC; SEG; BCF; BTS; TRXTP";"Total; week; weeklyBH; day; dailyBH; hour";"";"";"";"";"BSC";"";"";"";"";"";"";"nidd"
+"frl_8b";"DL Gb load";"Downlink Gb load";"Indicates the load percentage of the frame relay bearer for incoming data from SGSN.
+
+frbc: hierarchy object (BSC/FRBC/NSVC)
+commited_info_rate: CM parameter
+Definition: With this parameter you define the committed information rate.
+
+NOTE: MML RANGE:
+ETSI: 16..1984 (kbit/s, steps of 16 kbit/s)
+ANSI: 16..1536 (kbit/s, steps of 16 kbit/s)";"";"Customer";"Published";"7.00";"S14";"";"";"%";"Network Usage";"";"";"";"";"(100* (SUM(8*([074027] + [074027] + [074039]
++ [074051] + [074063] + [074075]
++ [074087] + [074099] + [074111]
++ [074123] + [074135] + [074147]
++ [074159] + [074171] + [074183]          
++ [074195])/(PERIOD_DURATION*60)))/
+(SUM PER FRBC OVER ALL UNLOCKED CHILD NSVC 
+(C_NSVC.COMMITTED_INFO_RATE*16)))";"(100* (SUM(8*([DLCI_2_BYTES_REC] + [DLCI_2_BYTES_REC] + [DLCI_3_BYTES_REC]
++ [DLCI_4_BYTES_REC] + [DLCI_5_BYTES_REC] + [DLCI_6_BYTES_REC]
++ [DLCI_7_BYTES_REC] + [DLCI_8_BYTES_REC] + [DLCI_9_BYTES_REC]
++ [DLCI_10_BYTES_REC] + [DLCI_11_BYTES_REC] + [DLCI_12_BYTES_REC]
++ [DLCI_13_BYTES_REC] + [DLCI_14_BYTES_REC] + [DLCI_15_BYTES_REC]          
++ [DLCI_16_BYTES_REC])/(PERIOD_DURATION*60)))/
+(SUM PER FRBC OVER ALL UNLOCKED CHILD NSVC 
+(C_NSVC.COMMITTED_INFO_RATE*16)))";"(100* (SUM(8*([DLCI 2 KBYTES REC FRMS] + [DLCI 2 KBYTES REC FRMS] + [DLCI 3 KBYTES REC FRMS]
++ [DLCI 4 KBYTES REC FRMS] + [DLCI 5 KBYTES REC FRMS] + [DLCI 6 KBYTES REC FRMS]
++ [DLCI 7 KBYTES REC FRMS] + [DLCI 8 KBYTES REC FRMS] + [DLCI 9 KBYTES REC FRMS]
++ [DLCI 10 KBYTES REC FRMS] + [DLCI 11 KBYTES REC FRMS] + [DLCI 12 KBYTES REC FRMS]
++ [DLCI 13 KBYTES REC FRMS] + [DLCI 14 KBYTES REC FRMS] + [DLCI 15 KBYTES REC FRMS]          
++ [DLCI 16 KBYTES REC FRMS])/(PERIOD_DURATION*60)))/
+(SUM PER FRBC OVER ALL UNLOCKED CHILD NSVC 
+(C_NSVC.COMMITTED_INFO_RATE*16)))";"(100* (SUM(8*([DLCI_2_BYTES_REC] + [DLCI_2_BYTES_REC] + [DLCI_3_BYTES_REC]
++ [DLCI_4_BYTES_REC] + [DLCI_5_BYTES_REC] + [DLCI_6_BYTES_REC]
++ [DLCI_7_BYTES_REC] + [DLCI_8_BYTES_REC] + [DLCI_9_BYTES_REC]
++ [DLCI_10_BYTES_REC] + [DLCI_11_BYTES_REC] + [DLCI_12_BYTES_REC]
++ [DLCI_13_BYTES_REC] + [DLCI_14_BYTES_REC] + [DLCI_15_BYTES_REC]          
++ [DLCI_16_BYTES_REC])/(PERIOD_DURATION*60)))/
+(SUM PER FRBC OVER ALL UNLOCKED CHILD NSVC 
+(C_NSVC.COMMITTED_INFO_RATE*16)))";"Known problems: The access rate is taken from configuration data and represents only the current setting. This may cause errors when used in 
+historical perspective if the settings have been changed.";"RG30_BM";"BSS09006";"Ari Saarinen";"BSC; Bearer";"Total; week; weeklyBH; day; dailyBH; hour";"";"";"";"";"BSC";"";"";"";"";"";"";"nidd"
+"gbip_6";"PCU Gb DL load";"PCU Gb DL load";"This KPI is used to monitor the PCU load in terms of received DL Gb over IP traffic vs. Gb processing capacity.
+Note that this does not indicate the exact Gb link load as the actual bandwidth is not known.
+For the PCU1 and the first release of PCU2 (PDU2-D/U cards) the processing capability in terms of Gb traffic is 2Mbits/s.
+For PCU2-E and PCUM cards the capability is higher and KPI values over 100% are possible.";"";"Customer";"Published";"6.00";"S16.1";"";"";"%";"Network Usage";"";"";"";"";"(100 * SUM([098008]) * 8
+ / 
+(2000 * SUM(PERIOD_DURATION*60) ))";"(100 * SUM([PAYLOAD_RCVD_FROM_SGSN_IN_KB]) * 8
+ / 
+(2000 * SUM(PERIOD_DURATION*60) ))";"(100 * SUM([PAYLOAD RCVD FROM SGSN IN KB]) * 8
+ / 
+(2000 * SUM(PERIOD_DURATION*60) ))";"(100 * SUM([PAYLOAD_RCVD_FROM_SGSN_IN_KB]) * 8
+ / 
+(2000 * SUM(PERIOD_DURATION*60) ))";"";"";"BSS10103";"";"Network, BSC";"Total; week; weeklyBH; day; dailyBH; hour";"";"";"";"";"";"";"";"";"";"";"";"nidd"
+"hfr_2b";"Tot HO FR, areaL";"Total HO failure ratio, area level";"This KPI can be used for dimensioning clusters to provide need capacity for MS mobility.
+HO failure in Nokia BSS can occur without the actual HO command.
+(for example, there is reason for a HO, but the target cell is full.) This KPI includes both
+the failed HOs where the HO command is sent and those where the HO command is not
+sent to the MS. HO failures are not visible to end (MS) users.";"";"Customer";"Published";"7.00";"S10.5";"";"";"%";"Mobility";"";"";"";"HO attempts - successful HOs
+        100 * --------------------------------- 
+                         HO commands
+        
+                     successful HOs
+        = 100 * (1- --------------   )  
+                      HO commands";"(100 * (1- (SUM([004004] + [004014] + [004018] + [004158])
+/SUM([001195] + [001196] + [001197] + [004154]))))";"(100 * (1- (SUM([MSC_O_SUCC_HO] + [BSC_O_SUCC_HO] + [INT_C_SUCC_HO] + [MSC_O_TO_WCDMARAN_SUCC_TCH_HO])
+/SUM([MSC_O_HO_CMD] + [BSC_O_HO_CMD_ASSGN] + [BTS_HO_ASSGN] + [MSC_O_WCDMARAN_HO_COM_MSGS]))))";"(100 * (1- (SUM([MSC O SUCCESS HO] + [BSC O SUCCESS HO] + [INT CELL SUCCESS HO] + [MSC O TO WCDMA RAN SUCCESS TCH HO])
+/SUM([MSC O HO CMD] + [BSC O HO CMD] + [BTS HO ASSGN] + [MSC O GEN INTER SYSTEM TO WCDMA RAN HANDOVER COM MESSAGES]))))";"(100 * (1- (SUM([MSC_O_SUCC_HO] + [BSC_O_SUCC_HO] + [CELL_SUCC_HO] + [MSC_TO_WCDMA_RAN_SUCC_TCH_HO])
+/SUM([MSC_O_HO_CMD] + [BSC_O_HO_CMD_ASSGN] + [BTS_HO_ASSGN] + [MSC_GEN_SYS_WCDMA_RAN_HO_COM]))))";"Segment related problems: Does not work on BTS level if a segment of several BTSs is used.";"RG30_BM";"BSS10101,BSS11083";"Nokia/Kivelä .Deduced from hfr_2a to add ISHO counters";"PLMN; BSC; SEG; BTS";"Total; week; weeklyBH; day; dailyBH; hour";"";"";"";"";"BSC";"";"";"";"";"";"";"nidd"
+"hfr_55c";"HO FR due radio If block";"HO failure ratio due to radio interface blocking";"This KPI can be used for the dimensioning of clusters to provide need capacity for MS
+mobility. Handover failure in Nokia BSS can occur without the actual
+HO command. (for example, there is a reason for a HO, but the target cell is full).
+Use:
+This KPI is used on the area level.";"";"Customer";"Published";"9.01";"S11";"";"";"%";"Mobility";"";"";"";"100* (handovers failing due to blocking/all HO attempts)";"((100*(SUM([004055] + [004072] + [004019] + [004155]))/
+(SUM([004052]+[004053]+[004054]+[004067]+[004068]+[004069] 
++[004076]+[004077]+[004078]+[004182]+[004180]))))";"((100*(SUM([MSC_O_UNSUCC_DUE_LACK] + [BSC_O_UNSUCC_DUE_LACK] + [INT_C_UNSUCC_HO_DUE_LACK] + [MSC_O_TO_WCDMARAN_FAIL_LACK]))/
+(SUM([MSC_O_TCH_TCH_HO_ATTEMPT]+[MSC_O_SDCCH_TCH_HO_ATTEMPT]+[MSC_O_SDCCH_SDCCH_HO_ATTEMPT]+[BSC_O_TCH_TCH_HO_ATTEMPT]+[BSC_O_SDCCH_TCH_HO_ATTEMPT]+[BSC_O_SDCCH_SDCCH_HO_ATTEMPT] 
++[INT_C_TCH_TCH_HO_ATTEMPT]+[INT_C_SDCCH_TCH_HO_ATTEMPT]+[INT_C_SDCCH_SDCCH_HO_ATTEMPT]+[MSC_O_SDC_TCH_WCDMA_RAN_ATT]+[HO_ATT_DUE_TO_ISHO]))))";"((100*(SUM([MSC O FAIL LACK] + [BSC O FAIL LACK] + [INT CELL UNSUCCESS HO DUE LACK] + [MSC O TO WCDMA RAN FAIL LACK]))/
+(SUM([MSC O TCH TCH AT]+[MSC O SDCCH TCH AT]+[MSC O SDCCH AT]+[BSC O TCH TCH AT]+[BSC O SDCCH TCH AT]+[BSC O SDCCH AT] 
++[CELL TCH TCH AT]+[CELL SDCCH TCH AT]+[CELL SDCCH AT]+[MSC O SDCCH TCH HO TO WCDMA RAN ATTEMPT]+[HO ATTEMPT DUE TO ISHO]))))";"((100*(SUM([MSC_O_FAIL_LACK] + [BSC_O_FAIL_LACK] + [CELL_FAIL_LACK] + [MSC_TO_WCDMA_RAN_FAIL_LACK]))/
+(SUM([MSC_O_TCH_TCH_AT]+[MSC_O_SDCCH_TCH_AT]+[MSC_O_SDCCH_AT]+[BSC_O_TCH_TCH_AT]+[BSC_O_SDCCH_TCH_AT]+[BSC_O_SDCCH_AT] 
++[CELL_TCH_TCH_AT]+[CELL_SDCCH_TCH_AT]+[CELL_SDCCH_AT]+[MSCO_SDCCH_TCH_HO_WCDMARAN_ATT]+[HO_ATTEMPT_DUE_TO_ISHO]))))";"";"RG30_BM";"BSS10101,BSS11107,BSS6114,BSS6115,BSS7057";"Hannu Makkonen .Deduced from hfr_55b.";"PLMN; BSC; SEG; BTS";"Total; week; weeklyBH; day; dailyBH; hour";"";"";"";"";"BSC";"";"";"";"";"";"";"nidd"
+"hfr_68c";"HO DR";"HO drop ratio";"This KPI defines how big a share of the started handovers are dropped. It indicates the
+quality of the handovers. HO drops are visible as dropped calls to end (MS) users.
+This KPI does not work on BTS level if the BTS is part of the multisegment. A reason for
+this is that an attempt counter triggers for a target BTS only if a HO is successful. In the
+case of a handover failure, the attempt counter triggers only for the master BTS.";"";"Customer";"Published";"7.00";"S11";"";"";"%";"Mobility";"";"";"";"";"(100*( SUM([004084] + [004107] + [004085] + [004157])/SUM([001195] + [001196] + [001197] + [004154])))";"(100*( SUM([BSC_O_DROP_CALLS] + [MSC_O_CALL_DROP_DURING_HO] + [INT_C_DROP_CALLS] + [MSC_O_CALLDROP_HO_TO_WCDMARAN])/SUM([MSC_O_HO_CMD] + [BSC_O_HO_CMD_ASSGN] + [BTS_HO_ASSGN] + [MSC_O_WCDMARAN_HO_COM_MSGS])))";"(100*( SUM([BSC O DROP CALLS] + [MSC O CALL DROP DURING HO] + [CELL DROP CALLS] + [MSC O CALL DROP DURING HO TO WCDMA RAN])/SUM([MSC O HO CMD] + [BSC O HO CMD] + [BTS HO ASSGN] + [MSC O GEN INTER SYSTEM TO WCDMA RAN HANDOVER COM MESSAGES])))";"(100*( SUM([BSC_O_DROP_CALLS] + [MSC_O_CALL_DROP_HO] + [CELL_DROP_CALLS] + [MSC_CALL_DROP_HO_WCDMA_RAN])/SUM([MSC_O_HO_CMD] + [BSC_O_HO_CMD_ASSGN] + [BTS_HO_ASSGN] + [MSC_GEN_SYS_WCDMA_RAN_HO_COM])))";"";"RG30_BM";"BSS10101,BSS11083,BSS7042";"Hannu Makkonen Deduced from hfr_68b.";"PLMN; BSC; SEG; BTS";"Total; week; weeklyBH; day; dailyBH; hour";"";"";"";"";"BSC";"";"";"";"";"";"";"nidd"
+"llc_3a";"Vol weighted LLC thp";"Volume weighted LLC throughput DL";"Indicates, on average, successfully transferred kilobits per second when the logical link
+control (LLC) bytes are more than 1560.";"";"Customer";"Published";"7.00";"S12";"";"";"kbps";"Network Usage";"";"";"";"";"((SUM([072109]) * 8) / (SUM([072110]) * 10))";"((SUM([VWTHR_NUMERATOR_EDGE_4_DL]) * 8) / (SUM([VWTHR_DENOMINATOR_EDGE_4_DL]) * 10))";"((SUM([VOLUME WEIGHTED LLC THROUGHPUT EDGE 4 DL NUMERATOR]) * 8) / (SUM([VOLUME WEIGHTED LLC THROUGHPUT EDGE 4 DL DENOMINATOR]) * 10))";"((SUM([AVG_VOL_WGHT_LLC_TROUGHPUT_NUM]) * 8) / (SUM([AVG_VOL_WGHT_LLC_TROUGHPUT_DEN]) * 10))";"";"RG30_BM";"BSS20727";"Pasi Kivel: deduced from llc_3 to use official counter names";"PLMN; BSC; SEG; BCF; BTS; TRXTP";"Total; week; weeklyBH; day; dailyBH; hour";"";"";"";"";"BSC";"";"";"";"";"";"";"nidd"
+"llc_4a";"Vol weighted LLC thp GPRS";"Volume weighted LLC throughput for GPRS";"Indicates, on average, successfully transferred kilobits per second when the logical link
+control (LLC) bytes are more than 1560.";"";"Customer";"Published";"7.00";"S11.5";"";"";"kbps";"Network Usage";"";"";"";"";"((SUM([090007]) * 8) / (SUM([090008]) * 10))";"((SUM([VWTHR_NUMERATOR_GPRS]) * 8) / (SUM([QOS_DENOM_2]) * 10))";"((SUM([VWTHR NUMERATOR GPRS]) * 8) / (SUM([VWTHR DENOMINATOR GPRS]) * 10))";"((SUM([VWTHR_NUMERATOR_GPRS]) * 8) / (SUM([VWTHR_DENOMINATOR_GPRS]) * 10))";"Counter names used from OSS4 CDSet2 ongoing";"RG30_BM";"";"Pasi Kivel: deduced from llc_4 to change the counter names modified in OSS4 CD Set 2";"";"Total; week; weeklyBH; day; dailyBH; hour";"";"";"";"";"BSC";"";"";"";"";"";"";"nidd"
+"llc_11";"DL LLC thp GPRS";"GPRS LLC DL throughput.";"Indicates, on average, successfully transferred kilobits in GPRS mode per second when the logical link
+control (LLC) bytes per TBF are more than 1560.";"";"Customer";"Published";"9.00";"S16.1";"";"";"kbps";"Network Usage";"";"";"";"";"((SUM([090007]) * 8 )
+/
+(SUM([090008]) * 10 ))";"((SUM([VWTHR_NUMERATOR_GPRS]) * 8 )
+/
+(SUM([QOS_DENOM_2]) * 10 ))";"((SUM([VWTHR NUMERATOR GPRS]) * 8 )
+/
+(SUM([VWTHR DENOMINATOR GPRS]) * 10 ))";"((SUM([VWTHR_NUMERATOR_GPRS]) * 8 )
+/
+(SUM([VWTHR_DENOMINATOR_GPRS]) * 10 ))";"";"";"";"";"PLMN; BSC; SEG; BTS";"Total; week; weeklyBH; day; dailyBH; hour";"";"";"";"";"";"";"";"";"";"";"";"nidd"
+"llc_13";"DL LLC thp EDGE";"EDGE LLC DL throughput.";"Indicates, on average, successfully transferred kilobits in EDGE mode per second when the logical link
+control (LLC) bytes per TBF are more than 1560.";"";"Customer";"Published";"9.00";"S16.1";"";"";"kbps";"Network Usage";"";"";"";"";"((SUM([090011] + [090009])*8)
+/
+(SUM([090012] + [090010]) * 10))";"((SUM([VWTHR_NUMERATOR_EDGE_4] + [VWTHR_NUMERATOR_EDGE_OTH_4])*8)
+/
+(SUM([QOS_DENOM_4] + [QOS_DENOM_3]) * 10))";"((SUM([VWTHR NUMERATOR EDGE 4] + [VWTHR NUMERATOR EDGE OTHER 4])*8)
+/
+(SUM([VWTHR DENOMINATOR EDGE 4] + [VWTHR DENOMINATOR EDGE OTHER 4]) * 10))";"((SUM([VWTHR_NUMERATOR_EDGE_4] + [VWTHR_NUMERATOR_EDGE_OTH_4])*8)
+/
+(SUM([VWTHR_DENOMINATOR_EDGE_4] + [VWTHR_DENOMINATOR_EDGE_OTH_4]) * 10))";"";"";"";"";"PLMN; BSC; SEG; BTS";"Total; week; weeklyBH; day; dailyBH; hour";"";"";"";"";"";"";"";"";"";"";"";"nidd"
+"sdr_4";"SDCCH DR wo timer T3101 exp";"SDCCH drop ratio without timer T3101 expiry";"This KPI defines the ratio of dropped SDCCH without considering the drops caused by
+timer T3101. It is used to analyse SDCCH drops and reasons in case of Call Setup,
+SMS, and LU. Call Setup failure is mostly visible to end (MS) users.
+Use:
+This KPI is used to follow up the performance of SDCCH from a technical point of view.";"";"Customer";"Published";"9.00";"S7";"";"";"%";"Retainability";"";"";"";"";"((100*
+(SUM([001003]
++ [001004]
++ [001037]
++ [001038]
++ [001039]
++ [001075]
++ [001076]
++ [001036]
++ [001035]
++ [001078]
++ [001079]
+- [057020])
+/
+SUM([001007]
++ [001006]))))";"((100*
+(SUM([TR_FAIL_DUE_TO_RADIO_FAIL]
++ [TR_FAIL_WITH_OLD_CH_DUR_HO]
++ [TR_FAIL_SDCCH_USER_ACT]
++ [TR_FAIL_SDCCH_BCSU_RESET]
++ [TR_FAIL_SDCCH_NETW_ACT]
++ [TR_FAIL_SDCCH_ABIS_PR_CALL]
++ [TR_FAIL_SDCCH_ABIS_PR_OLD]
++ [TR_FAIL_SDCCH_BTS_FAIL]
++ [TR_FAIL_SDCCH_LAPD_FAIL]
++ [TR_FAIL_SDCCH_A_INT_PR_CALL]
++ [TR_FAIL_SDCCH_A_INT_PR_OLD]
+- [SE_T3101_EXPIRED])
+/
+SUM([SUCC_SEIZ_FOR_IMM_ASSIGN]
++ [SUCC_SEIZ_FOR_HO]))))";"((100*
+(SUM([TRANSACTIONS FAIL DUE TO RADIO FAIL]
++ [TRANSACTIONS FAIL DUE RADIO ON SOURCE CHANNEL DURING HO]
++ [SDCCH USER ACT]
++ [SDCCH BCSU RESET]
++ [SDCCH NETW ACT]
++ [SDCCH ABIS FAIL CALL]
++ [SDCCH ABIS FAIL SOURCE]
++ [SDCCH BTS FAIL]
++ [SDCCH LAPD FAIL]
++ [SDCCH A IF FAIL CALL]
++ [SDCCH A IF FAIL SOURCE]
+- [T3101 EXPIRED])
+/
+SUM([SUCCESS SEIZURE FOR IMMEDIATE ASSIGNMENT]
++ [SUCCESS SEIZURE FOR HO]))))";"((100*
+(SUM([SDCCH_RADIO_FAIL]
++ [SDCCH_RF_OLD_HO]
++ [SDCCH_USER_ACT]
++ [SDCCH_BCSU_RESET]
++ [SDCCH_NETW_ACT]
++ [SDCCH_ABIS_FAIL_CALL]
++ [SDCCH_ABIS_FAIL_OLD]
++ [SDCCH_BTS_FAIL]
++ [SDCCH_LAPD_FAIL]
++ [SDCCH_A_IF_FAIL_CALL]
++ [SDCCH_A_IF_FAIL_OLD]
+- [T3101_EXPIRED])
+/
+SUM([SDCCH_ASSIGN]
++ [SDCCH_HO_SEIZ]))))";"";"RG30_BM";"BSC1003,BSC1004,BSS6115,BSS7089";"Nokia, B. Sudipto 31.07.2003";"PLMN; BSC; SEG; BTS";"Total; week; weeklyBH; day; dailyBH; hour";"";"";"";"";"BSC";"";"";"";"";"";"";"nidd"
+"tbf_16b";"DL mslot alloc block";"Downlink multislot allocation blocking";"If the blocking is met regularly, there is need either to expand the territory (CS traffic low)
+or TCH capacity (CS traffic high).
+Note: If the statistics show that there is blocking but no upgrade requests yet, the reason
+may be that the territory has been smaller than the default setting defines (CS use). The
+PCU will not make an upgrade request. This is because the CS side will return the
+default channels back to the PS territory as soon as the CS load allows that.";"";"Customer";"Published";"7.00";"S14";"";"";"%";"Retainability";"";"";"";"";"(100 * SUM([072080]) / ( SUM([072039] + [072040] + [072041] + [072042]
+        + [072129] + [072130] + [072131] + [072132]
+        + [072250] + [072251] + [072252] + [072253])))";"(100 * SUM([NO_RADIO_RES_AVA_DL_TBF]) / ( SUM([REQ_1_TSL_DL] + [REQ_2_TSL_DL] + [REQ_3_TSL_DL] + [REQ_4_TSL_DL]
+        + [REQ_5_TSL_DL] + [REQ_6_TSL_DL] + [REQ_7_TSL_DL] + [REQ_8_TSL_DL]
+        + [REQ_9_TSL_DL] + [REQ_10_TSL_DL] + [REQ_11_TSL_DL] + [REQ_12_TSL_DL])))";"(100 * SUM([NO RADIO RES AVA DL TBF]) / ( SUM([REQ 1 TSL DL] + [REQ 2 TSL DL] + [REQ 3 TSL DL] + [REQ 4 TSL DL]
+        + [REQ 5 TSL DL] + [REQ 6 TSL DL] + [REQ 7 TSL DL] + [REQ 8 TSL DL]
+        + [REQ 9 TSL DL] + [REQ 10 TSL DL] + [REQ 11 TSL DL] + [REQ 12 TSL DL])))";"(100 * SUM([NO_RADIO_RES_AVA_DL_TBF]) / ( SUM([REQ_1_TSL_DL] + [REQ_2_TSL_DL] + [REQ_3_TSL_DL] + [REQ_4_TSL_DL]
+        + [REQ_5_TSL_DL] + [REQ_6_TSL_DL] + [REQ_7_TSL_DL] + [REQ_8_TSL_DL]
+        + [REQ_9_TSL_DL] + [REQ_10_TSL_DL] + [REQ_11_TSL_DL] + [REQ_12_TSL_DL])))";"";"RG30_BM";"BSS09006,BSS115172,BSS20094,BSS21228,BSS21270";"Nokia/A.Saarinen: deduced from tbf_16a for S14";"PLMN; BSC; SEG; BCF; BTS; TRXTP";"Total; week; weeklyBH; day; dailyBH; hour";"";"";"";"";"BSC";"";"";"";"";"";"";"nidd"
+"tbf_61";"UL signaling TBFs usg R";"Uplink signaling TBFs usage ratio";"Indicates the percentage of signalling TBFs from the total of all UL TBFs.";"";"Customer";"Published";"8.00";"S11.5";"";"";"%";"Network Usage";"";"";"";"";"(100* SUM([072161])/( SUM([072161] + [072162])))";"(100* SUM([UL_TBF_FOR_SIGNALLING])/( SUM([UL_TBF_FOR_SIGNALLING] + [UL_TBF_FOR_DATA])))";"(100* SUM([UL TBF FOR SIGNALLING])/( SUM([UL TBF FOR SIGNALLING] + [UL TBF FOR DATA])))";"(100* SUM([UL_TBF_FOR_SIGNALLING])/( SUM([UL_TBF_FOR_SIGNALLING] + [UL_TBF_FOR_DATA])))";"";"RG30_BM";"BSS115172";"Poul Larsen 31.5.2005";"PLMN; BSC; SEG; BCF; BTS; TRXTP";"Total; week; weeklyBH; day; dailyBH; hour";"";"";"";"";"BSC";"";"";"";"";"";"";"nidd"
+"tbf_65b";"Share of EDGE req";"Share of EDGE requests";"Shows the ratio of timeslot requests where EDGE resources are required. Works also if
+EDGE is not activated in the network.";"";"Customer";"Published";"7.00";"S14";"";"";"%";"Network Usage";"";"";"";"";"(100* (SUM([072149] + [072150] + [072151]
+        + [072152] + [072153] + [072154] 
+        + [072155] + [072156] + [072250]
+        + [072251] + [072252] + [072253]))  
+/
+(SUM([072039] + [072040] + [072041] 
+        + [072042] + [072129] + [072130]  
+        + [072131] + [072132] + [072250] 
+        + [072251] + [072252] + [072253])))";"(100* (SUM([REQ_1_TSL_DL_FOR_EGPRS_MS] + [REQ_2_TSL_DL_FOR_EGPRS_MS] + [REQ_3_TSL_DL_FOR_EGPRS_MS]
+        + [REQ_4_TSL_DL_FOR_EGPRS_MS] + [REQ_5_TSL_DL_FOR_EGPRS_MS] + [REQ_6_TSL_DL_FOR_EGPRS_MS] 
+        + [REQ_7_TSL_DL_FOR_EGPRS_MS] + [REQ_8_TSL_DL_FOR_EGPRS_MS] + [REQ_9_TSL_DL]
+        + [REQ_10_TSL_DL] + [REQ_11_TSL_DL] + [REQ_12_TSL_DL]))  
+/
+(SUM([REQ_1_TSL_DL] + [REQ_2_TSL_DL] + [REQ_3_TSL_DL] 
+        + [REQ_4_TSL_DL] + [REQ_5_TSL_DL] + [REQ_6_TSL_DL]  
+        + [REQ_7_TSL_DL] + [REQ_8_TSL_DL] + [REQ_9_TSL_DL] 
+        + [REQ_10_TSL_DL] + [REQ_11_TSL_DL] + [REQ_12_TSL_DL])))";"(100* (SUM([REQ 1 TSL DL FOR EGPRS MS] + [REQ 2 TSL DL FOR EGPRS MS] + [REQ 3 TSL DL FOR EGPRS MS]
+        + [REQ 4 TSL DL FOR EGPRS MS] + [REQ 5 TSL DL FOR EGPRS MS] + [REQ 6 TSL DL FOR EGPRS MS] 
+        + [REQ 7 TSL DL FOR EGPRS MS] + [REQ 8 TSL DL FOR EGPRS MS] + [REQ 9 TSL DL]
+        + [REQ 10 TSL DL] + [REQ 11 TSL DL] + [REQ 12 TSL DL]))  
+/
+(SUM([REQ 1 TSL DL] + [REQ 2 TSL DL] + [REQ 3 TSL DL] 
+        + [REQ 4 TSL DL] + [REQ 5 TSL DL] + [REQ 6 TSL DL]  
+        + [REQ 7 TSL DL] + [REQ 8 TSL DL] + [REQ 9 TSL DL] 
+        + [REQ 10 TSL DL] + [REQ 11 TSL DL] + [REQ 12 TSL DL])))";"(100* (SUM([REQ_1_TSL_DL_FOR_EGPRS_MS] + [REQ_2_TSL_DL_FOR_EGPRS_MS] + [REQ_3_TSL_DL_FOR_EGPRS_MS]
+        + [REQ_4_TSL_DL_FOR_EGPRS_MS] + [REQ_5_TSL_DL_FOR_EGPRS_MS] + [REQ_6_TSL_DL_FOR_EGPRS_MS] 
+        + [REQ_7_TSL_DL_FOR_EGPRS_MS] + [REQ_8_TSL_DL_FOR_EGPRS_MS] + [REQ_9_TSL_DL]
+        + [REQ_10_TSL_DL] + [REQ_11_TSL_DL] + [REQ_12_TSL_DL]))  
+/
+(SUM([REQ_1_TSL_DL] + [REQ_2_TSL_DL] + [REQ_3_TSL_DL] 
+        + [REQ_4_TSL_DL] + [REQ_5_TSL_DL] + [REQ_6_TSL_DL]  
+        + [REQ_7_TSL_DL] + [REQ_8_TSL_DL] + [REQ_9_TSL_DL] 
+        + [REQ_10_TSL_DL] + [REQ_11_TSL_DL] + [REQ_12_TSL_DL])))";"";"RG30_BM";"BSS09006,BSS115172,BSS21228";"Ari Saarinen: deduced from tbf_65a for S14";"PLMN; BSC; SEG; BCF; BTS; TRXTP";"Total; week; weeklyBH; day; dailyBH; hour";"";"";"";"";"BSC";"";"";"";"";"";"";"nidd"
+"tbf_66";"(E)GPRS TBF establish FR";"(E)GPRS TBF establishment failure ratio";"This KPI calculates ratio of failed UL and DL TBFs due to no response from MS to all
+TBFs (UL and DL).";"";"Customer";"Published";"7.00";"S10.5";"";"";"%";"Accessibility";"";"";"";"";"((100*SUM([072093] + [072095]) + SUM([072092] + [072094]))
+/(SUM([072005] + [072000])))";"((100*SUM([DL_TBF_ESTABLISH_FAIL] + [DL_EGPRS_TBF_REL_DUE_MS_NRESP]) + SUM([UL_TBF_ESTABLISH_FAIL] + [UL_EGPRS_TBF_REL_DUE_MS_NRESP]))
+/(SUM([DOWNLINK_TBF] + [UPLINK_TBF])))";"((100*SUM([NBR OF DL TBF ESTABLISHMENT FAILED] + [DL EGPRS TBF ESTABL FAILED DUE NO RESPONSE FROM MS]) + SUM([NBR OF UL TBF ESTABLISHMENT FAILED] + [UL EGPRS TBF ESTABL FAILED DUE NO RESPONSE FROM MS]))
+/(SUM([NBR OF DL TBF] + [NBR OF UL TBF])))";"((100*SUM([DL_TBF_ESTABLISHMENT_FAILED] + [DL_EGPRS_TBF_REL_DUE_NO_RESP]) + SUM([UL_TBF_ESTABLISHMENT_FAILED] + [UL_EGPRS_TBF_REL_DUE_NO_RESP]))
+/(SUM([NBR_OF_DL_TBF] + [NBR_OF_UL_TBF])))";"";"RG30_BM";"BSS09006,BSS10083,BSS10091,BSS20094,BSS21270";"";"PLMN; BSC; SEG; BCF; BTS; TRXTP";"Total; week; weeklyBH; day; dailyBH; hour";"";"";"";"";"BSC";"";"";"";"";"";"";"nidd"
+"tbf_67";"TBF SR, some rel removed";"TBF success ratio, releases due flush, suspend or dtm removed.";"Also called TBF retainability. This KPI is used to measure the quality of the radio interface
+for TBF sessions. The KPI measures purely the retainability of TBFs and is not
+dependent on interfaces and NEs outside BSS.
+Note: Not usable on BTS level when common BCCH is used because TBF can start in
+one BTS of a segment and end in another.";"";"Customer";"Published";"7.00";"S12";"";"";"%";"Quality";"";"";"";"100-TBF failure % =
+
+100 - 100 * (TBF establishments -Normal TBF releases   
+- releases due to flush - releases due to suspend 
+- releases due to DTM procedures
+---------------------------------------------------   
+TBF establishments)";"(100 - 100 * ( (SUM(([072000]+ [072005]  
+- [072092] - [072093] - [072094] - [072095])
+-DECODE([072003] , 0 , 0 ,[072004]) 
+-DECODE([072008] , 0 , 0 ,[072009])
+-[072058]-[072059] -[072060]-[072061] -[072201]-[072202] ))
+/(SUM([072000] + [072005] - [072092] - [072093]   
+- [072094] - [072095]))))";"(100 - 100 * ( (SUM(([UPLINK_TBF]+ [DOWNLINK_TBF]  
+- [UL_TBF_ESTABLISH_FAIL] - [DL_TBF_ESTABLISH_FAIL] - [UL_EGPRS_TBF_REL_DUE_MS_NRESP] - [DL_EGPRS_TBF_REL_DUE_MS_NRESP])
+-DECODE([AVE_DUR_UL_TBF] , 0 , 0 ,[PCU_DENOMINATOR_1]) 
+-DECODE([AVE_DUR_DL_TBF] , 0 , 0 ,[PCU_DENOMINATOR_2])
+-[UL_TBF_REL_DUE_FLUSH]-[DL_TBF_REL_DUE_FLUSH] -[UL_TBF_REL_DUE_SUSPEND]-[DL_TBF_REL_DUE_SUSPEND] -[UL_TBF_RELEASES_DUE_DTM]-[DL_TBF_RELEASES_DUE_DTM] ))
+/(SUM([UPLINK_TBF] + [DOWNLINK_TBF] - [UL_TBF_ESTABLISH_FAIL] - [DL_TBF_ESTABLISH_FAIL]   
+- [UL_EGPRS_TBF_REL_DUE_MS_NRESP] - [DL_EGPRS_TBF_REL_DUE_MS_NRESP]))))";"(100 - 100 * ( (SUM(([NBR OF UL TBF]+ [NBR OF DL TBF]  
+- [NBR OF UL TBF ESTABLISHMENT FAILED] - [NBR OF DL TBF ESTABLISHMENT FAILED] - [UL EGPRS TBF ESTABL FAILED DUE NO RESPONSE FROM MS] - [DL EGPRS TBF ESTABL FAILED DUE NO RESPONSE FROM MS])
+-DECODE([AVE DUR UL TBF] , 0 , 0 ,[AVE DUR UL TBF DEN]) 
+-DECODE([AVE DUR DL TBF] , 0 , 0 ,[AVE DUR DL TBF DEN])
+-[UL TBF REL DUE TO FLUSH]-[DL TBF REL DUE TO FLUSH] -[UL TBF REL DUE TO SUSPEND]-[DL TBF REL DUE TO SUSPEND] -[UL TBF RELEASES DUE DTM]-[DL TBF RELEASES DUE DTM] ))
+/(SUM([NBR OF UL TBF] + [NBR OF DL TBF] - [NBR OF UL TBF ESTABLISHMENT FAILED] - [NBR OF DL TBF ESTABLISHMENT FAILED]   
+- [UL EGPRS TBF ESTABL FAILED DUE NO RESPONSE FROM MS] - [DL EGPRS TBF ESTABL FAILED DUE NO RESPONSE FROM MS]))))";"(100 - 100 * ( (SUM(([NBR_OF_UL_TBF]+ [NBR_OF_DL_TBF]  
+- [UL_TBF_ESTABLISHMENT_FAILED] - [DL_TBF_ESTABLISHMENT_FAILED] - [UL_EGPRS_TBF_REL_DUE_NO_RESP] - [DL_EGPRS_TBF_REL_DUE_NO_RESP])
+-DECODE([AVE_DUR_UL_TBF_SUM] , 0 , 0 ,[AVE_DUR_UL_TBF_DEN]) 
+-DECODE([AVE_DUR_DL_TBF_SUM] , 0 , 0 ,[AVE_DUR_DL_TBF_DEN])
+-[UL_TBF_REL_DUE_TO_FLUSH]-[DL_TBF_REL_DUE_TO_FLUSH] -[UL_TBF_REL_DUE_TO_SUSPEND]-[DL_TBF_REL_DUE_TO_SUSPEND] -[UL_TBF_RELEASES_DUE_DTM]-[DL_TBF_RELEASES_DUE_DTM] ))
+/(SUM([NBR_OF_UL_TBF] + [NBR_OF_DL_TBF] - [UL_TBF_ESTABLISHMENT_FAILED] - [DL_TBF_ESTABLISHMENT_FAILED]   
+- [UL_EGPRS_TBF_REL_DUE_NO_RESP] - [DL_EGPRS_TBF_REL_DUE_NO_RESP]))))";"Known problems:        Not usable on BTS level when common BCCH is used because TBF can start in one BTS of a segment and end in another. 
+Negative values are possible if KPI was calculated on BTS level because KPI includes counters related to both TBF establishment and release, and they may happen in different BTS";"RG30_BM";"BSS09006,BSS10083,BSS10091,BSS20088,BSS20094,BSS21270";"deduced from tbf_34b. Releases due flush, suspend or dtm removed from denominator.";"PLMN; BSC; SEG; BCF; BTS; TRXTP";"Total; week; weeklyBH; day; dailyBH; hour";"";"";"";"";"BSC";"";"";"";"";"";"";"nidd"
+"trf_120c";"TCH traf sh non-AMR calls";"TCH traffic share of non-AMR calls";"This KPI indicates TCH use % (sampling interval 480 ms) for non-AMR calls.
+
+bcf_type: CM parameter
+Definition: With this parameter you identify the type of the BTS site.
+
+NOTE:
+Modification of the BTS site type is possible only between the 2nd generation and Talk-family site types and from the 2nd generation or Talk-family site types to UltraSite site and Talk-family or UltraSite site types to Flexi EDGE type. The modification from the UltraSite or Flexi EDGE back to the 2nd generation or Talk-family site types is not possible.
+Modification between BTSplus and other site types is not possible.
+Modification from UltraSite or Flexi EDGE site type to Flexi Multiradio BTS site type is possible but not vice versa.
+
+Range:  0 (2nd Generation), 1 (Talk-family), 2 (PrimeSite), 3 (MetroSite), 4 (InSite), 5 (UltraSite), 6 (Flexi EDGE), 7 (BTSplus), 8 (Flexi Multiradio) 
+
+IMREPS: CM parameter
+Definition: With this parameter you specify the granularity in which the radio measurements have to be transmitted on the A-bis interface in case they are enabled (e.g 8 = 1/8).
+
+NOTE: Parameter is valid only for BTSplus site type
+ 
+Range: 1..254
+Default value =8";"";"Customer";"Published";"9.00";"S16.1";"";"";"%";"Network Usage";"";"";"";"100*trf_115c/trf_119a";"((DECODE(BCF_TYPE,'BTSPLUS',IMREPS,1) *  
+(SUM( NVL([053007_012],0)+ .. + NVL([053049_054],0))
+   -SUM( NVL([053007_012],0)+ .. + NVL([053049_054],0)   
+     + NVL([014085],0)+ .. + NVL([014099],0)   
+     + NVL([014101],0)+ .. + NVL([014115],0)   
+     + NVL([014117],0)+ .. + NVL([014131],0)   
+     + NVL([014133],0)+ .. + NVL([014147],0)   
+     + NVL([014021],0)+ .. + NVL([014035],0)   
+     + NVL([014037],0)+ .. + NVL([014051],0)   
+     + NVL([014053],0)+ .. + NVL([014067],0))
+     + NVL([014069],0)+ .. + NVL([014083],0))	 
+ -  SUM ( NVL([077015],0)+.. + NVL([077022],0)) WHERE CODEC_TYPE IN(18..20)
+)*0.48/3600    
+/
+(DECODE(BCF_TYPE,'BTSPLUS',
+((SUM(NVL([053007_012],0)+ .. + NVL([053049_054],0))*0.48/3600)*IMREPS)
+,
+(SUM(NVL([053007_012],0)+ .. + NVL([053049_054],0))*0.48/3600))))";"((DECODE(BCF_TYPE,'BTSPLUS',IMREPS,1) *  
+(SUM( NVL([],0)+ .. + NVL([],0))
+   -SUM( NVL([],0)+ .. + NVL([],0)   
+     + NVL([AMR_HR_MODE_1_ON_UL_QUAL_0],0)+ .. + NVL([AMR_HR_MODE_1_ON_UL_QUAL_7],0)   
+     + NVL([AMR_HR_MODE_2_ON_UL_QUAL_0],0)+ .. + NVL([AMR_HR_MODE_2_ON_UL_QUAL_7],0)   
+     + NVL([AMR_HR_MODE_3_ON_UL_QUAL_0],0)+ .. + NVL([AMR_HR_MODE_3_ON_UL_QUAL_7],0)   
+     + NVL([AMR_HR_MODE_4_ON_UL_QUAL_0],0)+ .. + NVL([AMR_HR_MODE_4_ON_UL_QUAL_7],0)   
+     + NVL([AMR_FR_MODE_1_ON_UL_QUAL_0],0)+ .. + NVL([AMR_FR_MODE_1_ON_UL_QUAL_7],0)   
+     + NVL([AMR_FR_MODE_2_ON_UL_QUAL_0],0)+ .. + NVL([AMR_FR_MODE_2_ON_UL_QUAL_7],0)   
+     + NVL([AMR_FR_MODE_3_ON_UL_QUAL_0],0)+ .. + NVL([AMR_FR_MODE_3_ON_UL_QUAL_7],0))
+     + NVL([AMR_FR_MODE_4_ON_UL_QUAL_0],0)+ .. + NVL([AMR_FR_MODE_4_ON_UL_QUAL_7],0))	 
+ -  SUM ( NVL([NBR_OF_UL_FER_CL_0],0)+.. + NVL([NBR_OF_UL_FER_CL_7],0)) WHERE CODEC_TYPE IN(18..20)
+)*0.48/3600    
+/
+(DECODE(BCF_TYPE,'BTSPLUS',
+((SUM(NVL([],0)+ .. + NVL([],0))*0.48/3600)*IMREPS)
+,
+(SUM(NVL([],0)+ .. + NVL([],0))*0.48/3600))))";"((DECODE(BCF_TYPE,'BTSPLUS',IMREPS,1) *  
+(SUM( NVL([UPLINK QUALITY 0 IN RXL 0-5],0)+ .. + NVL([UPLINK QUALITY 7 IN RXL 0-5],0))
+   -SUM( NVL([UPLINK QUALITY 0 IN RXL 0-5],0)+ .. + NVL([UPLINK QUALITY 7 IN RXL 0-5],0)   
+     + NVL([AMR HR CODEC MODE 1 ON UPLINK DIRECTION WITH RXQUAL 0],0)+ .. + NVL([AMR HR CODEC MODE 1 ON UPLINK DIRECTION WITH RXQUAL 7],0)   
+     + NVL([AMR HR CODEC MODE 2 ON UPLINK DIRECTION WITH RXQUAL 0],0)+ .. + NVL([AMR HR CODEC MODE 2 ON UPLINK DIRECTION WITH RXQUAL 7],0)   
+     + NVL([AMR HR CODEC MODE 3 ON UPLINK DIRECTION WITH RXQUAL 0],0)+ .. + NVL([AMR HR CODEC MODE 3 ON UPLINK DIRECTION WITH RXQUAL 7],0)   
+     + NVL([AMR HR CODEC MODE 4 ON UPLINK DIRECTION WITH RXQUAL 0],0)+ .. + NVL([AMR HR CODEC MODE 4 ON UPLINK DIRECTION WITH RXQUAL 7],0)   
+     + NVL([AMR FR CODEC MODE 1 ON UPLINK DIRECTION WITH RXQUAL 0],0)+ .. + NVL([AMR FR CODEC MODE 1 ON UPLINK DIRECTION WITH RXQUAL 7],0)   
+     + NVL([AMR FR CODEC MODE 2 ON UPLINK DIRECTION WITH RXQUAL 0],0)+ .. + NVL([AMR FR CODEC MODE 2 ON UPLINK DIRECTION WITH RXQUAL 7],0)   
+     + NVL([AMR FR CODEC MODE 3 ON UPLINK DIRECTION WITH RXQUAL 0],0)+ .. + NVL([AMR FR CODEC MODE 3 ON UPLINK  DIRECTION WITH RXQUAL 7],0))
+     + NVL([AMR FR CODEC MODE 4 ON UPLINK DIRECTION WITH RXQUAL 0],0)+ .. + NVL([AMR FR CODEC MODE 4 ON UPLINK DIRECTION WITH RXQUAL 7],0))	 
+ -  SUM ( NVL([NBR OF UL FER CL 0],0)+.. + NVL([NBR OF UL FER CL 7],0)) WHERE CODEC_TYPE IN(18..20)
+)*0.48/3600    
+/
+(DECODE(BCF_TYPE,'BTSPLUS',
+((SUM(NVL([UPLINK QUALITY 0 IN RXL 0-5],0)+ .. + NVL([UPLINK QUALITY 7 IN RXL 0-5],0))*0.48/3600)*IMREPS)
+,
+(SUM(NVL([UPLINK QUALITY 0 IN RXL 0-5],0)+ .. + NVL([UPLINK QUALITY 7 IN RXL 0-5],0))*0.48/3600))))";"((DECODE(BCF_TYPE,'BTSPLUS',IMREPS,1) *  
+(SUM( NVL([FREQ_UL_QUAL0],0)+ .. + NVL([FREQ_UL_QUAL7],0))
+   -SUM( NVL([FREQ_UL_QUAL0],0)+ .. + NVL([FREQ_UL_QUAL7],0)   
+     + NVL([AMR_HR_MODE_1_UL_RXQUAL_0],0)+ .. + NVL([AMR_HR_MODE_1_UL_RXQUAL_7],0)   
+     + NVL([AMR_HR_MODE_2_UL_RXQUAL_0],0)+ .. + NVL([AMR_HR_MODE_2_UL_RXQUAL_7],0)   
+     + NVL([AMR_HR_MODE_3_UL_RXQUAL_0],0)+ .. + NVL([AMR_HR_MODE_3_UL_RXQUAL_7],0)   
+     + NVL([AMR_HR_MODE_4_UL_RXQUAL_0],0)+ .. + NVL([AMR_HR_MODE_4_UL_RXQUAL_7],0)   
+     + NVL([AMR_FR_MODE_1_UL_RXQUAL_0],0)+ .. + NVL([AMR_FR_MODE_1_UL_RXQUAL_7],0)   
+     + NVL([AMR_FR_MODE_2_UL_RXQUAL_0],0)+ .. + NVL([AMR_FR_MODE_2_UL_RXQUAL_7],0)   
+     + NVL([AMR_FR_MODE_3_UL_RXQUAL_0],0)+ .. + NVL([AMR_FR_MODE_3_UL_RXQUAL_7],0))
+     + NVL([AMR_FR_MODE_4_UL_RXQUAL_0],0)+ .. + NVL([AMR_FR_MODE_4_UL_RXQUAL_7],0))	 
+ -  SUM ( NVL([NBR_OF_UL_FER_CL_0],0)+.. + NVL([NBR_OF_UL_FER_CL_7],0)) WHERE CODEC_TYPE IN(18..20)
+)*0.48/3600    
+/
+(DECODE(BCF_TYPE,'BTSPLUS',
+((SUM(NVL([FREQ_UL_QUAL0],0)+ .. + NVL([FREQ_UL_QUAL7],0))*0.48/3600)*IMREPS)
+,
+(SUM(NVL([FREQ_UL_QUAL0],0)+ .. + NVL([FREQ_UL_QUAL7],0))*0.48/3600))))";"";"";"BSS10004,BSS10022";"Marta. Deduced from trf_120b to update kpi references";"PLMN; BSC; SEG; BCF; BTS; TRXTP";"Total; week; weeklyBH; day; dailyBH; hour";"";"";"";"";"";"";"";"";"";"";"";"nidd"
+"trf_121a";"TCH traf sh of FR AMR calls";"TCH traffic share of FR AMR calls";"This KPI indicates TCH use % (sampling interval 480 ms) for full rate AMR.";"";"Customer";"Published";"10.00";"S10";"";"";"%";"Network Usage";"";"";"";"";"((100*DECODE(BCF_TYPE,'BTSPLUS',
+(SUM(NVL([014021],0)+ .. + NVL([014035],0)
++ NVL([014037],0)+ .. + NVL([014051],0)
++ NVL([014053],0)+ .. + NVL([014067],0)
++ NVL([014069],0)+ .. + NVL([014083],0))*0.48/3600)*IMREPS
+,
+(SUM(NVL([014021],0)+ .. + NVL([014035],0)
++ NVL([014037],0)+ .. + NVL([014051],0)
++ NVL([014053],0)+ .. + NVL([014067],0)
++ NVL([014069],0)+ .. + NVL([014083],0))*0.48/3600))
+/
+(DECODE(BCF_TYPE,'BTSPLUS',
+((SUM(NVL([053007_012],0)+ .. + NVL([053049_054],0))*0.48/3600)*IMREPS)
+,
+(SUM(NVL([053007_012],0)+ .. + NVL([053049_054],0))*0.48/3600)))))";"((100*DECODE(BCF_TYPE,'BTSPLUS',
+(SUM(NVL([AMR_FR_MODE_1_ON_UL_QUAL_0],0)+ .. + NVL([AMR_FR_MODE_1_ON_UL_QUAL_7],0)
++ NVL([AMR_FR_MODE_2_ON_UL_QUAL_0],0)+ .. + NVL([AMR_FR_MODE_2_ON_UL_QUAL_7],0)
++ NVL([AMR_FR_MODE_3_ON_UL_QUAL_0],0)+ .. + NVL([AMR_FR_MODE_3_ON_UL_QUAL_7],0)
++ NVL([AMR_FR_MODE_4_ON_UL_QUAL_0],0)+ .. + NVL([AMR_FR_MODE_4_ON_UL_QUAL_7],0))*0.48/3600)*IMREPS
+,
+(SUM(NVL([AMR_FR_MODE_1_ON_UL_QUAL_0],0)+ .. + NVL([AMR_FR_MODE_1_ON_UL_QUAL_7],0)
++ NVL([AMR_FR_MODE_2_ON_UL_QUAL_0],0)+ .. + NVL([AMR_FR_MODE_2_ON_UL_QUAL_7],0)
++ NVL([AMR_FR_MODE_3_ON_UL_QUAL_0],0)+ .. + NVL([AMR_FR_MODE_3_ON_UL_QUAL_7],0)
++ NVL([AMR_FR_MODE_4_ON_UL_QUAL_0],0)+ .. + NVL([AMR_FR_MODE_4_ON_UL_QUAL_7],0))*0.48/3600))
+/
+(DECODE(BCF_TYPE,'BTSPLUS',
+((SUM(NVL([],0)+ .. + NVL([],0))*0.48/3600)*IMREPS)
+,
+(SUM(NVL([],0)+ .. + NVL([],0))*0.48/3600)))))";"((100*DECODE(BCF_TYPE,'BTSPLUS',
+(SUM(NVL([AMR FR CODEC MODE 1 ON UPLINK DIRECTION WITH RXQUAL 0],0)+ .. + NVL([AMR FR CODEC MODE 1 ON UPLINK DIRECTION WITH RXQUAL 7],0)
++ NVL([AMR FR CODEC MODE 2 ON UPLINK DIRECTION WITH RXQUAL 0],0)+ .. + NVL([AMR FR CODEC MODE 2 ON UPLINK DIRECTION WITH RXQUAL 7],0)
++ NVL([AMR FR CODEC MODE 3 ON UPLINK DIRECTION WITH RXQUAL 0],0)+ .. + NVL([AMR FR CODEC MODE 3 ON UPLINK  DIRECTION WITH RXQUAL 7],0)
++ NVL([AMR FR CODEC MODE 4 ON UPLINK DIRECTION WITH RXQUAL 0],0)+ .. + NVL([AMR FR CODEC MODE 4 ON UPLINK DIRECTION WITH RXQUAL 7],0))*0.48/3600)*IMREPS
+,
+(SUM(NVL([AMR FR CODEC MODE 1 ON UPLINK DIRECTION WITH RXQUAL 0],0)+ .. + NVL([AMR FR CODEC MODE 1 ON UPLINK DIRECTION WITH RXQUAL 7],0)
++ NVL([AMR FR CODEC MODE 2 ON UPLINK DIRECTION WITH RXQUAL 0],0)+ .. + NVL([AMR FR CODEC MODE 2 ON UPLINK DIRECTION WITH RXQUAL 7],0)
++ NVL([AMR FR CODEC MODE 3 ON UPLINK DIRECTION WITH RXQUAL 0],0)+ .. + NVL([AMR FR CODEC MODE 3 ON UPLINK  DIRECTION WITH RXQUAL 7],0)
++ NVL([AMR FR CODEC MODE 4 ON UPLINK DIRECTION WITH RXQUAL 0],0)+ .. + NVL([AMR FR CODEC MODE 4 ON UPLINK DIRECTION WITH RXQUAL 7],0))*0.48/3600))
+/
+(DECODE(BCF_TYPE,'BTSPLUS',
+((SUM(NVL([UPLINK QUALITY 0 IN RXL 0-5],0)+ .. + NVL([UPLINK QUALITY 7 IN RXL 0-5],0))*0.48/3600)*IMREPS)
+,
+(SUM(NVL([UPLINK QUALITY 0 IN RXL 0-5],0)+ .. + NVL([UPLINK QUALITY 7 IN RXL 0-5],0))*0.48/3600)))))";"((100*DECODE(BCF_TYPE,'BTSPLUS',
+(SUM(NVL([AMR_FR_MODE_1_UL_RXQUAL_0],0)+ .. + NVL([AMR_FR_MODE_1_UL_RXQUAL_7],0)
++ NVL([AMR_FR_MODE_2_UL_RXQUAL_0],0)+ .. + NVL([AMR_FR_MODE_2_UL_RXQUAL_7],0)
++ NVL([AMR_FR_MODE_3_UL_RXQUAL_0],0)+ .. + NVL([AMR_FR_MODE_3_UL_RXQUAL_7],0)
++ NVL([AMR_FR_MODE_4_UL_RXQUAL_0],0)+ .. + NVL([AMR_FR_MODE_4_UL_RXQUAL_7],0))*0.48/3600)*IMREPS
+,
+(SUM(NVL([AMR_FR_MODE_1_UL_RXQUAL_0],0)+ .. + NVL([AMR_FR_MODE_1_UL_RXQUAL_7],0)
++ NVL([AMR_FR_MODE_2_UL_RXQUAL_0],0)+ .. + NVL([AMR_FR_MODE_2_UL_RXQUAL_7],0)
++ NVL([AMR_FR_MODE_3_UL_RXQUAL_0],0)+ .. + NVL([AMR_FR_MODE_3_UL_RXQUAL_7],0)
++ NVL([AMR_FR_MODE_4_UL_RXQUAL_0],0)+ .. + NVL([AMR_FR_MODE_4_UL_RXQUAL_7],0))*0.48/3600))
+/
+(DECODE(BCF_TYPE,'BTSPLUS',
+((SUM(NVL([FREQ_UL_QUAL0],0)+ .. + NVL([FREQ_UL_QUAL7],0))*0.48/3600)*IMREPS)
+,
+(SUM(NVL([FREQ_UL_QUAL0],0)+ .. + NVL([FREQ_UL_QUAL7],0))*0.48/3600)))))";"";"RG30_BM";"BSS10004";"Marta. Deduced from trf_121 to correct KPI references.";"PLMN; BSC; SEG; BCF; BTS; TRXTP";"Total; week; weeklyBH; day; dailyBH; hour";"";"";"";"";"BSC";"";"";"";"";"";"";"nidd"
+"trf_122b";"TCH traf sh of HR AMR calls";"TCH traffic share of HR AMR calls";"This KPI indicates TCH use % (sampling interval 480 ms) for half rate AMR.
+
+bcf_type: CM parameter
+Definition: With this parameter you identify the type of the BTS site.
+
+NOTE:
+Modification of the BTS site type is possible only between the 2nd generation and Talk-family site types and from the 2nd generation or Talk-family site types to UltraSite site and Talk-family or UltraSite site types to Flexi EDGE type. The modification from the UltraSite or Flexi EDGE back to the 2nd generation or Talk-family site types is not possible.
+Modification between BTSplus and other site types is not possible.
+Modification from UltraSite or Flexi EDGE site type to Flexi Multiradio BTS site type is possible but not vice versa.
+
+Range:  0 (2nd Generation), 1 (Talk-family), 2 (PrimeSite), 3 (MetroSite), 4 (InSite), 5 (UltraSite), 6 (Flexi EDGE), 7 (BTSplus), 8 (Flexi Multiradio) 
+
+IMREPS: CM parameter
+Definition: With this parameter you specify the granularity in which the radio measurements have to be transmitted on the A-bis interface in case they are enabled (e.g 8 = 1/8).
+
+NOTE: Parameter is valid only for BTSplus site type
+ 
+Range: 1..254
+Default value =8";"";"Customer";"Published";"10.00";"S10";"";"";"%";"Network Usage";"";"";"";"";"((100*DECODE(BCF_TYPE,'BTSPLUS',
+(SUM(NVL([014085],0)+ .. + NVL([014099],0)
++ NVL([014101],0)+ .. + NVL([014115],0)
++ NVL([014117],0)+ .. + NVL([014131],0)
++ NVL([014133],0)+ .. + NVL([014147],0))*0.48/3600)*IMREPS
+,
+(SUM(NVL([014085],0)+ .. + NVL([014099],0)
++ NVL([014101],0)+ .. + NVL([014115],0)
++ NVL([014117],0)+ .. + NVL([014131],0)
++ NVL([014133],0)+ .. + NVL([014147],0))*0.48/3600))
+/
+(DECODE(BCF_TYPE,'BTSPLUS',
+((SUM(NVL([053007_012],0)+ .. + NVL([053049_054],0))*0.48/3600)*IMREPS)
+,
+(SUM(NVL([053007_012],0)+ .. + NVL([053049_054],0))*0.48/3600)))))";"((100*DECODE(BCF_TYPE,'BTSPLUS',
+(SUM(NVL([AMR_HR_MODE_1_ON_UL_QUAL_0],0)+ .. + NVL([AMR_HR_MODE_1_ON_UL_QUAL_7],0)
++ NVL([AMR_HR_MODE_2_ON_UL_QUAL_0],0)+ .. + NVL([AMR_HR_MODE_2_ON_UL_QUAL_7],0)
++ NVL([AMR_HR_MODE_3_ON_UL_QUAL_0],0)+ .. + NVL([AMR_HR_MODE_3_ON_UL_QUAL_7],0)
++ NVL([AMR_HR_MODE_4_ON_UL_QUAL_0],0)+ .. + NVL([AMR_HR_MODE_4_ON_UL_QUAL_7],0))*0.48/3600)*IMREPS
+,
+(SUM(NVL([AMR_HR_MODE_1_ON_UL_QUAL_0],0)+ .. + NVL([AMR_HR_MODE_1_ON_UL_QUAL_7],0)
++ NVL([AMR_HR_MODE_2_ON_UL_QUAL_0],0)+ .. + NVL([AMR_HR_MODE_2_ON_UL_QUAL_7],0)
++ NVL([AMR_HR_MODE_3_ON_UL_QUAL_0],0)+ .. + NVL([AMR_HR_MODE_3_ON_UL_QUAL_7],0)
++ NVL([AMR_HR_MODE_4_ON_UL_QUAL_0],0)+ .. + NVL([AMR_HR_MODE_4_ON_UL_QUAL_7],0))*0.48/3600))
+/
+(DECODE(BCF_TYPE,'BTSPLUS',
+((SUM(NVL([],0)+ .. + NVL([],0))*0.48/3600)*IMREPS)
+,
+(SUM(NVL([],0)+ .. + NVL([],0))*0.48/3600)))))";"((100*DECODE(BCF_TYPE,'BTSPLUS',
+(SUM(NVL([AMR HR CODEC MODE 1 ON UPLINK DIRECTION WITH RXQUAL 0],0)+ .. + NVL([AMR HR CODEC MODE 1 ON UPLINK DIRECTION WITH RXQUAL 7],0)
++ NVL([AMR HR CODEC MODE 2 ON UPLINK DIRECTION WITH RXQUAL 0],0)+ .. + NVL([AMR HR CODEC MODE 2 ON UPLINK DIRECTION WITH RXQUAL 7],0)
++ NVL([AMR HR CODEC MODE 3 ON UPLINK DIRECTION WITH RXQUAL 0],0)+ .. + NVL([AMR HR CODEC MODE 3 ON UPLINK DIRECTION WITH RXQUAL 7],0)
++ NVL([AMR HR CODEC MODE 4 ON UPLINK DIRECTION WITH RXQUAL 0],0)+ .. + NVL([AMR HR CODEC MODE 4 ON UPLINK DIRECTION WITH RXQUAL 7],0))*0.48/3600)*IMREPS
+,
+(SUM(NVL([AMR HR CODEC MODE 1 ON UPLINK DIRECTION WITH RXQUAL 0],0)+ .. + NVL([AMR HR CODEC MODE 1 ON UPLINK DIRECTION WITH RXQUAL 7],0)
++ NVL([AMR HR CODEC MODE 2 ON UPLINK DIRECTION WITH RXQUAL 0],0)+ .. + NVL([AMR HR CODEC MODE 2 ON UPLINK DIRECTION WITH RXQUAL 7],0)
++ NVL([AMR HR CODEC MODE 3 ON UPLINK DIRECTION WITH RXQUAL 0],0)+ .. + NVL([AMR HR CODEC MODE 3 ON UPLINK DIRECTION WITH RXQUAL 7],0)
++ NVL([AMR HR CODEC MODE 4 ON UPLINK DIRECTION WITH RXQUAL 0],0)+ .. + NVL([AMR HR CODEC MODE 4 ON UPLINK DIRECTION WITH RXQUAL 7],0))*0.48/3600))
+/
+(DECODE(BCF_TYPE,'BTSPLUS',
+((SUM(NVL([UPLINK QUALITY 0 IN RXL 0-5],0)+ .. + NVL([UPLINK QUALITY 7 IN RXL 0-5],0))*0.48/3600)*IMREPS)
+,
+(SUM(NVL([UPLINK QUALITY 0 IN RXL 0-5],0)+ .. + NVL([UPLINK QUALITY 7 IN RXL 0-5],0))*0.48/3600)))))";"((100*DECODE(BCF_TYPE,'BTSPLUS',
+(SUM(NVL([AMR_HR_MODE_1_UL_RXQUAL_0],0)+ .. + NVL([AMR_HR_MODE_1_UL_RXQUAL_7],0)
++ NVL([AMR_HR_MODE_2_UL_RXQUAL_0],0)+ .. + NVL([AMR_HR_MODE_2_UL_RXQUAL_7],0)
++ NVL([AMR_HR_MODE_3_UL_RXQUAL_0],0)+ .. + NVL([AMR_HR_MODE_3_UL_RXQUAL_7],0)
++ NVL([AMR_HR_MODE_4_UL_RXQUAL_0],0)+ .. + NVL([AMR_HR_MODE_4_UL_RXQUAL_7],0))*0.48/3600)*IMREPS
+,
+(SUM(NVL([AMR_HR_MODE_1_UL_RXQUAL_0],0)+ .. + NVL([AMR_HR_MODE_1_UL_RXQUAL_7],0)
++ NVL([AMR_HR_MODE_2_UL_RXQUAL_0],0)+ .. + NVL([AMR_HR_MODE_2_UL_RXQUAL_7],0)
++ NVL([AMR_HR_MODE_3_UL_RXQUAL_0],0)+ .. + NVL([AMR_HR_MODE_3_UL_RXQUAL_7],0)
++ NVL([AMR_HR_MODE_4_UL_RXQUAL_0],0)+ .. + NVL([AMR_HR_MODE_4_UL_RXQUAL_7],0))*0.48/3600))
+/
+(DECODE(BCF_TYPE,'BTSPLUS',
+((SUM(NVL([FREQ_UL_QUAL0],0)+ .. + NVL([FREQ_UL_QUAL7],0))*0.48/3600)*IMREPS)
+,
+(SUM(NVL([FREQ_UL_QUAL0],0)+ .. + NVL([FREQ_UL_QUAL7],0))*0.48/3600)))))";"";"RG30_BM";"BSS10004";"Marta. Deduced from trf_122a to update KPI references.";"PLMN; BSC; SEG; BCF; BTS; TRXTP";"Total; week; weeklyBH; day; dailyBH; hour";"";"";"";"";"BSC";"";"";"";"";"";"";"nidd"
+"trf_161j";"UL EGPRS traffic";"Uplink EGPRS erlangs, area";"Indicates the amount of resources (timeslots) the EGPRS traffic data consumes, on
+average, during the period. This information is useful, for example, in estimating the
+need for capacity extension. 50 blocks/sec/TSL is used to estimate the timeslots.
+For area level, this formula should be first collected for all BTSs in the area. Then, the
+results should be summed up for the area.";"";"Customer";"Published";"1.00";"S16.1";"S16.1";"";"erlangs";"Network Usage";"";"";"";"actual UL data throughput (blocks) 
+---------------------------------------------------------------  = 
+nbr of blocks equivalent to 1 tsl full use in each BTS of area";"((SUM OVER MCS0..6 OF ( [079002] + [079006] + [079004]
+                    + [079003] + [079007] + [079005] + [079014])
++ SUM OVER MCS7..9  OF ( [079002] + [079006] + [079004]
+                    + [079003] + [079007] + [079005]
+                    + [079014]/2 + [072165]))
+/ (AVG(PERIOD_DURATION*60)*50))";"((SUM OVER MCS0..6 OF ( [NBR_OF_UL_RLC_BL_IN_ACK_MODE] + [BAD_RLC_DATA_BL_VALID_ACK_UL] + [BAD_RLC_DATA_BL_VALID_UNA_UL]
+                    + [NBR_OF_UL_RLC_BL_IN_UNA_MODE] + [BAD_RLC_DATA_BL_BAD_ACK_UL] + [BAD_RLC_DATA_BL_BAD_UNA_UL] + [IGNOR_RLC_DATA_UL_DUE_BSN])
++ SUM OVER MCS7..9  OF ( [NBR_OF_UL_RLC_BL_IN_ACK_MODE] + [BAD_RLC_DATA_BL_VALID_ACK_UL] + [BAD_RLC_DATA_BL_VALID_UNA_UL]
+                    + [NBR_OF_UL_RLC_BL_IN_UNA_MODE] + [BAD_RLC_DATA_BL_BAD_ACK_UL] + [BAD_RLC_DATA_BL_BAD_UNA_UL]
+                    + [IGNOR_RLC_DATA_UL_DUE_BSN]/2 + [EGPRS_UL_CTRL_BLOCKS]))
+/ (AVG(PERIOD_DURATION*60)*50))";"((SUM OVER MCS0..6 OF ( [NUMBER OF UL RLC BLOCKS IN ACKNOWLEDGED MODE] + [NUMBER OF BAD RLC DATA BLOCKS WITH VALID HEADER UL ACK MODE] + [NUMBER OF BAD RLC DATA BLOCKS WITH VALID HEADER UL UNACK MODE]
+                    + [NUMBER OF UL RLC BLOCKS IN UNACKNOWLEDGED MODE] + [NUMBER OF BAD RLC DATA BLOCKS WITH BAD HEADER UL ACK MODE] + [NUMBER OF BAD RLC DATA BLOCKS WITH BAD HEADER UL UNACK MODE] + [IGNORED RLC DATA BLOCKS UL DUE TO BSN])
++ SUM OVER MCS7..9  OF ( [NUMBER OF UL RLC BLOCKS IN ACKNOWLEDGED MODE] + [NUMBER OF BAD RLC DATA BLOCKS WITH VALID HEADER UL ACK MODE] + [NUMBER OF BAD RLC DATA BLOCKS WITH VALID HEADER UL UNACK MODE]
+                    + [NUMBER OF UL RLC BLOCKS IN UNACKNOWLEDGED MODE] + [NUMBER OF BAD RLC DATA BLOCKS WITH BAD HEADER UL ACK MODE] + [NUMBER OF BAD RLC DATA BLOCKS WITH BAD HEADER UL UNACK MODE]
+                    + [IGNORED RLC DATA BLOCKS UL DUE TO BSN]/2 + [EGPRS UL CTRL BLOCKS]))
+/ (AVG(PERIOD_DURATION*60)*50))";"((SUM OVER MCS0..6 OF ( [UL_RLC_BLOCKS_IN_ACK_MODE] + [BAD_RLC_VALID_HDR_UL_ACK] + [BAD_RLC_VALID_HDR_UL_UNACK]
+                    + [UL_RLC_BLOCKS_IN_UNACK_MODE] + [BAD_RLC_BAD_HDR_UL_ACK] + [BAD_RLC_BAD_HDR_UL_UNACK] + [IGNOR_RLC_DATA_UL_DUE_BSN])
++ SUM OVER MCS7..9  OF ( [UL_RLC_BLOCKS_IN_ACK_MODE] + [BAD_RLC_VALID_HDR_UL_ACK] + [BAD_RLC_VALID_HDR_UL_UNACK]
+                    + [UL_RLC_BLOCKS_IN_UNACK_MODE] + [BAD_RLC_BAD_HDR_UL_ACK] + [BAD_RLC_BAD_HDR_UL_UNACK]
+                    + [IGNOR_RLC_DATA_UL_DUE_BSN]/2 + [EGPRS_UL_CTRL_BLOCKS]))
+/ (AVG(PERIOD_DURATION*60)*50))";"";"";"BSS10083,BSS10091,BSS115172,BSS20094,BSS20835,BSS21270";"";"PLMN; BSC; SEG; BCF; BTS; TRXTP; CS";"Total; week; weeklyBH; day; dailyBH; hour";"";"";"";"";"";"";"";"";"";"";"";"nidd"
+"trf_162g";"DL EGPRS traffic";"Downlink EGPRS erlangs";"For area level, this formula should be first collected for all BTSs in area and then results
+should be summed up for the area. Indicates the amount of resources (timeslots) the DL
+EGPRS traffic data consumes. This information is useful, for example, in forecasting the
+need for capacity extension.";"";"Customer";"Published";"9.00";"S13";"";"";"TSL(or erlang)";"Network Usage";"";"";"";"Actual DL data throughput (blocks)
+------------------------------------------------------------  
+nbr of blocks equivalent to 1 tsl full use in each BTS of area";"(sum over mcs1..6 of ( 
+         [079000] 
+        + [079009] 
+        + [079001] 
+        ) 
+ + sum over mcs7..9 of ( 
+        [079000] 
+        + [079009] 
+        + [079001] 
+        )/2 
+ + ([072166]))
+/ 
+(sum(period_duration*60)*50)";"(sum over mcs1..6 of ( 
+         [NBR_OF_DL_RLC_BL_IN_ACK_MODE] 
+        + [RETRANS_RLC_DATA_BL_DL] 
+        + [NBR_OF_DL_RLC_BL_IN_UNA_MODE] 
+        ) 
+ + sum over mcs7..9 of ( 
+        [NBR_OF_DL_RLC_BL_IN_ACK_MODE] 
+        + [RETRANS_RLC_DATA_BL_DL] 
+        + [NBR_OF_DL_RLC_BL_IN_UNA_MODE] 
+        )/2 
+ + ([EGPRS_DL_CTRL_BLOCKS]))
+/ 
+(sum(period_duration*60)*50)";"(sum over mcs1..6 of ( 
+         [NUMBER OF DL RLC BLOCKS IN ACKNOWLEDGED MODE] 
+        + [RETRANSMITTED RLC DATA BLOCKS DL] 
+        + [NUMBER OF DL RLC BLOCKS IN UNACKNOWLEDGED MODE] 
+        ) 
+ + sum over mcs7..9 of ( 
+        [NUMBER OF DL RLC BLOCKS IN ACKNOWLEDGED MODE] 
+        + [RETRANSMITTED RLC DATA BLOCKS DL] 
+        + [NUMBER OF DL RLC BLOCKS IN UNACKNOWLEDGED MODE] 
+        )/2 
+ + ([EGPRS DL CTRL BLOCKS]))
+/ 
+(sum(period_duration*60)*50)";"(sum over mcs1..6 of ( 
+         [DL_RLC_BLOCKS_IN_ACK_MODE] 
+        + [RETRANS_RLC_DATA_BLOCKS_DL] 
+        + [DL_RLC_BLOCKS_IN_UNACK_MODE] 
+        ) 
+ + sum over mcs7..9 of ( 
+        [DL_RLC_BLOCKS_IN_ACK_MODE] 
+        + [RETRANS_RLC_DATA_BLOCKS_DL] 
+        + [DL_RLC_BLOCKS_IN_UNACK_MODE] 
+        )/2 
+ + ([EGPRS_DL_CTRL_BLOCKS]))
+/ 
+(sum(period_duration*60)*50)";"";"RG30_BM";"BSS10083,BSS10091,BSS115172,BSS20094,BSS21270";"Ari Saarinen 09.10.2007: deduced from trf_162f, dummy LLC blocks added to the formula. In EGPRS mode dummy LLC blocks are always sent using MCS-1.";"PLMN; BSC; SEG; BCF; BTS; TRXTP";"Total; week; weeklyBH; day; dailyBH; hour";"";"";"";"";"BSC";"";"";"";"";"";"";"nidd"
+"trf_205d";"UL GPRS traffic";"UL GPRS traffic";"Indicates the amount of resources (timeslots) the GPRS traffic (excluding EDGE traffic)
+consumes on average during the period. This information is useful, for example, in forecasting
+the need for capacity extension. 50 blocks /sec /tsl is used to estimate timeslots.";"";"Customer";"Published";"9.00";"S13";"";"";"TSL(or erlang)";"Network Usage";"";"";"";"Actual UL data throughput (blocks)
+-------------------------------------------------------------  
+nbr of blocks equivalent to 1 tsl full use in each BTS of area";"(((SUM([072062] + [072064] + [072070]
++ [072071] + [072073] + [072225] + [072226]
++ SUM OVER MCS-11..12 ([079002] + [079003] + [079004] 
+                      + [079005] + [079006] + [079007]
+                      + [079014] + [072076] - [072165])))
+/(SUM(PERIOD_DURATION*60)*50)))";"(((SUM([RLC_DATA_BLOCKS_UL_CS1] + [RLC_DATA_BLOCKS_UL_CS2] + [BAD_FRAME_IND_UL_CS1]
++ [BAD_FRAME_IND_UL_CS2] + [BAD_FRAME_IND_UL_UNACK] + [IGNOR_RLC_BL_UL_DUE_BSN_CS1] + [IGNOR_RLC_BL_UL_DUE_BSN_CS2]
++ SUM OVER MCS-11..12 ([NBR_OF_UL_RLC_BL_IN_ACK_MODE] + [NBR_OF_UL_RLC_BL_IN_UNA_MODE] + [BAD_RLC_DATA_BL_VALID_UNA_UL] 
+                      + [BAD_RLC_DATA_BL_BAD_UNA_UL] + [BAD_RLC_DATA_BL_VALID_ACK_UL] + [BAD_RLC_DATA_BL_BAD_ACK_UL]
+                      + [IGNOR_RLC_DATA_UL_DUE_BSN] + [RLC_MAC_CNTRL_BLOCKS_UL] - [EGPRS_UL_CTRL_BLOCKS])))
+/(SUM(PERIOD_DURATION*60)*50)))";"(((SUM([RLC DATA BLOCKS UL CS1] + [RLC DATA BLOCKS UL CS2] + [BAD FRAME IND UL CS1]
++ [BAD FRAME IND UL CS2] + [BAD FRAME IND UL UNACK] + [IGNORED  RLC DATA BLOCKS UL  DUE TO BSN CS1] + [IGNORED  RLC DATA BLOCKS UL DUE TO BSN CS2]
++ SUM OVER MCS-11..12 ([NUMBER OF UL RLC BLOCKS IN ACKNOWLEDGED MODE] + [NUMBER OF UL RLC BLOCKS IN UNACKNOWLEDGED MODE] + [NUMBER OF BAD RLC DATA BLOCKS WITH VALID HEADER UL UNACK MODE] 
+                      + [NUMBER OF BAD RLC DATA BLOCKS WITH BAD HEADER UL UNACK MODE] + [NUMBER OF BAD RLC DATA BLOCKS WITH VALID HEADER UL ACK MODE] + [NUMBER OF BAD RLC DATA BLOCKS WITH BAD HEADER UL ACK MODE]
+                      + [IGNORED RLC DATA BLOCKS UL DUE TO BSN] + [RLC MAC CNTRL BLOCKS UL] - [EGPRS UL CTRL BLOCKS])))
+/(SUM(PERIOD_DURATION*60)*50)))";"(((SUM([RLC_DATA_BLOCKS_UL_CS1] + [RLC_DATA_BLOCKS_UL_CS2] + [BAD_FRAME_IND_UL_CS1]
++ [BAD_FRAME_IND_UL_CS2] + [BAD_FRAME_IND_UL_UNACK] + [IGNOR_RLC_BL_UL_DUE_BSN_CS1] + [IGNOR_RLC_BL_UL_DUE_BSN_CS2]
++ SUM OVER MCS-11..12 ([UL_RLC_BLOCKS_IN_ACK_MODE] + [UL_RLC_BLOCKS_IN_UNACK_MODE] + [BAD_RLC_VALID_HDR_UL_UNACK] 
+                      + [BAD_RLC_BAD_HDR_UL_UNACK] + [BAD_RLC_VALID_HDR_UL_ACK] + [BAD_RLC_BAD_HDR_UL_ACK]
+                      + [IGNOR_RLC_DATA_UL_DUE_BSN] + [RLC_MAC_CNTRL_BLOCKS_UL] - [EGPRS_UL_CTRL_BLOCKS])))
+/(SUM(PERIOD_DURATION*60)*50)))";"";"RG30_BM";"BSS09006,BSS10083,BSS10091,BSS115172,BSS20094,BSS20835,BSS21270";"16.12.2005 & 9.10.2007 deduced from trf_205b to replace [ignor rlc radio bl ul due bsn egprs] with the real S13 counters";"PLMN; BSC; SEG; BCF; BTS; TRXTP";"Total; week; weeklyBH; day; dailyBH; hour";"";"";"";"";"BSC";"";"";"";"";"";"";"nidd"
+"trf_208c";"DL GPRS traffic";"DL GPRS traffic";"Indicates the amount of resources (timeslots) the GPRS traffic (excluding EDGE traffic)
+consumes on average during the period. This information is useful, for example, in forecasting
+the need for capacity extension. 50 blocks /sec /tsl is used to estimate timeslots.";"";"Customer";"Published";"9.00";"S13";"";"";"TSL(or erlang)";"Network Usage";"";"";"";"Actual DL data throughput (blocks)
+-------------------------------------------------------------  
+nbr of blocks equivalent to 1 tsl full use in each BTS of area";"((SUM([072063] + [072065] + 
+[072068] + [072069]) 
++ SUM OVER MCS-11..12 ([079000] + [079001] + [079009]) 
++ ([072077] - [072166]) + [072224])
+/
+(SUM(PERIOD_DURATION*60)*50))";"((SUM([RLC_DATA_BLOCKS_DL_CS1] + [RLC_DATA_BLOCKS_DL_CS2] + 
+[RETRA_RLC_DATA_BLOCKS_DL_CS1] + [RETRA_RLC_DATA_BLOCKS_DL_CS2]) 
++ SUM OVER MCS-11..12 ([NBR_OF_DL_RLC_BL_IN_ACK_MODE] + [NBR_OF_DL_RLC_BL_IN_UNA_MODE] + [RETRANS_RLC_DATA_BL_DL]) 
++ ([RLC_MAC_CNTRL_BLOCKS_DL] - [EGPRS_DL_CTRL_BLOCKS]) + [DL_CS1_DATA_FOR_DUMMY_LLC])
+/
+(SUM(PERIOD_DURATION*60)*50))";"((SUM([RLC DATA BLOCKS DL CS1] + [RLC DATA BLOCKS DL CS2] + 
+[RETRA RLC DATA BLOCKS DL CS1] + [RETRA RLC DATA BLOCKS DL CS2]) 
++ SUM OVER MCS-11..12 ([NUMBER OF DL RLC BLOCKS IN ACKNOWLEDGED MODE] + [NUMBER OF DL RLC BLOCKS IN UNACKNOWLEDGED MODE] + [RETRANSMITTED RLC DATA BLOCKS DL]) 
++ ([RLC MAC CNTRL BLOCKS DL] - [EGPRS DL CTRL BLOCKS]) + [DL CS1 DATA FOR DUMMY LLC])
+/
+(SUM(PERIOD_DURATION*60)*50))";"((SUM([RLC_DATA_BLOCKS_DL_CS1] + [RLC_DATA_BLOCKS_DL_CS2] + 
+[RETRA_RLC_DATA_BLOCKS_DL_CS1] + [RETRA_RLC_DATA_BLOCKS_DL_CS2]) 
++ SUM OVER MCS-11..12 ([DL_RLC_BLOCKS_IN_ACK_MODE] + [DL_RLC_BLOCKS_IN_UNACK_MODE] + [RETRANS_RLC_DATA_BLOCKS_DL]) 
++ ([RLC_MAC_CNTRL_BLOCKS_DL] - [EGPRS_DL_CTRL_BLOCKS]) + [DL_CS1_DATA_FOR_DUMMY_LLC])
+/
+(SUM(PERIOD_DURATION*60)*50))";"";"RG30_BM";"BSS09006,BSS10083,BSS10091,BSS115172,BSS20094,BSS20835,BSS21270";"Ari Saarinen 9.10.2007. Deduced from trf_208b to add dummy llc blocks. Dummy blocks in GPSR mode are always sent using CS-1.";"PLMN; BSC; SEG; BCF; BTS; TRXTP";"Total; week; weeklyBH; day; dailyBH; hour";"";"";"";"";"BSC";"";"";"";"";"";"";"nidd"
+"trf_233c";"Avg ef ACK GPRS UL thp us TSL";"Average effective ACK GPRS UL throughput per used TSL";"Indicates the impact of radio link quality on net data rate per used timeslot considering
+retransmissions and coding scheme selection. The lower the value the poorer the radio
+link quality causing retransmissions and use of lower coding schemes.
+The numerator does not contain the RLC header bytes neither the does the MAC header
+because the aim is to count data volume from the users point of view as close as possible.
+The denominator is built on the fact that one timeslot can carry 50 RLC blocks per
+second.
+Note: Formula assumes that all GRPS unack RLC traffic is using CS1. With PCU2,
+GPRS unack RLC traffic can use CS1-4. If there is a significant amount of GRPS unack
+RLC traffic with CS2, the formula will give too high values.";"";"Customer";"Published";"10.01";"S11.5";"";"";"";"Network Usage";"";"";"";"GPRS UL payload ACK data in (kilobits)
+------------------------------------------------------------- 
+GPRS UL time for ACK data transfer (sec)";"(((SUM(([072062] - [072066])*20 + [072064]*30
++ SUM OVER MCS-11 ([079002])*36
++ SUM OVER MCS-12 ([079002])*50)*8 /1000)
+/(SUM([072062] - [072066] + [072064]
++ [072173] + [072174]
++ SUM OVER MCS-11..12([079002] + [079008])) /50)))";"(((SUM(([RLC_DATA_BLOCKS_UL_CS1] - [RLC_DATA_BLOCKS_UL_UNACK])*20 + [RLC_DATA_BLOCKS_UL_CS2]*30
++ SUM OVER MCS-11 ([NBR_OF_UL_RLC_BL_IN_ACK_MODE])*36
++ SUM OVER MCS-12 ([NBR_OF_UL_RLC_BL_IN_ACK_MODE])*50)*8 /1000)
+/(SUM([RLC_DATA_BLOCKS_UL_CS1] - [RLC_DATA_BLOCKS_UL_UNACK] + [RLC_DATA_BLOCKS_UL_CS2]
++ [RETRA_DATA_BLOCKS_UL_CS1] + [RETRA_DATA_BLOCKS_UL_CS2]
++ SUM OVER MCS-11..12([NBR_OF_UL_RLC_BL_IN_ACK_MODE] + [RETRANS_RLC_DATA_BL_UL])) /50)))";"(((SUM(([RLC DATA BLOCKS UL CS1] - [RLC DATA BLOCKS UL UNACK])*20 + [RLC DATA BLOCKS UL CS2]*30
++ SUM OVER MCS-11 ([NUMBER OF UL RLC BLOCKS IN ACKNOWLEDGED MODE])*36
++ SUM OVER MCS-12 ([NUMBER OF UL RLC BLOCKS IN ACKNOWLEDGED MODE])*50)*8 /1000)
+/(SUM([RLC DATA BLOCKS UL CS1] - [RLC DATA BLOCKS UL UNACK] + [RLC DATA BLOCKS UL CS2]
++ [RETRA DATA BLOCKS UL CS1] + [RETRA DATA BLOCKS UL CS2]
++ SUM OVER MCS-11..12([NUMBER OF UL RLC BLOCKS IN ACKNOWLEDGED MODE] + [RETRANSMITTED RLC DATA BLOCKS UL])) /50)))";"(((SUM(([RLC_DATA_BLOCKS_UL_CS1] - [RLC_DATA_BLOCKS_UL_UNACK])*20 + [RLC_DATA_BLOCKS_UL_CS2]*30
++ SUM OVER MCS-11 ([UL_RLC_BLOCKS_IN_ACK_MODE])*36
++ SUM OVER MCS-12 ([UL_RLC_BLOCKS_IN_ACK_MODE])*50)*8 /1000)
+/(SUM([RLC_DATA_BLOCKS_UL_CS1] - [RLC_DATA_BLOCKS_UL_UNACK] + [RLC_DATA_BLOCKS_UL_CS2]
++ [RETRA_DATA_BLOCKS_UL_CS1] + [RETRA_DATA_BLOCKS_UL_CS2]
++ SUM OVER MCS-11..12([UL_RLC_BLOCKS_IN_ACK_MODE] + [RETRANS_RLC_DATA_BLOCKS_UL])) /50)))";"Known problems: 
+1.  See rlc_10b for more details on counter update scenarios.
+2.  See trf_72i for more information.
+2. Formula assumes that all GRPS unack RLC traffic is using CS1. With PCU2, GPRS unack RLC traffic can use CS1-4. If there is a significant amount of GRPS unack RLC traffic with CS2, the formula will give too high values";"RG30_BM";"BSS09006,BSS10083,BSS10091,BSS115172,BSS20094,BSS21270";"PKi 4.3.2005 Deduced from trf_233b to include CS3 and CS4.";"PLMN; BSC; SEG; BCF; BTS; TRXTP";"Total; week; weeklyBH; day; dailyBH; hour";"";"";"";"";"BSC";"";"";"";"";"";"";"nidd"
+"trf_234";"Avg eff ACK EGP UL thp TSL eTRX";"Average effective ACK EGPRS UL throughput per used TSL in extended TRXs";"Indicates the impact of radio link quality on net data rate per used timeslot considering
+retransmissions and coding scheme selection. The lower the value the poorer the radio
+link quality causing retransmissions and use of lower coding schemes.
+The numerator does not contain the RLC header bytes neither the does the MAC header
+because the aim is to count data volume from the users point of view as close as possible.
+The denominator is built on the fact that one timeslot can carry 50 RLC blocks per
+second.";"";"Customer";"Published";"9.01";"S13";"";"";"";"Network Usage";"";"";"";"EGPRS UL payload ACK data in (kilobits) 
+--------------------------------------------------------------
+EGPRS UL time for ACK data transfer (sec)";"TRX_TYPE=1
+((SUM OVER MCS-1 ([079002])*22 
++ SUM OVER MCS-2 ([079002])*28
++ SUM OVER MCS-3 ([079002])*37
++ SUM OVER MCS-4 ([079002])*44
++ SUM OVER MCS-5 ([079002])*56
++ SUM OVER MCS-6 ([079002])*74
++ SUM OVER MCS-7 ([079002])*56
++ SUM OVER MCS-8 ([079002])*68
++ SUM OVER MCS-9 ([079002])*74)*8/1000)
+/
+TRX_TYPE=1
+(SUM OVER MCS1..6 OF ([079002] + [079008])/50
++ SUM OVER MCS7..9 OF ([079002] + [079008])/2 /50)";"TRX_TYPE=1
+((SUM OVER MCS-1 ([NBR_OF_UL_RLC_BL_IN_ACK_MODE])*22 
++ SUM OVER MCS-2 ([NBR_OF_UL_RLC_BL_IN_ACK_MODE])*28
++ SUM OVER MCS-3 ([NBR_OF_UL_RLC_BL_IN_ACK_MODE])*37
++ SUM OVER MCS-4 ([NBR_OF_UL_RLC_BL_IN_ACK_MODE])*44
++ SUM OVER MCS-5 ([NBR_OF_UL_RLC_BL_IN_ACK_MODE])*56
++ SUM OVER MCS-6 ([NBR_OF_UL_RLC_BL_IN_ACK_MODE])*74
++ SUM OVER MCS-7 ([NBR_OF_UL_RLC_BL_IN_ACK_MODE])*56
++ SUM OVER MCS-8 ([NBR_OF_UL_RLC_BL_IN_ACK_MODE])*68
++ SUM OVER MCS-9 ([NBR_OF_UL_RLC_BL_IN_ACK_MODE])*74)*8/1000)
+/
+TRX_TYPE=1
+(SUM OVER MCS1..6 OF ([NBR_OF_UL_RLC_BL_IN_ACK_MODE] + [RETRANS_RLC_DATA_BL_UL])/50
++ SUM OVER MCS7..9 OF ([NBR_OF_UL_RLC_BL_IN_ACK_MODE] + [RETRANS_RLC_DATA_BL_UL])/2 /50)";"TRX_TYPE=1
+((SUM OVER MCS-1 ([NUMBER OF UL RLC BLOCKS IN ACKNOWLEDGED MODE])*22 
++ SUM OVER MCS-2 ([NUMBER OF UL RLC BLOCKS IN ACKNOWLEDGED MODE])*28
++ SUM OVER MCS-3 ([NUMBER OF UL RLC BLOCKS IN ACKNOWLEDGED MODE])*37
++ SUM OVER MCS-4 ([NUMBER OF UL RLC BLOCKS IN ACKNOWLEDGED MODE])*44
++ SUM OVER MCS-5 ([NUMBER OF UL RLC BLOCKS IN ACKNOWLEDGED MODE])*56
++ SUM OVER MCS-6 ([NUMBER OF UL RLC BLOCKS IN ACKNOWLEDGED MODE])*74
++ SUM OVER MCS-7 ([NUMBER OF UL RLC BLOCKS IN ACKNOWLEDGED MODE])*56
++ SUM OVER MCS-8 ([NUMBER OF UL RLC BLOCKS IN ACKNOWLEDGED MODE])*68
++ SUM OVER MCS-9 ([NUMBER OF UL RLC BLOCKS IN ACKNOWLEDGED MODE])*74)*8/1000)
+/
+TRX_TYPE=1
+(SUM OVER MCS1..6 OF ([NUMBER OF UL RLC BLOCKS IN ACKNOWLEDGED MODE] + [RETRANSMITTED RLC DATA BLOCKS UL])/50
++ SUM OVER MCS7..9 OF ([NUMBER OF UL RLC BLOCKS IN ACKNOWLEDGED MODE] + [RETRANSMITTED RLC DATA BLOCKS UL])/2 /50)";"TRX_TYPE=1
+((SUM OVER MCS-1 ([UL_RLC_BLOCKS_IN_ACK_MODE])*22 
++ SUM OVER MCS-2 ([UL_RLC_BLOCKS_IN_ACK_MODE])*28
++ SUM OVER MCS-3 ([UL_RLC_BLOCKS_IN_ACK_MODE])*37
++ SUM OVER MCS-4 ([UL_RLC_BLOCKS_IN_ACK_MODE])*44
++ SUM OVER MCS-5 ([UL_RLC_BLOCKS_IN_ACK_MODE])*56
++ SUM OVER MCS-6 ([UL_RLC_BLOCKS_IN_ACK_MODE])*74
++ SUM OVER MCS-7 ([UL_RLC_BLOCKS_IN_ACK_MODE])*56
++ SUM OVER MCS-8 ([UL_RLC_BLOCKS_IN_ACK_MODE])*68
++ SUM OVER MCS-9 ([UL_RLC_BLOCKS_IN_ACK_MODE])*74)*8/1000)
+/
+TRX_TYPE=1
+(SUM OVER MCS1..6 OF ([UL_RLC_BLOCKS_IN_ACK_MODE] + [RETRANS_RLC_DATA_BLOCKS_UL])/50
++ SUM OVER MCS7..9 OF ([UL_RLC_BLOCKS_IN_ACK_MODE] + [RETRANS_RLC_DATA_BLOCKS_UL])/2 /50)";"Known problems:         1) The numerator is not yet pure user data but as close to that as we can see from BSC counters.
+        2) See rlc_10b for more details on counter update scenarios.
+        3) See trf_72i for more information.";"RG30_BM";"BSS10083,BSS10091,BSS20094,BSS21270";"PMWG 13.01.2005. Deduced from trf_72i for GPRS only version";"PLMN; BSC; SEG; BCF; BTS; TRXTP";"Total; week; weeklyBH; day; dailyBH; hour";"";"";"";"";"BSC";"";"";"";"";"";"";"nidd"
+"trf_235b";"Avg ef ACK GPRS DL thp us TSL";"Average effective ACK GPRS DL throughput per used TSL";"Indicates the impact of radio link quality on net data rate per used timeslot considering
+retransmissions and coding scheme selection. The lower the value the poorer the radio
+link quality causing retransmissions and use of lower coding schemes.
+The numerator does not contain the RLC header bytes neither the does the MAC
+header because the aim is to count data volume from the users point of view as close
+as possible. The denominator is built on the fact that one timeslot can carry 50 RLC
+blocks per second.
+Note: Formula assumes that all GRPS unack RLC traffic is using CS1. With PCU2,
+GPRS unack RLC traffic can use CS1-4. If there is a significant amount of GRPS unack
+RLC traffic with CS2, the formula will give too high values.";"";"Customer";"Published";"9.00";"S11.5";"";"";"";"Network Usage";"";"";"";"GPRS ACK DL payload data in (kilobits) 
+-------------------------------------------------------------
+GPRS ACK DL time for data transfer (sec)";"(SUM(
+([072063] - [072067])*20 
++ [072065]*30 
++ SUM OVER MCS-11 ([079000])*36 
++ SUM OVER MCS-12 ([079000])*50)*8 /1000)
+/
+(SUM ([072063] 
+- [072067] 
++ [072065] 
++ [072068] 
++ [072069] 
++ SUM OVER MCS-11..12([079000] 
++ [079009])) /50)";"(SUM(
+([RLC_DATA_BLOCKS_DL_CS1] - [RLC_DATA_BLOCKS_DL_UNACK])*20 
++ [RLC_DATA_BLOCKS_DL_CS2]*30 
++ SUM OVER MCS-11 ([NBR_OF_DL_RLC_BL_IN_ACK_MODE])*36 
++ SUM OVER MCS-12 ([NBR_OF_DL_RLC_BL_IN_ACK_MODE])*50)*8 /1000)
+/
+(SUM ([RLC_DATA_BLOCKS_DL_CS1] 
+- [RLC_DATA_BLOCKS_DL_UNACK] 
++ [RLC_DATA_BLOCKS_DL_CS2] 
++ [RETRA_RLC_DATA_BLOCKS_DL_CS1] 
++ [RETRA_RLC_DATA_BLOCKS_DL_CS2] 
++ SUM OVER MCS-11..12([NBR_OF_DL_RLC_BL_IN_ACK_MODE] 
++ [RETRANS_RLC_DATA_BL_DL])) /50)";"(SUM(
+([RLC DATA BLOCKS DL CS1] - [RLC DATA BLOCKS DL UNACK])*20 
++ [RLC DATA BLOCKS DL CS2]*30 
++ SUM OVER MCS-11 ([NUMBER OF DL RLC BLOCKS IN ACKNOWLEDGED MODE])*36 
++ SUM OVER MCS-12 ([NUMBER OF DL RLC BLOCKS IN ACKNOWLEDGED MODE])*50)*8 /1000)
+/
+(SUM ([RLC DATA BLOCKS DL CS1] 
+- [RLC DATA BLOCKS DL UNACK] 
++ [RLC DATA BLOCKS DL CS2] 
++ [RETRA RLC DATA BLOCKS DL CS1] 
++ [RETRA RLC DATA BLOCKS DL CS2] 
++ SUM OVER MCS-11..12([NUMBER OF DL RLC BLOCKS IN ACKNOWLEDGED MODE] 
++ [RETRANSMITTED RLC DATA BLOCKS DL])) /50)";"(SUM(
+([RLC_DATA_BLOCKS_DL_CS1] - [RLC_DATA_BLOCKS_DL_UNACK])*20 
++ [RLC_DATA_BLOCKS_DL_CS2]*30 
++ SUM OVER MCS-11 ([DL_RLC_BLOCKS_IN_ACK_MODE])*36 
++ SUM OVER MCS-12 ([DL_RLC_BLOCKS_IN_ACK_MODE])*50)*8 /1000)
+/
+(SUM ([RLC_DATA_BLOCKS_DL_CS1] 
+- [RLC_DATA_BLOCKS_DL_UNACK] 
++ [RLC_DATA_BLOCKS_DL_CS2] 
++ [RETRA_RLC_DATA_BLOCKS_DL_CS1] 
++ [RETRA_RLC_DATA_BLOCKS_DL_CS2] 
++ SUM OVER MCS-11..12([DL_RLC_BLOCKS_IN_ACK_MODE] 
++ [RETRANS_RLC_DATA_BLOCKS_DL])) /50)";"Known problems:        
+1) See trf_73h for more details.";"RG30_BM";"BSS09006,BSS10083,BSS10091,BSS20094,BSS21270";"PKi 4.3.2005 Deduced from trf_233a to include CS3 and CS4";"PLMN; BSC; SEG; BCF; BTS; TRXTP";"Total; week; weeklyBH; day; dailyBH; hour";"";"";"";"";"BSC";"";"";"";"";"";"";"nidd"
+"trf_236";"Avg ef ACK EGPRS DL thp us TSL";"Average effective ACK EGPRS DL throughput per used TSL";"Indicates the impact of radio link quality on net data rate per used timeslot considering
+retransmissions and coding scheme selection. The lower the value the poorer the radio
+link quality causing retransmissions and use of lower coding schemes.
+The numerator does not contain the RLC header bytes neither the does the MAC header
+because the aim is to count data volume from the users point of view as close as possible.
+The denominator is built on the fact that one timeslot can carry 50 RLC blocks per
+second.";"";"Customer";"Published";"9.00";"S10";"";"";"";"Network Usage";"";"";"";"EGPRS ACK DL payload data in (kilobits)
+--------------------------------------------------------------
+EGPRS ACK DL time for data transfer (sec)";"((SUM OVER MCS-1 ([079000])*22
++ SUM OVER MCS-2 ([079000])*28
++ SUM OVER MCS-3 ([079000])*37
++ SUM OVER MCS-4 ([079000])*44
++ SUM OVER MCS-5 ([079000])*56
++ SUM OVER MCS-6 ([079000])*74
++ SUM OVER MCS-7 ([079000])*56
++ SUM OVER MCS-8 ([079000])*68
++ SUM OVER MCS-9 ([079000])*74)*8/1000)
+/
+(SUM OVER MCS1..6 OF ([079000] 
++ [079009])/50
++ SUM OVER MCS7..9 OF ([079000] 
++ [079009])/2/50)";"((SUM OVER MCS-1 ([NBR_OF_DL_RLC_BL_IN_ACK_MODE])*22
++ SUM OVER MCS-2 ([NBR_OF_DL_RLC_BL_IN_ACK_MODE])*28
++ SUM OVER MCS-3 ([NBR_OF_DL_RLC_BL_IN_ACK_MODE])*37
++ SUM OVER MCS-4 ([NBR_OF_DL_RLC_BL_IN_ACK_MODE])*44
++ SUM OVER MCS-5 ([NBR_OF_DL_RLC_BL_IN_ACK_MODE])*56
++ SUM OVER MCS-6 ([NBR_OF_DL_RLC_BL_IN_ACK_MODE])*74
++ SUM OVER MCS-7 ([NBR_OF_DL_RLC_BL_IN_ACK_MODE])*56
++ SUM OVER MCS-8 ([NBR_OF_DL_RLC_BL_IN_ACK_MODE])*68
++ SUM OVER MCS-9 ([NBR_OF_DL_RLC_BL_IN_ACK_MODE])*74)*8/1000)
+/
+(SUM OVER MCS1..6 OF ([NBR_OF_DL_RLC_BL_IN_ACK_MODE] 
++ [RETRANS_RLC_DATA_BL_DL])/50
++ SUM OVER MCS7..9 OF ([NBR_OF_DL_RLC_BL_IN_ACK_MODE] 
++ [RETRANS_RLC_DATA_BL_DL])/2/50)";"((SUM OVER MCS-1 ([NUMBER OF DL RLC BLOCKS IN ACKNOWLEDGED MODE])*22
++ SUM OVER MCS-2 ([NUMBER OF DL RLC BLOCKS IN ACKNOWLEDGED MODE])*28
++ SUM OVER MCS-3 ([NUMBER OF DL RLC BLOCKS IN ACKNOWLEDGED MODE])*37
++ SUM OVER MCS-4 ([NUMBER OF DL RLC BLOCKS IN ACKNOWLEDGED MODE])*44
++ SUM OVER MCS-5 ([NUMBER OF DL RLC BLOCKS IN ACKNOWLEDGED MODE])*56
++ SUM OVER MCS-6 ([NUMBER OF DL RLC BLOCKS IN ACKNOWLEDGED MODE])*74
++ SUM OVER MCS-7 ([NUMBER OF DL RLC BLOCKS IN ACKNOWLEDGED MODE])*56
++ SUM OVER MCS-8 ([NUMBER OF DL RLC BLOCKS IN ACKNOWLEDGED MODE])*68
++ SUM OVER MCS-9 ([NUMBER OF DL RLC BLOCKS IN ACKNOWLEDGED MODE])*74)*8/1000)
+/
+(SUM OVER MCS1..6 OF ([NUMBER OF DL RLC BLOCKS IN ACKNOWLEDGED MODE] 
++ [RETRANSMITTED RLC DATA BLOCKS DL])/50
++ SUM OVER MCS7..9 OF ([NUMBER OF DL RLC BLOCKS IN ACKNOWLEDGED MODE] 
++ [RETRANSMITTED RLC DATA BLOCKS DL])/2/50)";"((SUM OVER MCS-1 ([DL_RLC_BLOCKS_IN_ACK_MODE])*22
++ SUM OVER MCS-2 ([DL_RLC_BLOCKS_IN_ACK_MODE])*28
++ SUM OVER MCS-3 ([DL_RLC_BLOCKS_IN_ACK_MODE])*37
++ SUM OVER MCS-4 ([DL_RLC_BLOCKS_IN_ACK_MODE])*44
++ SUM OVER MCS-5 ([DL_RLC_BLOCKS_IN_ACK_MODE])*56
++ SUM OVER MCS-6 ([DL_RLC_BLOCKS_IN_ACK_MODE])*74
++ SUM OVER MCS-7 ([DL_RLC_BLOCKS_IN_ACK_MODE])*56
++ SUM OVER MCS-8 ([DL_RLC_BLOCKS_IN_ACK_MODE])*68
++ SUM OVER MCS-9 ([DL_RLC_BLOCKS_IN_ACK_MODE])*74)*8/1000)
+/
+(SUM OVER MCS1..6 OF ([DL_RLC_BLOCKS_IN_ACK_MODE] 
++ [RETRANS_RLC_DATA_BLOCKS_DL])/50
++ SUM OVER MCS7..9 OF ([DL_RLC_BLOCKS_IN_ACK_MODE] 
++ [RETRANS_RLC_DATA_BLOCKS_DL])/2/50)";"Known problems:        
+1) See trf_73h for more details.";"RG30_BM";"BSS10083,BSS10091,BSS20094,BSS21270";"PMWG 13.01.2005. Deduced from trf_73h for EGPRS only version.";"PLMN; BSC; SEG; BCF; BTS; TRXTP; CS";"Total; week; weeklyBH; day; dailyBH; hour";"";"";"";"";"BSC";"";"";"";"";"";"";"nidd"
+"trf_237d";"PS traffic";"PS traffic";"Detects the maximum amount of PS data traffic during the measurement period.";"";"Customer";"Published";"9.01";"S13";"";"";"E";"Network Usage";"";"";"";"";"SUM(
+MAX( 
+( 
+RLC_DATA_BLOCKS_UL_CS1 + RLC_DATA_BLOCKS_UL_CS2  
++ BAD_FRAME_IND_UL_CS1 + BAD_FRAME_IND_UL_CS2  
++ BAD_FRAME_IND_UL_UNACK + RLC_MAC_CNTRL_BLOCKS_UL  
++ IGNOR_RLC_BL_UL_DUE_BSN_CS1 + IGNOR_RLC_BL_UL_DUE_BSN_CS2 
++ SUM OVER MCS0..6 OF ( 
+UL_RLC_BLOCKS_IN_ACK_MODE + UL_RLC_BLOCKS_IN_UNACK_MODE 
++ BAD_RLC_VALID_HDR_UL_ACK + BAD_RLC_VALID_HDR_UL_UNACK  
++ BAD_RLC_BAD_HDR_UL_ACK + BAD_RLC_BAD_HDR_UL_UNACK  
++ IGNOR_RLC_DATA_UL_DUE_BSN) 
++ SUM OVER MCS7..9 OF (( 
+UL_RLC_BLOCKS_IN_ACK_MODE + UL_RLC_BLOCKS_IN_UNACK_MODE 
++ BAD_RLC_VALID_HDR_UL_ACK + BAD_RLC_VALID_HDR_UL_UNACK  
++ BAD_RLC_BAD_HDR_UL_ACK + BAD_RLC_BAD_HDR_UL_UNACK  
++ IGNOR_RLC_DATA_UL_DUE_BSN)/2) 
++ SUM OVER MCS-11..12 OF ( 
+UL_RLC_BLOCKS_IN_ACK_MODE + UL_RLC_BLOCKS_IN_UNACK_MODE 
++ BAD_RLC_VALID_HDR_UL_ACK + BAD_RLC_VALID_HDR_UL_UNACK  
++ BAD_RLC_BAD_HDR_UL_ACK + BAD_RLC_BAD_HDR_UL_UNACK  
++ IGNOR_RLC_DATA_UL_DUE_BSN)
+)
+ 
+,
+ 
+( 
+RLC_DATA_BLOCKS_DL_CS1 + RLC_DATA_BLOCKS_DL_CS2  
++ RETRA_RLC_DATA_BLOCKS_DL_CS1 + RETRA_RLC_DATA_BLOCKS_DL_CS2  
++ RLC_MAC_CNTRL_BLOCKS_DL + DL_CS1_DATA_FOR_DUMMY_LLC 
++ SUM OVER MCS1..6 OF ( 
+DL_RLC_BLOCKS_IN_ACK_MODE + DL_RLC_BLOCKS_IN_UNACK_MODE  
++ RETRANS_RLC_DATA_BLOCKS_DL + DL_RLC_DATA_FOR_DUMMY_LLC) 
++ SUM OVER MCS7..9 OF ((
+DL_RLC_BLOCKS_IN_ACK_MODE + DL_RLC_BLOCKS_IN_UNACK_MODE  
++ RETRANS_RLC_DATA_BLOCKS_DL)/2) 
++ SUM OVER MCS-11..12 OF ( 
+DL_RLC_BLOCKS_IN_ACK_MODE + DL_RLC_BLOCKS_IN_UNACK_MODE  
++ RETRANS_RLC_DATA_BLOCKS_DL) 
+) 
+))
+/ 
+SUM(PERIOD_DURATION*60*50)";"";"";"";"";"RG30_BM";"";"16.12.2005 & 9.10.2007 deduced from trf_237b to replace [ignor rlc radio bl ul due bsn egprs] with the real S13 counters and to add new S13 Dummy DL LLC block counters";"PLMN; BSC; SEG; BCF; BTS; TRXTP";"Total; week; weeklyBH; day; dailyBH; hour";"";"";"";"";"BSC";"";"";"";"";"";"";"nidd"
+"trf_242f";"Share of PS erl all erl";"Share of PS erlangs to all erlangs";"Indicates the ratio of PS traffic in erlangs compared to all erlangs (PS + CS).";"";"Customer";"Published";"1.00";"S16.1";"S16.1";"";"%";"Network Usage";"";"";"";"trf_237d 
+100 * ---------------- 
+      trf_237d + trf_171f";"(
+MAX(
+(([072062] + [072064] + [072070] + [072071]
++ [072073] + [072076] + [072225] + [072226]
++ SUM OVER MCS0..6 OF ([079002] + [079003]
+                    + [079006] + [079004] 
+                    + [079007] + [079005] + [079014])
++ SUM OVER MCS7..9 OF ([079002] + [079003]
+                    + [079006] + [079004]
+                    + [079007] + [079005] + [079014]/2)
++ SUM OVER MCS-11..12 OF ([079002] + [079004]
+                    + [079006] + [079007]
+                    + [079005] + [079003] + [079014]))
+/(PERIOD_DURATION*60*50))
+,
+(([072063] + [072065] + [072068]
++ [072069] + [072077] + [072224]
++ SUM OVER MCS1..6 OF ([079000] + [079001] 
+                    + [079009] + [079012])
++ SUM OVER MCS7..9 OF (([079000] + [079001] 
+                    + [079009])/2)
++ SUM OVER MCS-11..12 OF ([079000] + [079001] 
+                    + [079009]))
+/(PERIOD_DURATION*60*50)))
+)
+/
+(
+(MAX(
+(([072062] + [072064] + [072070] + [072071]
++ [072073] + [072076] + [072225] + [072226]
++ SUM OVER MCS0..6 OF ([079002] + [079003]
+                    + [079006] + [079004] 
+                    + [079007] + [079005] + [079014])
++ SUM OVER MCS7..9 OF (([079002] + [079003]
+                    + [079006] + [079004]
+                    + [079007] + [079005] + [079014])/2)
++ SUM OVER MCS-11..12 OF ([079002] + [079004]
+                    + [079006] + [079007]
+                    + [079005] + [079003] + [079014]))
+/(PERIOD_DURATION*60*50))
+,
+(([072063] + [072065] + [072068]
++ [072069] + [072077] + [072224]
++ SUM OVER MCS1..6 OF ([079000] + [079001] 
+                    + [079009] + [079012])
++ SUM OVER MCS7..9 OF (([079000] + [079001] 
+                    + [079009])/2)
++ SUM OVER MCS-11..12 OF ([079000] + [079001] 
+                    + [079009]))
+/(PERIOD_DURATION*60*50)))
+)
++ (SUM([002027]) / SUM([002028]))
++ (SUM(([105012] + [105011]) /100) / SUM (PERIOD_DURATION*60)))";"(
+MAX(
+(([RLC_DATA_BLOCKS_UL_CS1] + [RLC_DATA_BLOCKS_UL_CS2] + [BAD_FRAME_IND_UL_CS1] + [BAD_FRAME_IND_UL_CS2]
++ [BAD_FRAME_IND_UL_UNACK] + [RLC_MAC_CNTRL_BLOCKS_UL] + [IGNOR_RLC_BL_UL_DUE_BSN_CS1] + [IGNOR_RLC_BL_UL_DUE_BSN_CS2]
++ SUM OVER MCS0..6 OF ([NBR_OF_UL_RLC_BL_IN_ACK_MODE] + [NBR_OF_UL_RLC_BL_IN_UNA_MODE]
+                    + [BAD_RLC_DATA_BL_VALID_ACK_UL] + [BAD_RLC_DATA_BL_VALID_UNA_UL] 
+                    + [BAD_RLC_DATA_BL_BAD_ACK_UL] + [BAD_RLC_DATA_BL_BAD_UNA_UL] + [IGNOR_RLC_DATA_UL_DUE_BSN])
++ SUM OVER MCS7..9 OF ([NBR_OF_UL_RLC_BL_IN_ACK_MODE] + [NBR_OF_UL_RLC_BL_IN_UNA_MODE]
+                    + [BAD_RLC_DATA_BL_VALID_ACK_UL] + [BAD_RLC_DATA_BL_VALID_UNA_UL]
+                    + [BAD_RLC_DATA_BL_BAD_ACK_UL] + [BAD_RLC_DATA_BL_BAD_UNA_UL] + [IGNOR_RLC_DATA_UL_DUE_BSN]/2)
++ SUM OVER MCS-11..12 OF ([NBR_OF_UL_RLC_BL_IN_ACK_MODE] + [BAD_RLC_DATA_BL_VALID_UNA_UL]
+                    + [BAD_RLC_DATA_BL_VALID_ACK_UL] + [BAD_RLC_DATA_BL_BAD_ACK_UL]
+                    + [BAD_RLC_DATA_BL_BAD_UNA_UL] + [NBR_OF_UL_RLC_BL_IN_UNA_MODE] + [IGNOR_RLC_DATA_UL_DUE_BSN]))
+/(PERIOD_DURATION*60*50))
+,
+(([RLC_DATA_BLOCKS_DL_CS1] + [RLC_DATA_BLOCKS_DL_CS2] + [RETRA_RLC_DATA_BLOCKS_DL_CS1]
++ [RETRA_RLC_DATA_BLOCKS_DL_CS2] + [RLC_MAC_CNTRL_BLOCKS_DL] + [DL_CS1_DATA_FOR_DUMMY_LLC]
++ SUM OVER MCS1..6 OF ([NBR_OF_DL_RLC_BL_IN_ACK_MODE] + [NBR_OF_DL_RLC_BL_IN_UNA_MODE] 
+                    + [RETRANS_RLC_DATA_BL_DL] + [DL_RLC_DATA_FOR_DUMMY_LLC])
++ SUM OVER MCS7..9 OF (([NBR_OF_DL_RLC_BL_IN_ACK_MODE] + [NBR_OF_DL_RLC_BL_IN_UNA_MODE] 
+                    + [RETRANS_RLC_DATA_BL_DL])/2)
++ SUM OVER MCS-11..12 OF ([NBR_OF_DL_RLC_BL_IN_ACK_MODE] + [NBR_OF_DL_RLC_BL_IN_UNA_MODE] 
+                    + [RETRANS_RLC_DATA_BL_DL]))
+/(PERIOD_DURATION*60*50)))
+)
+/
+(
+(MAX(
+(([RLC_DATA_BLOCKS_UL_CS1] + [RLC_DATA_BLOCKS_UL_CS2] + [BAD_FRAME_IND_UL_CS1] + [BAD_FRAME_IND_UL_CS2]
++ [BAD_FRAME_IND_UL_UNACK] + [RLC_MAC_CNTRL_BLOCKS_UL] + [IGNOR_RLC_BL_UL_DUE_BSN_CS1] + [IGNOR_RLC_BL_UL_DUE_BSN_CS2]
++ SUM OVER MCS0..6 OF ([NBR_OF_UL_RLC_BL_IN_ACK_MODE] + [NBR_OF_UL_RLC_BL_IN_UNA_MODE]
+                    + [BAD_RLC_DATA_BL_VALID_ACK_UL] + [BAD_RLC_DATA_BL_VALID_UNA_UL] 
+                    + [BAD_RLC_DATA_BL_BAD_ACK_UL] + [BAD_RLC_DATA_BL_BAD_UNA_UL] + [IGNOR_RLC_DATA_UL_DUE_BSN])
++ SUM OVER MCS7..9 OF (([NBR_OF_UL_RLC_BL_IN_ACK_MODE] + [NBR_OF_UL_RLC_BL_IN_UNA_MODE]
+                    + [BAD_RLC_DATA_BL_VALID_ACK_UL] + [BAD_RLC_DATA_BL_VALID_UNA_UL]
+                    + [BAD_RLC_DATA_BL_BAD_ACK_UL] + [BAD_RLC_DATA_BL_BAD_UNA_UL] + [IGNOR_RLC_DATA_UL_DUE_BSN])/2)
++ SUM OVER MCS-11..12 OF ([NBR_OF_UL_RLC_BL_IN_ACK_MODE] + [BAD_RLC_DATA_BL_VALID_UNA_UL]
+                    + [BAD_RLC_DATA_BL_VALID_ACK_UL] + [BAD_RLC_DATA_BL_BAD_ACK_UL]
+                    + [BAD_RLC_DATA_BL_BAD_UNA_UL] + [NBR_OF_UL_RLC_BL_IN_UNA_MODE] + [IGNOR_RLC_DATA_UL_DUE_BSN]))
+/(PERIOD_DURATION*60*50))
+,
+(([RLC_DATA_BLOCKS_DL_CS1] + [RLC_DATA_BLOCKS_DL_CS2] + [RETRA_RLC_DATA_BLOCKS_DL_CS1]
++ [RETRA_RLC_DATA_BLOCKS_DL_CS2] + [RLC_MAC_CNTRL_BLOCKS_DL] + [DL_CS1_DATA_FOR_DUMMY_LLC]
++ SUM OVER MCS1..6 OF ([NBR_OF_DL_RLC_BL_IN_ACK_MODE] + [NBR_OF_DL_RLC_BL_IN_UNA_MODE] 
+                    + [RETRANS_RLC_DATA_BL_DL] + [DL_RLC_DATA_FOR_DUMMY_LLC])
++ SUM OVER MCS7..9 OF (([NBR_OF_DL_RLC_BL_IN_ACK_MODE] + [NBR_OF_DL_RLC_BL_IN_UNA_MODE] 
+                    + [RETRANS_RLC_DATA_BL_DL])/2)
++ SUM OVER MCS-11..12 OF ([NBR_OF_DL_RLC_BL_IN_ACK_MODE] + [NBR_OF_DL_RLC_BL_IN_UNA_MODE] 
+                    + [RETRANS_RLC_DATA_BL_DL]))
+/(PERIOD_DURATION*60*50)))
+)
++ (SUM([AVE_BUSY_TCH]) / SUM([RES_AVAIL_DENOMINATOR_14]))
++ (SUM(([DTM_DURATION_SUM_HR] + [DTM_DURATION_SUM_FR]) /100) / SUM (PERIOD_DURATION*60)))";"(
+MAX(
+(([RLC DATA BLOCKS UL CS1] + [RLC DATA BLOCKS UL CS2] + [BAD FRAME IND UL CS1] + [BAD FRAME IND UL CS2]
++ [BAD FRAME IND UL UNACK] + [RLC MAC CNTRL BLOCKS UL] + [IGNORED  RLC DATA BLOCKS UL  DUE TO BSN CS1] + [IGNORED  RLC DATA BLOCKS UL DUE TO BSN CS2]
++ SUM OVER MCS0..6 OF ([NUMBER OF UL RLC BLOCKS IN ACKNOWLEDGED MODE] + [NUMBER OF UL RLC BLOCKS IN UNACKNOWLEDGED MODE]
+                    + [NUMBER OF BAD RLC DATA BLOCKS WITH VALID HEADER UL ACK MODE] + [NUMBER OF BAD RLC DATA BLOCKS WITH VALID HEADER UL UNACK MODE] 
+                    + [NUMBER OF BAD RLC DATA BLOCKS WITH BAD HEADER UL ACK MODE] + [NUMBER OF BAD RLC DATA BLOCKS WITH BAD HEADER UL UNACK MODE] + [IGNORED RLC DATA BLOCKS UL DUE TO BSN])
++ SUM OVER MCS7..9 OF ([NUMBER OF UL RLC BLOCKS IN ACKNOWLEDGED MODE] + [NUMBER OF UL RLC BLOCKS IN UNACKNOWLEDGED MODE]
+                    + [NUMBER OF BAD RLC DATA BLOCKS WITH VALID HEADER UL ACK MODE] + [NUMBER OF BAD RLC DATA BLOCKS WITH VALID HEADER UL UNACK MODE]
+                    + [NUMBER OF BAD RLC DATA BLOCKS WITH BAD HEADER UL ACK MODE] + [NUMBER OF BAD RLC DATA BLOCKS WITH BAD HEADER UL UNACK MODE] + [IGNORED RLC DATA BLOCKS UL DUE TO BSN]/2)
++ SUM OVER MCS-11..12 OF ([NUMBER OF UL RLC BLOCKS IN ACKNOWLEDGED MODE] + [NUMBER OF BAD RLC DATA BLOCKS WITH VALID HEADER UL UNACK MODE]
+                    + [NUMBER OF BAD RLC DATA BLOCKS WITH VALID HEADER UL ACK MODE] + [NUMBER OF BAD RLC DATA BLOCKS WITH BAD HEADER UL ACK MODE]
+                    + [NUMBER OF BAD RLC DATA BLOCKS WITH BAD HEADER UL UNACK MODE] + [NUMBER OF UL RLC BLOCKS IN UNACKNOWLEDGED MODE] + [IGNORED RLC DATA BLOCKS UL DUE TO BSN]))
+/(PERIOD_DURATION*60*50))
+,
+(([RLC DATA BLOCKS DL CS1] + [RLC DATA BLOCKS DL CS2] + [RETRA RLC DATA BLOCKS DL CS1]
++ [RETRA RLC DATA BLOCKS DL CS2] + [RLC MAC CNTRL BLOCKS DL] + [DL CS1 DATA FOR DUMMY LLC]
++ SUM OVER MCS1..6 OF ([NUMBER OF DL RLC BLOCKS IN ACKNOWLEDGED MODE] + [NUMBER OF DL RLC BLOCKS IN UNACKNOWLEDGED MODE] 
+                    + [RETRANSMITTED RLC DATA BLOCKS DL] + [DL RLC DATA FOR DUMMY LLC])
++ SUM OVER MCS7..9 OF (([NUMBER OF DL RLC BLOCKS IN ACKNOWLEDGED MODE] + [NUMBER OF DL RLC BLOCKS IN UNACKNOWLEDGED MODE] 
+                    + [RETRANSMITTED RLC DATA BLOCKS DL])/2)
++ SUM OVER MCS-11..12 OF ([NUMBER OF DL RLC BLOCKS IN ACKNOWLEDGED MODE] + [NUMBER OF DL RLC BLOCKS IN UNACKNOWLEDGED MODE] 
+                    + [RETRANSMITTED RLC DATA BLOCKS DL]))
+/(PERIOD_DURATION*60*50)))
+)
+/
+(
+(MAX(
+(([RLC DATA BLOCKS UL CS1] + [RLC DATA BLOCKS UL CS2] + [BAD FRAME IND UL CS1] + [BAD FRAME IND UL CS2]
++ [BAD FRAME IND UL UNACK] + [RLC MAC CNTRL BLOCKS UL] + [IGNORED  RLC DATA BLOCKS UL  DUE TO BSN CS1] + [IGNORED  RLC DATA BLOCKS UL DUE TO BSN CS2]
++ SUM OVER MCS0..6 OF ([NUMBER OF UL RLC BLOCKS IN ACKNOWLEDGED MODE] + [NUMBER OF UL RLC BLOCKS IN UNACKNOWLEDGED MODE]
+                    + [NUMBER OF BAD RLC DATA BLOCKS WITH VALID HEADER UL ACK MODE] + [NUMBER OF BAD RLC DATA BLOCKS WITH VALID HEADER UL UNACK MODE] 
+                    + [NUMBER OF BAD RLC DATA BLOCKS WITH BAD HEADER UL ACK MODE] + [NUMBER OF BAD RLC DATA BLOCKS WITH BAD HEADER UL UNACK MODE] + [IGNORED RLC DATA BLOCKS UL DUE TO BSN])
++ SUM OVER MCS7..9 OF (([NUMBER OF UL RLC BLOCKS IN ACKNOWLEDGED MODE] + [NUMBER OF UL RLC BLOCKS IN UNACKNOWLEDGED MODE]
+                    + [NUMBER OF BAD RLC DATA BLOCKS WITH VALID HEADER UL ACK MODE] + [NUMBER OF BAD RLC DATA BLOCKS WITH VALID HEADER UL UNACK MODE]
+                    + [NUMBER OF BAD RLC DATA BLOCKS WITH BAD HEADER UL ACK MODE] + [NUMBER OF BAD RLC DATA BLOCKS WITH BAD HEADER UL UNACK MODE] + [IGNORED RLC DATA BLOCKS UL DUE TO BSN])/2)
++ SUM OVER MCS-11..12 OF ([NUMBER OF UL RLC BLOCKS IN ACKNOWLEDGED MODE] + [NUMBER OF BAD RLC DATA BLOCKS WITH VALID HEADER UL UNACK MODE]
+                    + [NUMBER OF BAD RLC DATA BLOCKS WITH VALID HEADER UL ACK MODE] + [NUMBER OF BAD RLC DATA BLOCKS WITH BAD HEADER UL ACK MODE]
+                    + [NUMBER OF BAD RLC DATA BLOCKS WITH BAD HEADER UL UNACK MODE] + [NUMBER OF UL RLC BLOCKS IN UNACKNOWLEDGED MODE] + [IGNORED RLC DATA BLOCKS UL DUE TO BSN]))
+/(PERIOD_DURATION*60*50))
+,
+(([RLC DATA BLOCKS DL CS1] + [RLC DATA BLOCKS DL CS2] + [RETRA RLC DATA BLOCKS DL CS1]
++ [RETRA RLC DATA BLOCKS DL CS2] + [RLC MAC CNTRL BLOCKS DL] + [DL CS1 DATA FOR DUMMY LLC]
++ SUM OVER MCS1..6 OF ([NUMBER OF DL RLC BLOCKS IN ACKNOWLEDGED MODE] + [NUMBER OF DL RLC BLOCKS IN UNACKNOWLEDGED MODE] 
+                    + [RETRANSMITTED RLC DATA BLOCKS DL] + [DL RLC DATA FOR DUMMY LLC])
++ SUM OVER MCS7..9 OF (([NUMBER OF DL RLC BLOCKS IN ACKNOWLEDGED MODE] + [NUMBER OF DL RLC BLOCKS IN UNACKNOWLEDGED MODE] 
+                    + [RETRANSMITTED RLC DATA BLOCKS DL])/2)
++ SUM OVER MCS-11..12 OF ([NUMBER OF DL RLC BLOCKS IN ACKNOWLEDGED MODE] + [NUMBER OF DL RLC BLOCKS IN UNACKNOWLEDGED MODE] 
+                    + [RETRANSMITTED RLC DATA BLOCKS DL]))
+/(PERIOD_DURATION*60*50)))
+)
++ (SUM([AVE BUSY TCH]) / SUM([RES AVAIL DENOMINATOR 14]))
++ (SUM(([DTM DURATION SUM HR] + [DTM DURATION SUM FR]) /100) / SUM (PERIOD_DURATION*60)))";"(
+MAX(
+(([RLC_DATA_BLOCKS_UL_CS1] + [RLC_DATA_BLOCKS_UL_CS2] + [BAD_FRAME_IND_UL_CS1] + [BAD_FRAME_IND_UL_CS2]
++ [BAD_FRAME_IND_UL_UNACK] + [RLC_MAC_CNTRL_BLOCKS_UL] + [IGNOR_RLC_BL_UL_DUE_BSN_CS1] + [IGNOR_RLC_BL_UL_DUE_BSN_CS2]
++ SUM OVER MCS0..6 OF ([UL_RLC_BLOCKS_IN_ACK_MODE] + [UL_RLC_BLOCKS_IN_UNACK_MODE]
+                    + [BAD_RLC_VALID_HDR_UL_ACK] + [BAD_RLC_VALID_HDR_UL_UNACK] 
+                    + [BAD_RLC_BAD_HDR_UL_ACK] + [BAD_RLC_BAD_HDR_UL_UNACK] + [IGNOR_RLC_DATA_UL_DUE_BSN])
++ SUM OVER MCS7..9 OF ([UL_RLC_BLOCKS_IN_ACK_MODE] + [UL_RLC_BLOCKS_IN_UNACK_MODE]
+                    + [BAD_RLC_VALID_HDR_UL_ACK] + [BAD_RLC_VALID_HDR_UL_UNACK]
+                    + [BAD_RLC_BAD_HDR_UL_ACK] + [BAD_RLC_BAD_HDR_UL_UNACK] + [IGNOR_RLC_DATA_UL_DUE_BSN]/2)
++ SUM OVER MCS-11..12 OF ([UL_RLC_BLOCKS_IN_ACK_MODE] + [BAD_RLC_VALID_HDR_UL_UNACK]
+                    + [BAD_RLC_VALID_HDR_UL_ACK] + [BAD_RLC_BAD_HDR_UL_ACK]
+                    + [BAD_RLC_BAD_HDR_UL_UNACK] + [UL_RLC_BLOCKS_IN_UNACK_MODE] + [IGNOR_RLC_DATA_UL_DUE_BSN]))
+/(PERIOD_DURATION*60*50))
+,
+(([RLC_DATA_BLOCKS_DL_CS1] + [RLC_DATA_BLOCKS_DL_CS2] + [RETRA_RLC_DATA_BLOCKS_DL_CS1]
++ [RETRA_RLC_DATA_BLOCKS_DL_CS2] + [RLC_MAC_CNTRL_BLOCKS_DL] + [DL_CS1_DATA_FOR_DUMMY_LLC]
++ SUM OVER MCS1..6 OF ([DL_RLC_BLOCKS_IN_ACK_MODE] + [DL_RLC_BLOCKS_IN_UNACK_MODE] 
+                    + [RETRANS_RLC_DATA_BLOCKS_DL] + [DL_RLC_DATA_FOR_DUMMY_LLC])
++ SUM OVER MCS7..9 OF (([DL_RLC_BLOCKS_IN_ACK_MODE] + [DL_RLC_BLOCKS_IN_UNACK_MODE] 
+                    + [RETRANS_RLC_DATA_BLOCKS_DL])/2)
++ SUM OVER MCS-11..12 OF ([DL_RLC_BLOCKS_IN_ACK_MODE] + [DL_RLC_BLOCKS_IN_UNACK_MODE] 
+                    + [RETRANS_RLC_DATA_BLOCKS_DL]))
+/(PERIOD_DURATION*60*50)))
+)
+/
+(
+(MAX(
+(([RLC_DATA_BLOCKS_UL_CS1] + [RLC_DATA_BLOCKS_UL_CS2] + [BAD_FRAME_IND_UL_CS1] + [BAD_FRAME_IND_UL_CS2]
++ [BAD_FRAME_IND_UL_UNACK] + [RLC_MAC_CNTRL_BLOCKS_UL] + [IGNOR_RLC_BL_UL_DUE_BSN_CS1] + [IGNOR_RLC_BL_UL_DUE_BSN_CS2]
++ SUM OVER MCS0..6 OF ([UL_RLC_BLOCKS_IN_ACK_MODE] + [UL_RLC_BLOCKS_IN_UNACK_MODE]
+                    + [BAD_RLC_VALID_HDR_UL_ACK] + [BAD_RLC_VALID_HDR_UL_UNACK] 
+                    + [BAD_RLC_BAD_HDR_UL_ACK] + [BAD_RLC_BAD_HDR_UL_UNACK] + [IGNOR_RLC_DATA_UL_DUE_BSN])
++ SUM OVER MCS7..9 OF (([UL_RLC_BLOCKS_IN_ACK_MODE] + [UL_RLC_BLOCKS_IN_UNACK_MODE]
+                    + [BAD_RLC_VALID_HDR_UL_ACK] + [BAD_RLC_VALID_HDR_UL_UNACK]
+                    + [BAD_RLC_BAD_HDR_UL_ACK] + [BAD_RLC_BAD_HDR_UL_UNACK] + [IGNOR_RLC_DATA_UL_DUE_BSN])/2)
++ SUM OVER MCS-11..12 OF ([UL_RLC_BLOCKS_IN_ACK_MODE] + [BAD_RLC_VALID_HDR_UL_UNACK]
+                    + [BAD_RLC_VALID_HDR_UL_ACK] + [BAD_RLC_BAD_HDR_UL_ACK]
+                    + [BAD_RLC_BAD_HDR_UL_UNACK] + [UL_RLC_BLOCKS_IN_UNACK_MODE] + [IGNOR_RLC_DATA_UL_DUE_BSN]))
+/(PERIOD_DURATION*60*50))
+,
+(([RLC_DATA_BLOCKS_DL_CS1] + [RLC_DATA_BLOCKS_DL_CS2] + [RETRA_RLC_DATA_BLOCKS_DL_CS1]
++ [RETRA_RLC_DATA_BLOCKS_DL_CS2] + [RLC_MAC_CNTRL_BLOCKS_DL] + [DL_CS1_DATA_FOR_DUMMY_LLC]
++ SUM OVER MCS1..6 OF ([DL_RLC_BLOCKS_IN_ACK_MODE] + [DL_RLC_BLOCKS_IN_UNACK_MODE] 
+                    + [RETRANS_RLC_DATA_BLOCKS_DL] + [DL_RLC_DATA_FOR_DUMMY_LLC])
++ SUM OVER MCS7..9 OF (([DL_RLC_BLOCKS_IN_ACK_MODE] + [DL_RLC_BLOCKS_IN_UNACK_MODE] 
+                    + [RETRANS_RLC_DATA_BLOCKS_DL])/2)
++ SUM OVER MCS-11..12 OF ([DL_RLC_BLOCKS_IN_ACK_MODE] + [DL_RLC_BLOCKS_IN_UNACK_MODE] 
+                    + [RETRANS_RLC_DATA_BLOCKS_DL]))
+/(PERIOD_DURATION*60*50)))
+)
++ (SUM([AVE_BUSY_TCH]) / SUM([RES_AV_DENOM14]))
++ (SUM(([DTM_DURATION_SUM_HR] + [DTM_DURATION_SUM_FR]) /100) / SUM (PERIOD_DURATION*60)))";"PS Erlangs = max( UL PS Erlangs, DL PS Erlangs)";"";"BSS09006,BSS10083,BSS10091,BSS20088,BSS20094,BSS20835,BSS21270";"";"PLMN; BSC; SEG; BTS";"Total; week; weeklyBH; day; dailyBH; hour";"";"";"";"";"";"";"";"";"";"";"";"nidd"
+"trf_243";"UL RLC payload";"Uplink RLC payload";"Indicates all combined GPRS and EDGE payload data in uplink.";"";"Customer";"Published";"10.00";"S12";"";"";"GB";"Network Usage";"";"";"";"(trf_212c + trf_214a)/(1024*1024)";"((((SUM([072062] *20 + [072064] *30
++ SUM OVER MCS-11([079002] + [079003] )*36
++ SUM OVER MCS-12([079002] + [079003] )*50)
+/1024)+
+(SUM OVER MCS-1 ([079003] + [079002])* 22+
+SUM OVER MCS-2 ([079003] + [079002])* 28+
+SUM OVER MCS-3 ([079003] + [079002])* 37+
+SUM OVER MCS-4 ([079003] + [079002])* 44+
+SUM OVER MCS-5 ([079003] + [079002])* 56+
+SUM OVER MCS-6 ([079003] + [079002])* 74+
+SUM OVER MCS-7 (([079003] + [079002])/2)*112+
+SUM OVER MCS-8 (([079003] + [079002])/2)*136+
+SUM OVER MCS-9 (([079003] + [079002])/2)*148))
+/
+(1024*1024)))";"((((SUM([RLC_DATA_BLOCKS_UL_CS1] *20 + [RLC_DATA_BLOCKS_UL_CS2] *30
++ SUM OVER MCS-11([NBR_OF_UL_RLC_BL_IN_ACK_MODE] + [NBR_OF_UL_RLC_BL_IN_UNA_MODE] )*36
++ SUM OVER MCS-12([NBR_OF_UL_RLC_BL_IN_ACK_MODE] + [NBR_OF_UL_RLC_BL_IN_UNA_MODE] )*50)
+/1024)+
+(SUM OVER MCS-1 ([NBR_OF_UL_RLC_BL_IN_UNA_MODE] + [NBR_OF_UL_RLC_BL_IN_ACK_MODE])* 22+
+SUM OVER MCS-2 ([NBR_OF_UL_RLC_BL_IN_UNA_MODE] + [NBR_OF_UL_RLC_BL_IN_ACK_MODE])* 28+
+SUM OVER MCS-3 ([NBR_OF_UL_RLC_BL_IN_UNA_MODE] + [NBR_OF_UL_RLC_BL_IN_ACK_MODE])* 37+
+SUM OVER MCS-4 ([NBR_OF_UL_RLC_BL_IN_UNA_MODE] + [NBR_OF_UL_RLC_BL_IN_ACK_MODE])* 44+
+SUM OVER MCS-5 ([NBR_OF_UL_RLC_BL_IN_UNA_MODE] + [NBR_OF_UL_RLC_BL_IN_ACK_MODE])* 56+
+SUM OVER MCS-6 ([NBR_OF_UL_RLC_BL_IN_UNA_MODE] + [NBR_OF_UL_RLC_BL_IN_ACK_MODE])* 74+
+SUM OVER MCS-7 (([NBR_OF_UL_RLC_BL_IN_UNA_MODE] + [NBR_OF_UL_RLC_BL_IN_ACK_MODE])/2)*112+
+SUM OVER MCS-8 (([NBR_OF_UL_RLC_BL_IN_UNA_MODE] + [NBR_OF_UL_RLC_BL_IN_ACK_MODE])/2)*136+
+SUM OVER MCS-9 (([NBR_OF_UL_RLC_BL_IN_UNA_MODE] + [NBR_OF_UL_RLC_BL_IN_ACK_MODE])/2)*148))
+/
+(1024*1024)))";"((((SUM([RLC DATA BLOCKS UL CS1] *20 + [RLC DATA BLOCKS UL CS2] *30
++ SUM OVER MCS-11([NUMBER OF UL RLC BLOCKS IN ACKNOWLEDGED MODE] + [NUMBER OF UL RLC BLOCKS IN UNACKNOWLEDGED MODE] )*36
++ SUM OVER MCS-12([NUMBER OF UL RLC BLOCKS IN ACKNOWLEDGED MODE] + [NUMBER OF UL RLC BLOCKS IN UNACKNOWLEDGED MODE] )*50)
+/1024)+
+(SUM OVER MCS-1 ([NUMBER OF UL RLC BLOCKS IN UNACKNOWLEDGED MODE] + [NUMBER OF UL RLC BLOCKS IN ACKNOWLEDGED MODE])* 22+
+SUM OVER MCS-2 ([NUMBER OF UL RLC BLOCKS IN UNACKNOWLEDGED MODE] + [NUMBER OF UL RLC BLOCKS IN ACKNOWLEDGED MODE])* 28+
+SUM OVER MCS-3 ([NUMBER OF UL RLC BLOCKS IN UNACKNOWLEDGED MODE] + [NUMBER OF UL RLC BLOCKS IN ACKNOWLEDGED MODE])* 37+
+SUM OVER MCS-4 ([NUMBER OF UL RLC BLOCKS IN UNACKNOWLEDGED MODE] + [NUMBER OF UL RLC BLOCKS IN ACKNOWLEDGED MODE])* 44+
+SUM OVER MCS-5 ([NUMBER OF UL RLC BLOCKS IN UNACKNOWLEDGED MODE] + [NUMBER OF UL RLC BLOCKS IN ACKNOWLEDGED MODE])* 56+
+SUM OVER MCS-6 ([NUMBER OF UL RLC BLOCKS IN UNACKNOWLEDGED MODE] + [NUMBER OF UL RLC BLOCKS IN ACKNOWLEDGED MODE])* 74+
+SUM OVER MCS-7 (([NUMBER OF UL RLC BLOCKS IN UNACKNOWLEDGED MODE] + [NUMBER OF UL RLC BLOCKS IN ACKNOWLEDGED MODE])/2)*112+
+SUM OVER MCS-8 (([NUMBER OF UL RLC BLOCKS IN UNACKNOWLEDGED MODE] + [NUMBER OF UL RLC BLOCKS IN ACKNOWLEDGED MODE])/2)*136+
+SUM OVER MCS-9 (([NUMBER OF UL RLC BLOCKS IN UNACKNOWLEDGED MODE] + [NUMBER OF UL RLC BLOCKS IN ACKNOWLEDGED MODE])/2)*148))
+/
+(1024*1024)))";"((((SUM([RLC_DATA_BLOCKS_UL_CS1] *20 + [RLC_DATA_BLOCKS_UL_CS2] *30
++ SUM OVER MCS-11([UL_RLC_BLOCKS_IN_ACK_MODE] + [UL_RLC_BLOCKS_IN_UNACK_MODE] )*36
++ SUM OVER MCS-12([UL_RLC_BLOCKS_IN_ACK_MODE] + [UL_RLC_BLOCKS_IN_UNACK_MODE] )*50)
+/1024)+
+(SUM OVER MCS-1 ([UL_RLC_BLOCKS_IN_UNACK_MODE] + [UL_RLC_BLOCKS_IN_ACK_MODE])* 22+
+SUM OVER MCS-2 ([UL_RLC_BLOCKS_IN_UNACK_MODE] + [UL_RLC_BLOCKS_IN_ACK_MODE])* 28+
+SUM OVER MCS-3 ([UL_RLC_BLOCKS_IN_UNACK_MODE] + [UL_RLC_BLOCKS_IN_ACK_MODE])* 37+
+SUM OVER MCS-4 ([UL_RLC_BLOCKS_IN_UNACK_MODE] + [UL_RLC_BLOCKS_IN_ACK_MODE])* 44+
+SUM OVER MCS-5 ([UL_RLC_BLOCKS_IN_UNACK_MODE] + [UL_RLC_BLOCKS_IN_ACK_MODE])* 56+
+SUM OVER MCS-6 ([UL_RLC_BLOCKS_IN_UNACK_MODE] + [UL_RLC_BLOCKS_IN_ACK_MODE])* 74+
+SUM OVER MCS-7 (([UL_RLC_BLOCKS_IN_UNACK_MODE] + [UL_RLC_BLOCKS_IN_ACK_MODE])/2)*112+
+SUM OVER MCS-8 (([UL_RLC_BLOCKS_IN_UNACK_MODE] + [UL_RLC_BLOCKS_IN_ACK_MODE])/2)*136+
+SUM OVER MCS-9 (([UL_RLC_BLOCKS_IN_UNACK_MODE] + [UL_RLC_BLOCKS_IN_ACK_MODE])/2)*148))
+/
+(1024*1024)))";"";"RG30_BM";"BSS09006,BSS10083,BSS10091,BSS20094,BSS21270";"Ville Salomaa /NSN";"PLMN; BSC; SEG; BCF; BTS; TRXTP";"Total; week; weeklyBH; day; dailyBH; hour";"";"";"";"";"BSC";"";"";"";"";"";"";"nidd"
+"trf_244";"DL RLC payload";"Downlink RLC payload";"Indicates all combined GPRS and EDGE payload data in downlink.";"";"Customer";"Published";"10.00";"S12";"";"";"GB";"Network Usage";"";"";"";"(trf_213c+trf_215a)/(1024*1024)";"((((SUM([072063] *20 + [072065] *30
++ SUM OVER MCS-11 ([079000] + [079001])*36
++ SUM OVER MCS-12 ([079000] + [079001])*50)/1024)+
+((SUM OVER MCS-1 ([079001] + [079000])* 22+
+SUM OVER MCS-2 ([079001] + [079000])* 28+
+SUM OVER MCS-3 ([079001] + [079000])* 37+
+SUM OVER MCS-4 ([079001] + [079000])* 44+
+SUM OVER MCS-5 ([079001] + [079000])* 56+
+SUM OVER MCS-6 ([079001] + [079000])* 74+
+SUM OVER MCS-7 (([079001] + [079000])/2)*112+
+SUM OVER MCS-8 (([079001] + [079000])/2)*136+
+SUM OVER MCS-9 (([079001] + [079000])/2)*148)/ 1024))
+/
+(1024*1024)))";"((((SUM([RLC_DATA_BLOCKS_DL_CS1] *20 + [RLC_DATA_BLOCKS_DL_CS2] *30
++ SUM OVER MCS-11 ([NBR_OF_DL_RLC_BL_IN_ACK_MODE] + [NBR_OF_DL_RLC_BL_IN_UNA_MODE])*36
++ SUM OVER MCS-12 ([NBR_OF_DL_RLC_BL_IN_ACK_MODE] + [NBR_OF_DL_RLC_BL_IN_UNA_MODE])*50)/1024)+
+((SUM OVER MCS-1 ([NBR_OF_DL_RLC_BL_IN_UNA_MODE] + [NBR_OF_DL_RLC_BL_IN_ACK_MODE])* 22+
+SUM OVER MCS-2 ([NBR_OF_DL_RLC_BL_IN_UNA_MODE] + [NBR_OF_DL_RLC_BL_IN_ACK_MODE])* 28+
+SUM OVER MCS-3 ([NBR_OF_DL_RLC_BL_IN_UNA_MODE] + [NBR_OF_DL_RLC_BL_IN_ACK_MODE])* 37+
+SUM OVER MCS-4 ([NBR_OF_DL_RLC_BL_IN_UNA_MODE] + [NBR_OF_DL_RLC_BL_IN_ACK_MODE])* 44+
+SUM OVER MCS-5 ([NBR_OF_DL_RLC_BL_IN_UNA_MODE] + [NBR_OF_DL_RLC_BL_IN_ACK_MODE])* 56+
+SUM OVER MCS-6 ([NBR_OF_DL_RLC_BL_IN_UNA_MODE] + [NBR_OF_DL_RLC_BL_IN_ACK_MODE])* 74+
+SUM OVER MCS-7 (([NBR_OF_DL_RLC_BL_IN_UNA_MODE] + [NBR_OF_DL_RLC_BL_IN_ACK_MODE])/2)*112+
+SUM OVER MCS-8 (([NBR_OF_DL_RLC_BL_IN_UNA_MODE] + [NBR_OF_DL_RLC_BL_IN_ACK_MODE])/2)*136+
+SUM OVER MCS-9 (([NBR_OF_DL_RLC_BL_IN_UNA_MODE] + [NBR_OF_DL_RLC_BL_IN_ACK_MODE])/2)*148)/ 1024))
+/
+(1024*1024)))";"((((SUM([RLC DATA BLOCKS DL CS1] *20 + [RLC DATA BLOCKS DL CS2] *30
++ SUM OVER MCS-11 ([NUMBER OF DL RLC BLOCKS IN ACKNOWLEDGED MODE] + [NUMBER OF DL RLC BLOCKS IN UNACKNOWLEDGED MODE])*36
++ SUM OVER MCS-12 ([NUMBER OF DL RLC BLOCKS IN ACKNOWLEDGED MODE] + [NUMBER OF DL RLC BLOCKS IN UNACKNOWLEDGED MODE])*50)/1024)+
+((SUM OVER MCS-1 ([NUMBER OF DL RLC BLOCKS IN UNACKNOWLEDGED MODE] + [NUMBER OF DL RLC BLOCKS IN ACKNOWLEDGED MODE])* 22+
+SUM OVER MCS-2 ([NUMBER OF DL RLC BLOCKS IN UNACKNOWLEDGED MODE] + [NUMBER OF DL RLC BLOCKS IN ACKNOWLEDGED MODE])* 28+
+SUM OVER MCS-3 ([NUMBER OF DL RLC BLOCKS IN UNACKNOWLEDGED MODE] + [NUMBER OF DL RLC BLOCKS IN ACKNOWLEDGED MODE])* 37+
+SUM OVER MCS-4 ([NUMBER OF DL RLC BLOCKS IN UNACKNOWLEDGED MODE] + [NUMBER OF DL RLC BLOCKS IN ACKNOWLEDGED MODE])* 44+
+SUM OVER MCS-5 ([NUMBER OF DL RLC BLOCKS IN UNACKNOWLEDGED MODE] + [NUMBER OF DL RLC BLOCKS IN ACKNOWLEDGED MODE])* 56+
+SUM OVER MCS-6 ([NUMBER OF DL RLC BLOCKS IN UNACKNOWLEDGED MODE] + [NUMBER OF DL RLC BLOCKS IN ACKNOWLEDGED MODE])* 74+
+SUM OVER MCS-7 (([NUMBER OF DL RLC BLOCKS IN UNACKNOWLEDGED MODE] + [NUMBER OF DL RLC BLOCKS IN ACKNOWLEDGED MODE])/2)*112+
+SUM OVER MCS-8 (([NUMBER OF DL RLC BLOCKS IN UNACKNOWLEDGED MODE] + [NUMBER OF DL RLC BLOCKS IN ACKNOWLEDGED MODE])/2)*136+
+SUM OVER MCS-9 (([NUMBER OF DL RLC BLOCKS IN UNACKNOWLEDGED MODE] + [NUMBER OF DL RLC BLOCKS IN ACKNOWLEDGED MODE])/2)*148)/ 1024))
+/
+(1024*1024)))";"((((SUM([RLC_DATA_BLOCKS_DL_CS1] *20 + [RLC_DATA_BLOCKS_DL_CS2] *30
++ SUM OVER MCS-11 ([DL_RLC_BLOCKS_IN_ACK_MODE] + [DL_RLC_BLOCKS_IN_UNACK_MODE])*36
++ SUM OVER MCS-12 ([DL_RLC_BLOCKS_IN_ACK_MODE] + [DL_RLC_BLOCKS_IN_UNACK_MODE])*50)/1024)+
+((SUM OVER MCS-1 ([DL_RLC_BLOCKS_IN_UNACK_MODE] + [DL_RLC_BLOCKS_IN_ACK_MODE])* 22+
+SUM OVER MCS-2 ([DL_RLC_BLOCKS_IN_UNACK_MODE] + [DL_RLC_BLOCKS_IN_ACK_MODE])* 28+
+SUM OVER MCS-3 ([DL_RLC_BLOCKS_IN_UNACK_MODE] + [DL_RLC_BLOCKS_IN_ACK_MODE])* 37+
+SUM OVER MCS-4 ([DL_RLC_BLOCKS_IN_UNACK_MODE] + [DL_RLC_BLOCKS_IN_ACK_MODE])* 44+
+SUM OVER MCS-5 ([DL_RLC_BLOCKS_IN_UNACK_MODE] + [DL_RLC_BLOCKS_IN_ACK_MODE])* 56+
+SUM OVER MCS-6 ([DL_RLC_BLOCKS_IN_UNACK_MODE] + [DL_RLC_BLOCKS_IN_ACK_MODE])* 74+
+SUM OVER MCS-7 (([DL_RLC_BLOCKS_IN_UNACK_MODE] + [DL_RLC_BLOCKS_IN_ACK_MODE])/2)*112+
+SUM OVER MCS-8 (([DL_RLC_BLOCKS_IN_UNACK_MODE] + [DL_RLC_BLOCKS_IN_ACK_MODE])/2)*136+
+SUM OVER MCS-9 (([DL_RLC_BLOCKS_IN_UNACK_MODE] + [DL_RLC_BLOCKS_IN_ACK_MODE])/2)*148)/ 1024))
+/
+(1024*1024)))";"";"RG30_BM";"BSS09006,BSS10083,BSS10091,BSS20094,BSS21270";"Ville Salomaa /NSN";"PLMN; BSC; SEG; BCF; BTS; TRXTP";"Total; week; weeklyBH; day; dailyBH; hour";"";"";"";"";"BSC";"";"";"";"";"";"";"nidd"
+"trf_473a";"DHR Usage";"DHR Traffic share";"This KPI indicates TCH use % of DHR TCH.";"";"Customer";"Published";"8.00";"S16.1";"";"";"%";"Network Usage";"";"";"";"100* trf_472 / trf_1d";"((100* SUM(2*[002094] ) / SUM([002095]) 
+/
+(SUM((0.5*[105012] + [105011]) /100) /SUM (PERIOD_DURATION*60)  
++  
+SUM([002027]) /SUM([002028]))))";"((100* SUM(2*[AVE_BUSY_DHR_TCH] ) / SUM([AVE_BUSY_DHR_TCH_DENOM]) 
+/
+(SUM((0.5*[DTM_DURATION_SUM_HR] + [DTM_DURATION_SUM_FR]) /100) /SUM (PERIOD_DURATION*60)  
++  
+SUM([AVE_BUSY_TCH]) /SUM([RES_AVAIL_DENOMINATOR_14]))))";"((100* SUM(2*[AVE BUSY OSC DHR TCH PAIR] ) / SUM([AVE BUSY OSC DHR TCH PAIR DENOMINATOR]) 
+/
+(SUM((0.5*[DTM DURATION SUM HR] + [DTM DURATION SUM FR]) /100) /SUM (PERIOD_DURATION*60)  
++  
+SUM([AVE BUSY TCH]) /SUM([RES AVAIL DENOMINATOR 14]))))";"((100* SUM(2*[AVE_BUSY_DHR_TCH] ) / SUM([AVE_BUSY_DHR_TCH_DENOM]) 
+/
+(SUM((0.5*[DTM_DURATION_SUM_HR] + [DTM_DURATION_SUM_FR]) /100) /SUM (PERIOD_DURATION*60)  
++  
+SUM([AVE_BUSY_TCH]) /SUM([RES_AV_DENOM14]))))";"DTM is not supporting HR yet in S14. Counter was made because HR may be supported later. KPIs using this counter are ok even though HR counter is currently always zero. ";"";"BSS20088,BSS21309";"";"PLMN; BSC; SEG; BTS";"Total; week; weeklyBH; day; dailyBH; hour";"";"";"";"";"";"";"";"";"";"";"";"nidd"
+"trf_1010a";"DFR Usage";"DFR Traffic share";"Gives the ratio of traffic served in the DFR mode";"";"Customer";"Published";"8.00";"S16.1";"";"";"%";"Network Usage";"";"";"";"100*trf_1009a / trf_1d";"100* (2*SUM ([002097]) / SUM([002095])) 
+/
+(SUM(((0.5*[105012] + [105011]) /100) 
+/ SUM (PERIOD_DURATION*60)) + (SUM([002027])/SUM([002028])))";"100* (2*SUM ([AVE_BUSY_DFR_TCH]) / SUM([AVE_BUSY_DHR_TCH_DENOM])) 
+/
+(SUM(((0.5*[DTM_DURATION_SUM_HR] + [DTM_DURATION_SUM_FR]) /100) 
+/ SUM (PERIOD_DURATION*60)) + (SUM([AVE_BUSY_TCH])/SUM([RES_AVAIL_DENOMINATOR_14])))";"100* (2*SUM ([AVE BUSY DFR TCH]) / SUM([AVE BUSY OSC DHR TCH PAIR DENOMINATOR])) 
+/
+(SUM(((0.5*[DTM DURATION SUM HR] + [DTM DURATION SUM FR]) /100) 
+/ SUM (PERIOD_DURATION*60)) + (SUM([AVE BUSY TCH])/SUM([RES AVAIL DENOMINATOR 14])))";"100* (2*SUM ([AVE_BUSY_DFR_TCH]) / SUM([AVE_BUSY_DHR_TCH_DENOM])) 
+/
+(SUM(((0.5*[DTM_DURATION_SUM_HR] + [DTM_DURATION_SUM_FR]) /100) 
+/ SUM (PERIOD_DURATION*60)) + (SUM([AVE_BUSY_TCH])/SUM([RES_AV_DENOM14])))";"DTM is not supporting HR yet in S14. Counter was made because HR may be supported later. KPIs using this counter are ok even though HR counter is currently always zero. ";"";"BSS20088,BSS21309,BSS21534";"";"PLMN; BSC; SEG; BTS";"Total; week; weeklyBH; day; dailyBH; hour";"";"";"";"";"";"";"";"";"";"";"";"nidd"
+"trf_1068a";"DL GPRS traffic";"DL GPRS traffic, area";"Indicates the amount of resources (timeslots) the GPRS traffic (excluding EDGE traffic) consumes on average during the period. This information is useful, for example, in forecasting the need for capacity extension. 50 blocks /sec /tsl is used to estimate timeslots.";"";"Customer";"Published";"9.00";"S16.1";"";"";"erlangs";"Network Usage";"";"";"";"Actual DL data throughput (blocks) 
+-------------------------------------------------------------  = 
+nbr of blocks equivalent to 1 tsl full use in each BTS of area";"((SUM([072063] + [072065] + 
+[072068] + [072069]) + 
+SUM OVER MCS-11..12 ([079000]+ [079001] 
+                    + [079009]) + 
+SUM ([072077] - [072166]) + 
+SUM([072224]))
+/ 
+(SUM(PERIOD_DURATION*60)*50))";"((SUM([RLC_DATA_BLOCKS_DL_CS1] + [RLC_DATA_BLOCKS_DL_CS2] + 
+[RETRA_RLC_DATA_BLOCKS_DL_CS1] + [RETRA_RLC_DATA_BLOCKS_DL_CS2]) + 
+SUM OVER MCS-11..12 ([NBR_OF_DL_RLC_BL_IN_ACK_MODE]+ [NBR_OF_DL_RLC_BL_IN_UNA_MODE] 
+                    + [RETRANS_RLC_DATA_BL_DL]) + 
+SUM ([RLC_MAC_CNTRL_BLOCKS_DL] - [EGPRS_DL_CTRL_BLOCKS]) + 
+SUM([DL_CS1_DATA_FOR_DUMMY_LLC]))
+/ 
+(SUM(PERIOD_DURATION*60)*50))";"((SUM([RLC DATA BLOCKS DL CS1] + [RLC DATA BLOCKS DL CS2] + 
+[RETRA RLC DATA BLOCKS DL CS1] + [RETRA RLC DATA BLOCKS DL CS2]) + 
+SUM OVER MCS-11..12 ([NUMBER OF DL RLC BLOCKS IN ACKNOWLEDGED MODE]+ [NUMBER OF DL RLC BLOCKS IN UNACKNOWLEDGED MODE] 
+                    + [RETRANSMITTED RLC DATA BLOCKS DL]) + 
+SUM ([RLC MAC CNTRL BLOCKS DL] - [EGPRS DL CTRL BLOCKS]) + 
+SUM([DL CS1 DATA FOR DUMMY LLC]))
+/ 
+(SUM(PERIOD_DURATION*60)*50))";"((SUM([RLC_DATA_BLOCKS_DL_CS1] + [RLC_DATA_BLOCKS_DL_CS2] + 
+[RETRA_RLC_DATA_BLOCKS_DL_CS1] + [RETRA_RLC_DATA_BLOCKS_DL_CS2]) + 
+SUM OVER MCS-11..12 ([DL_RLC_BLOCKS_IN_ACK_MODE]+ [DL_RLC_BLOCKS_IN_UNACK_MODE] 
+                    + [RETRANS_RLC_DATA_BLOCKS_DL]) + 
+SUM ([RLC_MAC_CNTRL_BLOCKS_DL] - [EGPRS_DL_CTRL_BLOCKS]) + 
+SUM([DL_CS1_DATA_FOR_DUMMY_LLC]))
+/ 
+(SUM(PERIOD_DURATION*60)*50))";"";"";"BSS09006,BSS10083,BSS10091,BSS115172,BSS20094,BSS20835,BSS21270";"";"PLMN; BSC; SEG; BTS";"Total; week; weeklyBH; day; dailyBH; hour";"";"";"";"";"";"";"";"";"";"";"";"nidd"
+"trf_1069a";"UL GPRS traffic";"UL GPRS traffic, area";"Indicates the amount of resources (timeslots) the GPRS traffic (excluding EDGE traffic) consumes on average during the period. This information is useful, for example, in forecasting the need for capacity extension. 50 blocks /sec /tsl is used to estimate timeslots.";"";"Customer";"Published";"9.00";"S16.1";"";"";"erlangs";"Network Usage";"";"";"";"Actual UL data throughput (blocks) 
+-------------------------------------------------------------  = 
+nbr of blocks equivalent to 1 tsl full use in each BTS of area";"(((SUM([072062]+ [072064] 
+  + [072070] + [072071] 
+  + [072073] + [072225]
+  + [072226])
+  + SUM OVER MCS-11..12 ([079002]
+          + [079003]  + [079004] 
+          + [079005]  + [079006] 
+           + [079007]  + [079014])
+  +SUM ([072076] - [072165])) 
+/
+SUM(PERIOD_DURATION*60) *50))";"(((SUM([RLC_DATA_BLOCKS_UL_CS1]+ [RLC_DATA_BLOCKS_UL_CS2] 
+  + [BAD_FRAME_IND_UL_CS1] + [BAD_FRAME_IND_UL_CS2] 
+  + [BAD_FRAME_IND_UL_UNACK] + [IGNOR_RLC_BL_UL_DUE_BSN_CS1]
+  + [IGNOR_RLC_BL_UL_DUE_BSN_CS2])
+  + SUM OVER MCS-11..12 ([NBR_OF_UL_RLC_BL_IN_ACK_MODE]
+          + [NBR_OF_UL_RLC_BL_IN_UNA_MODE]  + [BAD_RLC_DATA_BL_VALID_UNA_UL] 
+          + [BAD_RLC_DATA_BL_BAD_UNA_UL]  + [BAD_RLC_DATA_BL_VALID_ACK_UL] 
+           + [BAD_RLC_DATA_BL_BAD_ACK_UL]  + [IGNOR_RLC_DATA_UL_DUE_BSN])
+  +SUM ([RLC_MAC_CNTRL_BLOCKS_UL] - [EGPRS_UL_CTRL_BLOCKS])) 
+/
+SUM(PERIOD_DURATION*60) *50))";"(((SUM([RLC DATA BLOCKS UL CS1]+ [RLC DATA BLOCKS UL CS2] 
+  + [BAD FRAME IND UL CS1] + [BAD FRAME IND UL CS2] 
+  + [BAD FRAME IND UL UNACK] + [IGNORED  RLC DATA BLOCKS UL  DUE TO BSN CS1]
+  + [IGNORED  RLC DATA BLOCKS UL DUE TO BSN CS2])
+  + SUM OVER MCS-11..12 ([NUMBER OF UL RLC BLOCKS IN ACKNOWLEDGED MODE]
+          + [NUMBER OF UL RLC BLOCKS IN UNACKNOWLEDGED MODE]  + [NUMBER OF BAD RLC DATA BLOCKS WITH VALID HEADER UL UNACK MODE] 
+          + [NUMBER OF BAD RLC DATA BLOCKS WITH BAD HEADER UL UNACK MODE]  + [NUMBER OF BAD RLC DATA BLOCKS WITH VALID HEADER UL ACK MODE] 
+           + [NUMBER OF BAD RLC DATA BLOCKS WITH BAD HEADER UL ACK MODE]  + [IGNORED RLC DATA BLOCKS UL DUE TO BSN])
+  +SUM ([RLC MAC CNTRL BLOCKS UL] - [EGPRS UL CTRL BLOCKS])) 
+/
+SUM(PERIOD_DURATION*60) *50))";"(((SUM([RLC_DATA_BLOCKS_UL_CS1]+ [RLC_DATA_BLOCKS_UL_CS2] 
+  + [BAD_FRAME_IND_UL_CS1] + [BAD_FRAME_IND_UL_CS2] 
+  + [BAD_FRAME_IND_UL_UNACK] + [IGNOR_RLC_BL_UL_DUE_BSN_CS1]
+  + [IGNOR_RLC_BL_UL_DUE_BSN_CS2])
+  + SUM OVER MCS-11..12 ([UL_RLC_BLOCKS_IN_ACK_MODE]
+          + [UL_RLC_BLOCKS_IN_UNACK_MODE]  + [BAD_RLC_VALID_HDR_UL_UNACK] 
+          + [BAD_RLC_BAD_HDR_UL_UNACK]  + [BAD_RLC_VALID_HDR_UL_ACK] 
+           + [BAD_RLC_BAD_HDR_UL_ACK]  + [IGNOR_RLC_DATA_UL_DUE_BSN])
+  +SUM ([RLC_MAC_CNTRL_BLOCKS_UL] - [EGPRS_UL_CTRL_BLOCKS])) 
+/
+SUM(PERIOD_DURATION*60) *50))";"";"";"BSS09006,BSS10083,BSS10091,BSS115172,BSS20094,BSS20835,BSS21270";"";"PLMN; BSC; SEG; BTS";"Total; week; weeklyBH; day; dailyBH; hour";"";"";"";"";"";"";"";"";"";"";"";"nidd"
+"trf_1070a";"DL EGPRS traffic";"Downlink EGPRS erlangs, area";"For area level, this formula should be first collected for all BTSs in area and then results should be summed up for the area. Indicates the amount of resources (timeslots) the DL EGPRS traffic data consumes. This information is useful, for example, in forecasting the need for capacity extension.";"";"Customer";"Published";"9.00";"S16.1";"";"";"erlangs";"Network Usage";"";"";"";"Actual DL data throughput (blocks) 
+------------------------------------------------------------  = 
+nbr of blocks equivalent to 1 tsl full use in each BTS of area";"((SUM OVER MCS1..6 OF ( 
+[079000] + [079009] +  
+[079001] + [079012]) 
++ SUM OVER MCS7..9 OF ( 
+[079000] + [079009] + 
+[079001])/2 
++ SUM ([072166]))
+/
+(SUM (PERIOD_DURATION*60)*50))";"((SUM OVER MCS1..6 OF ( 
+[NBR_OF_DL_RLC_BL_IN_ACK_MODE] + [RETRANS_RLC_DATA_BL_DL] +  
+[NBR_OF_DL_RLC_BL_IN_UNA_MODE] + [DL_RLC_DATA_FOR_DUMMY_LLC]) 
++ SUM OVER MCS7..9 OF ( 
+[NBR_OF_DL_RLC_BL_IN_ACK_MODE] + [RETRANS_RLC_DATA_BL_DL] + 
+[NBR_OF_DL_RLC_BL_IN_UNA_MODE])/2 
++ SUM ([EGPRS_DL_CTRL_BLOCKS]))
+/
+(SUM (PERIOD_DURATION*60)*50))";"((SUM OVER MCS1..6 OF ( 
+[NUMBER OF DL RLC BLOCKS IN ACKNOWLEDGED MODE] + [RETRANSMITTED RLC DATA BLOCKS DL] +  
+[NUMBER OF DL RLC BLOCKS IN UNACKNOWLEDGED MODE] + [DL RLC DATA FOR DUMMY LLC]) 
++ SUM OVER MCS7..9 OF ( 
+[NUMBER OF DL RLC BLOCKS IN ACKNOWLEDGED MODE] + [RETRANSMITTED RLC DATA BLOCKS DL] + 
+[NUMBER OF DL RLC BLOCKS IN UNACKNOWLEDGED MODE])/2 
++ SUM ([EGPRS DL CTRL BLOCKS]))
+/
+(SUM (PERIOD_DURATION*60)*50))";"((SUM OVER MCS1..6 OF ( 
+[DL_RLC_BLOCKS_IN_ACK_MODE] + [RETRANS_RLC_DATA_BLOCKS_DL] +  
+[DL_RLC_BLOCKS_IN_UNACK_MODE] + [DL_RLC_DATA_FOR_DUMMY_LLC]) 
++ SUM OVER MCS7..9 OF ( 
+[DL_RLC_BLOCKS_IN_ACK_MODE] + [RETRANS_RLC_DATA_BLOCKS_DL] + 
+[DL_RLC_BLOCKS_IN_UNACK_MODE])/2 
++ SUM ([EGPRS_DL_CTRL_BLOCKS]))
+/
+(SUM (PERIOD_DURATION*60)*50))";"";"";"BSS10083,BSS10091,BSS115172,BSS20094,BSS20835,BSS21270";"";"PLMN; BSC; SEG; BTS";"Total; week; weeklyBH; day; dailyBH; hour";"";"";"";"";"";"";"";"";"";"";"";"nidd"
+"ulq_2a, X=5";"UL cumul lev R in cl 5";"UL cumulative level ratio in class 5";"This KPI gives the cumulative percentage of call samples in classes 0 to X. X = 5 is
+normally used as a quality indicator. If X = 5 and this figure is 100%, the MS users obviously have not perceived any quality problems.";"";"Customer";"Published";"10.00";"S1";"";"";"%";"Quality";"";"";"";"";"((100 *( SUM([053007_012]+[053013_018]+[053019_024]+[053025_030]+[053031_036]+[053037_042])
+/SUM([053007_012]+[053013_018]+[053019_024]+[053025_030]+[053031_036]+[053037_042]+[053043_048]+[053049_054]))))";"((100 *( SUM([]+[]+[]+[]+[]+[])
+/SUM([]+[]+[]+[]+[]+[]+[]+[]))))";"((100 *( SUM([UPLINK QUALITY 0 IN RXL 0-5]+[UPLINK QUALITY 1 IN RXL 0-5]+[UPLINK QUALITY 2 IN RXL 0-5]+[UPLINK QUALITY 3 IN RXL 0-5]+[UPLINK QUALITY 4 IN RXL 0-5]+[UPLINK QUALITY 5 IN RXL 0-5])
+/SUM([UPLINK QUALITY 0 IN RXL 0-5]+[UPLINK QUALITY 1 IN RXL 0-5]+[UPLINK QUALITY 2 IN RXL 0-5]+[UPLINK QUALITY 3 IN RXL 0-5]+[UPLINK QUALITY 4 IN RXL 0-5]+[UPLINK QUALITY 5 IN RXL 0-5]+[UPLINK QUALITY 6 IN RXL 0-5]+[UPLINK QUALITY 7 IN RXL 0-5]))))";"((100 *( SUM([FREQ_UL_QUAL0]+[FREQ_UL_QUAL1]+[FREQ_UL_QUAL2]+[FREQ_UL_QUAL3]+[FREQ_UL_QUAL4]+[FREQ_UL_QUAL5])
+/SUM([FREQ_UL_QUAL0]+[FREQ_UL_QUAL1]+[FREQ_UL_QUAL2]+[FREQ_UL_QUAL3]+[FREQ_UL_QUAL4]+[FREQ_UL_QUAL5]+[FREQ_UL_QUAL6]+[FREQ_UL_QUAL7]))))";"";"RG30_BM";"";"Nokia / J.Hanhijrvi";"PLMN; BSC; SEG; BCF; BTS; TRXTP";"Total; week; weeklyBH; day; dailyBH; hour";"";"";"";"";"BSC";"";"";"";"";"";"";"nidd"
+"tbf_64";"DL Flush pr min";"Downlink flush per minute";"Indicates the number of temporary block flows (TBFs) that are interrupted by cell reselections
+per ""TBF minute"". Indicates the level of subscriber mobility.";"";"Customer";"Published";"7.00";"S9";"";"";"#/min";"Mobility";"";"";"";"";"(60 * 100 * (SUM([072059])/ SUM([072008])))";"(60 * 100 * (SUM([DL_TBF_REL_DUE_FLUSH])/ SUM([AVE_DUR_DL_TBF])))";"(60 * 100 * (SUM([DL TBF REL DUE TO FLUSH])/ SUM([AVE DUR DL TBF])))";"(60 * 100 * (SUM([DL_TBF_REL_DUE_TO_FLUSH])/ SUM([AVE_DUR_DL_TBF_SUM])))";"";"RG30_BM";"BSS09006,BSS20094,BSS21270";"Poul Larsen";"PLMN; BSC; SEG; BCF; BTS; TRXTP";"Total; week; weeklyBH; day; dailyBH; hour";"";"";"";"";"BSC";"";"";"";"";"";"";"nidd"
+"csf_1";"SDCCH acc prob before FCS";"SDCCH access probability, before FCS";"This KPI measures SDCCH congestion.
+Use:
+Gives the probability to access SDCCH without the effect of FCS. Applicable for area
+and BTS level.";"";"Customer";"Published";"7.00";"S1";"";"";"%";"Accessibility";"";"";"";"100 - blck_5";"(100 *  (1- SUM([001001])/SUM([001000])))";"(100 *  (1- SUM([SEIZ_ATTEMPTS_WITH_BUSY_SDCCH])/SUM([SEIZ_ATTEMPTS])))";"(100 *  (1- SUM([SEIZURE ATTEMPTS WITH BUSY SDCCH])/SUM([SEIZURE ATTEMPTS])))";"(100 *  (1- SUM([SDCCH_BUSY_ATT])/SUM([SDCCH_SEIZ_ATT])))";"";"RG30_BM";"BSS20003";"Nokia/J.Neva, M.Räsänen";"PLMN; BSC; SEG; BTS";"Total; week; weeklyBH; day; dailyBH; hour";"";"";"";"";"BSC";"";"";"";"";"";"";"nidd"
