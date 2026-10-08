@@ -640,7 +640,7 @@
     <!-- LINE 1: MAIN BRANDING & FILE ACTIONS HEADER -->
     <header>
         <div class="logo-area">
-            <h1>SCF Nokia Analytics <span class="logo-badge">Pro Suite</span> <span class="logo-badge" style="background:rgba(255,255,255,0.1); font-weight:600;">v2.07</span></h1>
+            <h1>SCF Nokia Analytics <span class="logo-badge">Pro Suite</span> <span class="logo-badge" style="background:rgba(255,255,255,0.1); font-weight:600;">v2.08</span></h1>
         </div>
         <div class="upload-area">
             <span class="summary-badge" id="site-summary">No SCF file loaded</span>
@@ -4382,14 +4382,20 @@
                 const rfData = lncelFddParams[lncelDistName];
                 const earfcnRaw = rfData.earfcnDL || 'N/A';
                 const earfcnInfo = earfcnRaw !== 'N/A' ? earfcnToFreqAndBand(earfcnRaw).text : '';
-                return `<div class="rf-tag-4g">EARFCN: <strong>${earfcnRaw}${earfcnInfo}</strong> | BW: <strong>${rfData.dlChBw || 'N/A'}</strong> | RS Boost: <strong>${rfData.dlRsBoost || 'N/A'} dB</strong></div>`;
+                const adminStateVal = getLncelAdminState(lncelDistName);
+                return `<div class="rf-tag-4g">EARFCN: <strong>${earfcnRaw}${earfcnInfo}</strong> | BW: <strong>${rfData.dlChBw || 'N/A'}</strong> | RS Boost: <strong>${rfData.dlRsBoost || 'N/A'} dB</strong> | State: <strong>${adminStateVal}</strong></div>`;
             }
             const nrcellDistName = getParentNrcellDistName(distName);
             if (nrcellDistName && nrcellRfParams[nrcellDistName]) {
                 const rfData = nrcellRfParams[nrcellDistName];
-                return `<div class="rf-tag-5g">ARFCN/SSB: <strong>${rfData.ssbFrequency || rfData.nrARFCN || 'N/A'}</strong> | BW: <strong>${rfData.chBw || 'N/A'}</strong></div>`;
+                return `<div class="rf-tag-5g">ARFCN/SSB: <strong>${rfData.ssbFrequency || rfData.nrARFCN || 'N/A'}</strong> | BW: <strong>${rfData.chBw || 'N/A'}</strong> | State: <strong>${rfData.adminState ? rfData.adminState.toUpperCase() : 'N/A'}</strong></div>`;
             }
             return '';
+        }
+
+        function getLncelAdminState(lncelDistName) {
+            const raw = lncelFddParams[lncelDistName] && lncelFddParams[lncelDistName].adminState;
+            return raw ? raw.toUpperCase() : 'N/A';
         }
 
         document.getElementById('fileInput')?.addEventListener('click', function() { this.value = null; });
@@ -4520,13 +4526,20 @@
                 if (className && className.endsWith(':LNCEL_FDD')) {
                     const lncelParent = getParentLncelDistName(distName);
                     if (lncelParent) {
-                        lncelFddParams[lncelParent] = {
-                            earfcnDL: getParamCaseInsensitive(params, "earfcnDL") || 'N/A', 
+                        if (!lncelFddParams[lncelParent]) lncelFddParams[lncelParent] = {};
+                        Object.assign(lncelFddParams[lncelParent], {
+                            earfcnDL: getParamCaseInsensitive(params, "earfcnDL") || 'N/A',
                             dlChBw: getParamCaseInsensitive(params, "dlChBw") || 'N/A',
-                            dlRsBoost: getParamCaseInsensitive(params, "dlRsBoost") || '0', 
+                            dlRsBoost: getParamCaseInsensitive(params, "dlRsBoost") || '0',
                             dlpcMimoComp: getParamCaseInsensitive(params, "dlpcMimoComp") || '0'
-                        };
+                        });
                     }
+                }
+
+                // administrativeState (LOCKED/UNLOCKED) lives on LNCEL itself, not LNCEL_FDD.
+                if (className && className.endsWith(':LNCEL')) {
+                    if (!lncelFddParams[distName]) lncelFddParams[distName] = {};
+                    lncelFddParams[distName].adminState = getParamCaseInsensitive(params, "administrativeState") || 'N/A';
                 }
 
                 if (className && (className.includes('NRCELL') || className.includes('NRDU'))) {
@@ -4537,6 +4550,8 @@
                         if (getParamCaseInsensitive(params, "nrARFCN")) nrcellRfParams[nrcellParent].nrARFCN = getParamCaseInsensitive(params, "nrARFCN");
                         // chBwDl lives on NRCELL_FDD (downlink channel bandwidth) — "chBw" is not a real SCF param and was always undefined.
                         if (getParamCaseInsensitive(params, "chBwDl")) nrcellRfParams[nrcellParent].chBw = getParamCaseInsensitive(params, "chBwDl");
+                        // administrativeState (LOCKED/UNLOCKED) lives on NRCELL itself, not NRCELL_FDD.
+                        if (className.endsWith(':NRCELL')) nrcellRfParams[nrcellParent].adminState = getParamCaseInsensitive(params, "administrativeState") || 'N/A';
                     }
                 }
 
