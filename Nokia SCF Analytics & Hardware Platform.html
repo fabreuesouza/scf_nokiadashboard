@@ -208,7 +208,7 @@
 
         .container { display: flex; flex: 1; overflow: hidden; position: relative; padding: 8px; gap: 8px; min-height: 0; }
         .analytics-view { display: flex; flex: 1; width: 100%; height: 100%; overflow: hidden; gap: 8px; }
-        .stats-sidebar { width: max-content; min-width: 234px; max-width: 396px; background-color: var(--bg-card); border: 1px solid var(--border-color); border-radius: 8px; display: none; flex-direction: column; padding: 12px; gap: 8px; overflow-y: auto; flex-shrink: 0; box-shadow: var(--shadow-xs); }
+        .stats-sidebar { width: max-content; min-width: 211px; max-width: 356px; background-color: var(--bg-card); border: 1px solid var(--border-color); border-radius: 8px; display: none; flex-direction: column; padding: 12px; gap: 8px; overflow-y: auto; flex-shrink: 0; box-shadow: var(--shadow-xs); }
         
         .kpi-card { background: var(--bg-subtle); border: 1px solid var(--border-color); border-radius: 6px; padding: 10px 12px; display: flex; flex-direction: column; gap: 6px; border-left: 3px solid transparent; }
         .card-2g { border-left-color: var(--tech-2g-main); background-color: var(--tech-2g-bg); }
@@ -321,7 +321,7 @@
         .list-title { font-size: 0.725rem; font-weight: 700; color: var(--brand-blue); text-transform: uppercase; letter-spacing: 0.05em; }
         .list-item { background-color: var(--bg-subtle); padding: 8px; border-radius: 6px; border: 1px solid var(--border-color); }
 
-        .boost-view, .cio-view, .power-footprint-view, .layer-priority-view, .hardware-view, .neighbor-view, .health-view { display: none; flex: 1; flex-direction: column; padding: 0; overflow: hidden; gap: 8px; }
+        .boost-view, .cio-view, .power-footprint-view, .layer-priority-view, .hardware-view, .neighbor-view, .neighbor-mapping-view, .health-view { display: none; flex: 1; flex-direction: column; padding: 0; overflow: hidden; gap: 8px; }
         .boost-fixed-header, .footprint-fixed-header { display: flex; flex-direction: column; gap: 8px; flex-shrink: 0; }
         .power-tech-tabs { display: flex; align-items: center; gap: 6px; border-bottom: 1px solid var(--border-color); padding-bottom: 6px; }
         .power-tech-btn { padding: 4px 12px; border-radius: 9999px; border: 1px solid var(--border-color-strong); background: var(--bg-card); font-size: 0.75rem; font-weight: 600; color: var(--text-secondary); cursor: pointer; transition: all 0.15s ease; display: flex; align-items: center; gap: 6px; }
@@ -352,6 +352,43 @@
         .filter-section-title span.btn-reset { color: var(--brand-blue); cursor: pointer; text-transform: none; font-size: 0.75rem; font-weight: 600; }
         .filter-section-title span.btn-reset:hover { text-decoration: underline; }
         .sidebar-chip-group { display: flex; flex-direction: column; gap: 4px; max-height: 180px; overflow-y: auto; background: var(--bg-subtle); padding: 6px; border-radius: 6px; border: 1px solid var(--border-color); }
+
+        .nbr-map-select { width: 100%; margin-top: 2px; padding: 5px 6px; border-radius: 5px; border: 1px solid var(--border-color-strong); background: var(--bg-card); color: var(--text-primary); font-size: 0.8rem; font-weight: 600; font-family: 'JetBrains Mono', monospace; }
+
+        .nbr-map-tree-card { flex: 1; min-width: 0; display: flex; flex-direction: column; background-color: var(--bg-card); border: 1px solid var(--border-color); border-radius: 8px; overflow: hidden; box-shadow: var(--shadow-xs); }
+        .nbr-map-list-toolbar { display: flex; align-items: center; gap: 10px; padding: 8px 10px; border-bottom: 1px solid var(--border-color); flex-shrink: 0; }
+        .nbr-map-search-input { flex: 1; padding: 5px 8px; border-radius: 5px; border: 1px solid var(--border-color-strong); background: var(--bg-subtle); color: var(--text-primary); font-size: 0.75rem; }
+        .nbr-map-conflict-toggle { display: flex; align-items: center; gap: 4px; font-size: 0.72rem; color: var(--text-secondary); white-space: nowrap; cursor: pointer; }
+        .nbr-map-tree-scroll { flex: 1; overflow: auto; padding: 14px; }
+
+        /* Source -> LNBTS -> LNCEL hierarchy, laid out as plain flex columns (left to right) and
+           connected by an SVG overlay of bezier curves — same technique as the Hardware Mapping >
+           Configuration block diagram (drawHwBlockConnectors): absolutely-positioned SVG on top of
+           the DOM cards, redrawn from each card's real getBoundingClientRect() after every render. */
+        .nbr-map-tree-wrap { position: relative; display: flex; flex-direction: row; align-items: flex-start; gap: 46px; }
+        .nbr-map-connector-svg { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 1; overflow: visible; }
+        .nbr-map-lnbts-col { display: flex; flex-direction: column; gap: 10px; }
+        .nbr-map-group-row { display: flex; flex-direction: row; align-items: flex-start; gap: 46px; }
+        .nbr-map-leaves-col { display: flex; flex-direction: column; gap: 6px; }
+
+        .nbr-map-card { position: relative; z-index: 2; background-color: var(--bg-card); border: 1px solid var(--border-color-strong); border-radius: 6px; padding: 4px 6px; box-shadow: var(--shadow-xs); display: flex; flex-direction: column; gap: 1px; font-family: 'JetBrains Mono', monospace; }
+        .nbr-map-card-source { width: max-content; min-width: 165px; max-width: 280px; border: 2px solid var(--brand-blue); }
+        .nbr-map-card-source .nbr-map-card-title, .nbr-map-card-source .nbr-map-card-sub { white-space: normal; overflow: visible; text-overflow: clip; word-break: break-word; }
+        .nbr-map-card-lnbts { width: 115px; align-items: center; background: var(--bg-subtle); cursor: pointer; user-select: none; }
+        .nbr-map-card-lnbts.is-own-site { background: var(--badge-true-bg); border-color: var(--badge-true-border); }
+        .nbr-map-card-leaf { width: 145px; cursor: pointer; }
+        .nbr-map-card-leaf.expanded { width: 260px; }
+        .nbr-map-card-leaf:hover { border-color: var(--brand-blue); }
+        .nbr-map-card-leaf.has-conflict { border-left: 3px solid #ef4444; }
+        .nbr-map-card-title { font-size: 11px; font-weight: 700; color: var(--text-primary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .nbr-map-card-sub { font-size: 11px; color: var(--text-secondary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .nbr-map-card-source .nbr-map-event-profile { margin-top: 3px; padding-top: 3px; border-top: 1px solid var(--border-color); font-family: 'JetBrains Mono', monospace; }
+        .nbr-map-leaf-detail { margin-top: 4px; padding-top: 4px; border-top: 1px solid var(--border-color); cursor: default; white-space: normal; }
+        .nbr-map-detail-row { padding: 3px 0; border-bottom: 1px solid var(--border-color); font-size: 11px; white-space: normal; }
+        .nbr-map-derived-params { margin-top: 2px; padding-left: 6px; border-left: 2px solid var(--border-color-strong); font-size: 11px; color: var(--text-muted); white-space: normal; word-break: break-word; }
+        .nbr-map-detail-row b { color: var(--text-primary); }
+        .nbr-map-conflict-badge { display: inline-block; background: var(--badge-false-bg); color: var(--badge-false-text); border: 1px solid var(--badge-false-border); border-radius: 4px; padding: 1px 6px; font-size: 11px; font-weight: 700; margin-top: 2px; white-space: normal; }
+        .nbr-map-ok-badge { display: inline-block; background: var(--badge-true-bg); color: var(--badge-true-text); border: 1px solid var(--badge-true-border); border-radius: 4px; padding: 1px 6px; font-size: 11px; font-weight: 700; margin-top: 2px; }
 
         .footprint-table-card, .boost-table-card { flex: 1; display: flex; flex-direction: column; overflow: hidden; background-color: var(--bg-card); border: 1px solid var(--border-color); border-radius: 8px; padding: 12px; box-shadow: var(--shadow-xs); }
         .footprint-table-scroll, .boost-table-scroll { flex: 1; overflow-y: auto; overflow-x: auto; margin-top: 4px; border: 1px solid var(--border-color); border-radius: 6px; }
@@ -603,7 +640,7 @@
     <!-- LINE 1: MAIN BRANDING & FILE ACTIONS HEADER -->
     <header>
         <div class="logo-area">
-            <h1>SCF Nokia Analytics <span class="logo-badge">Pro Suite</span> <span class="logo-badge" style="background:rgba(255,255,255,0.1); font-weight:600;">v1.86</span></h1>
+            <h1>SCF Nokia Analytics <span class="logo-badge">Pro Suite</span> <span class="logo-badge" style="background:rgba(255,255,255,0.1); font-weight:600;">v2.08</span></h1>
         </div>
         <div class="upload-area">
             <span class="summary-badge" id="site-summary">No SCF file loaded</span>
@@ -631,7 +668,13 @@
                     <button class="nav-dropdown-item" id="btnNavConnectedPriority" onclick="switchMainTab('connectedPriority'); closeAllNavDropdowns();">Connected Priority</button>
                 </div>
             </div>
-            <button class="main-nav-btn" id="btnNavNeighbor" onclick="switchMainTab('neighbor')"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block; vertical-align:-3px; margin-right:2px;"><path d="M9 15l6-6"></path><path d="M8 13l-2 2a3 3 0 0 0 4 4l2-2"></path><path d="M16 11l2-2a3 3 0 0 0-4-4l-2 2"></path></svg>Neighbor Audit</button>
+            <div class="main-nav-btn-group" id="neighborNavGroup">
+                <button class="main-nav-btn" id="btnNavNeighbor" onclick="toggleNavDropdown(event, 'neighborDropdownMenu')"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block; vertical-align:-3px; margin-right:2px;"><path d="M9 15l6-6"></path><path d="M8 13l-2 2a3 3 0 0 0 4 4l2-2"></path><path d="M16 11l2-2a3 3 0 0 0-4-4l-2 2"></path></svg>Neighbor Analytics<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block; vertical-align:-1px; margin-left:3px;"><polyline points="6,9 12,15 18,9"></polyline></svg></button>
+                <div class="nav-dropdown-menu" id="neighborDropdownMenu">
+                    <button class="nav-dropdown-item" id="btnNavNeighborAudit" onclick="switchMainTab('neighbor'); closeAllNavDropdowns();">Audit</button>
+                    <button class="nav-dropdown-item" id="btnNavNeighborMapping" onclick="switchMainTab('neighborMapping'); closeAllNavDropdowns();">Mapping</button>
+                </div>
+            </div>
             <button class="main-nav-btn" id="btnNavHardware" onclick="switchMainTab('hardware')"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block; vertical-align:-3px; margin-right:2px;"><path d="M14.7 6.3a4 4 0 0 0-5.4 5.4L4 17l3 3 5.3-5.3a4 4 0 0 0 5.4-5.4l-2.5 2.5-2-2z"></path></svg>Hardware Mapping</button>
             <button class="main-nav-btn" id="btnNavHealth" onclick="switchMainTab('health')"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block; vertical-align:-3px; margin-right:2px;"><circle cx="12" cy="12" r="9"></circle><path d="M8.5 12.5l2.5 2.5 5-5"></path></svg>Site Health Check</button>
             <button class="main-nav-btn" id="btnNavNrAnchor" onclick="switchMainTab('nranchor')"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block; vertical-align:-3px; margin-right:2px;"><path d="M3 11 L11 19 L15 15 L7 7 Z"></path><path d="M15 15 L21 21"></path><path d="M14 3 a10 10 0 0 1 7 7" opacity="0.45"></path><path d="M11 6 a6 6 0 0 1 7 7" opacity="0.7"></path></svg>NR Anchoring</button>
@@ -704,9 +747,6 @@
             
             <div class="main-panel" id="mainPanel">
                 <div class="card">
-                    <div class="mo-metrics-bar" id="moMetricsBarTitles" style="border-bottom:none; margin-bottom:0; padding-bottom:0;">
-                        <span style="font-size:0.65rem; color:var(--text-muted); font-style:italic;">Per-technology MO counts moved to the tech cards in the left sidebar →</span>
-                    </div>
 
                     <div class="sets-bar" id="setsBar"></div>
                     <div class="breadcrumb" id="moBreadcrumb">Select an object in the side tree</div>
@@ -1077,6 +1117,43 @@
                                 <tr><td colspan="10" style="text-align:center; color:var(--text-muted); font-style:italic;">No SCF file loaded.</td></tr>
                             </tbody>
                         </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- MODULE 6b: NEIGHBOR MAPPING -->
+        <div class="neighbor-mapping-view" id="neighborMappingView">
+            <div class="footprint-fixed-header">
+                <div class="footprint-summary-grid">
+                    <div class="power-summary-card">
+                        <span class="power-card-title">Source Cell (LNCEL)</span>
+                        <select id="nbrMapSourceSelect" class="nbr-map-select" onchange="renderNeighborMappingGraph()">
+                            <option value="">Select a serving cell…</option>
+                        </select>
+                        <span class="power-card-sub">Phase 1: intra-LTE (LNADJ/LNREL) only</span>
+                    </div>
+                    <div class="power-summary-card">
+                        <span class="power-card-title">Neighbors Mapped</span>
+                        <span class="power-card-value" id="nbrMapTotalNeighbors">0</span>
+                        <span class="power-card-sub">4G relations from selected source</span>
+                    </div>
+                    <div class="power-summary-card" style="border-left: 3px solid #ef4444;">
+                        <span class="power-card-title">🔴 Event Dynamics Conflicts</span>
+                        <span class="power-card-value" id="nbrMapTotalConflicts" style="color:#ef4444;">0</span>
+                        <span class="power-card-sub">A1/A2/A3/A5 overlap, inversion or asymmetry</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="footprint-main-content" style="margin-top:4px;">
+                <div class="nbr-map-tree-card">
+                    <div class="nbr-map-list-toolbar">
+                        <input type="text" id="nbrMapSearchInput" class="nbr-map-search-input" placeholder="Filter by target name, LNBTS, LNCEL, PCI, EARFCN or TAC…" oninput="renderNeighborMappingGraph()">
+                        <label class="nbr-map-conflict-toggle"><input type="checkbox" id="nbrMapOnlyConflicts" onchange="renderNeighborMappingGraph()"> Only conflicts</label>
+                    </div>
+                    <div class="nbr-map-tree-scroll" id="nbrMapTreeScroll">
+                        <div style="padding:16px; font-size:0.75rem; color:var(--text-muted); font-style:italic; text-align:center;">Select a source cell above to build its neighbor hierarchy.</div>
                     </div>
                 </div>
             </div>
@@ -2826,6 +2903,38 @@
             return { status: 'WARN', detail: `${mismatches.length} of ${ctx.allLncel.length} LNCEL have inactivityTimer different from NRBTS nsaInactivityTimer (${nsaVal}): ${mismatches.slice(0, 3).join(', ')}${mismatches.length > 3 ? '…' : ''}`, fullDetail };
         }
 
+        // Shared renderer for the "CS Fallback" category — every card there reports its detail as an
+        // HTML table (columns vary per card) instead of a plain-text line list, per house standard.
+        // `cols` is [{ key, label, mono }]; `rows` is an array of plain objects keyed like `cols`.
+        function renderHcDetailTable(cols, rows) {
+            if (rows.length === 0) return '<div style="padding:8px 0; color:var(--text-muted); font-style:italic;">No rows to display.</div>';
+            const statusColor = (v) => {
+                const s = String(v || '').toUpperCase();
+                if (s === 'OK' || s === '✅') return 'var(--status-ok-main, #16a34a)';
+                if (s === 'WARN' || s === '⚠️') return 'var(--text-color)';
+                if (s === 'FAIL' || s === 'NOK' || s === '❌' || s === '⛔') return 'var(--status-fail-main, #dc2626)';
+                return 'var(--text-muted)';
+            };
+            return `
+                <div style="width:100%; overflow-x:auto;">
+                <table class="hc-detail-table">
+                    <thead><tr>${cols.map(c => `<th>${c.label}</th>`).join('')}</tr></thead>
+                    <tbody>
+                        ${rows.map(row => `
+                        <tr>
+                            ${cols.map(c => {
+                                const val = row[c.key] !== undefined && row[c.key] !== null && row[c.key] !== '' ? row[c.key] : 'N/A';
+                                const style = c.key === 'status' || c.key === 'icon'
+                                    ? `font-weight:700; color:${statusColor(val)};`
+                                    : (c.mono ? `font-family:'JetBrains Mono', monospace;` : '');
+                                return `<td style="${style}">${val}</td>`;
+                            }).join('')}
+                        </tr>`).join('')}
+                    </tbody>
+                </table>
+                </div>`;
+        }
+
         function checkRedirect3G(ctx) {
             if (ctx.allLnbts.length === 0) return { status: 'NA', detail: 'No LNBTS found in this SCF.' };
 
@@ -2847,7 +2956,7 @@
             }
 
             let positiveCount = 0;
-            const lines = allRedrt.map(r => {
+            const tableRows = allRedrt.map(r => {
                 const lncelLabel = getParentDistName(r.distName).split('/').pop();
                 const redrtLabel = r.distName.split('/').pop();
                 const redirRat = getParamCaseInsensitive(r.params, 'redirRat');
@@ -2857,11 +2966,16 @@
                 const redirFreqUtra = getParamCaseInsensitive(r.params, 'redirFreqUtra');
                 const positive = redirectActive; // redirRat=utraFDD already guaranteed by the filter above
                 if (positive) positiveCount++;
-                return `${positive ? '✅' : '❌'} <strong>${lncelLabel}/${redrtLabel}</strong>: \nredirRat=${redirRat !== undefined ? redirRat : 'N/A'}\ncsFallBPrio=${csFallBPrio !== undefined ? csFallBPrio : 'N/A'}, emerCallPrio=${emerCallPrio !== undefined ? emerCallPrio : 'N/A'}, redirectPrio=${redirectPrio !== undefined ? redirectPrio : 'N/A'}, redirFreqUtra=${redirFreqUtra !== undefined ? redirFreqUtra : 'N/A'}`;
+                return { icon: positive ? '✅' : '❌', mo: `${lncelLabel}/${redrtLabel}`, redirRat, csFallBPrio, emerCallPrio, redirectPrio, redirFreqUtra, status: positive ? 'OK' : 'FAIL' };
             });
 
             const summary = `LNBTS.actRedirect=${actRedirectVal || 'N/A'} | ${positiveCount} of ${allRedrt.length} REDRT (redirRat=utraFDD) positively configured for 3G redirect.`;
-            const fullDetail = `${summary}\n\n${lines.join('\n\n')}`;
+            const tableHtml = renderHcDetailTable([
+                { key: 'icon', label: '' }, { key: 'mo', label: 'MO', mono: true }, { key: 'redirRat', label: 'redirRat', mono: true },
+                { key: 'csFallBPrio', label: 'csFallBPrio', mono: true }, { key: 'emerCallPrio', label: 'emerCallPrio', mono: true },
+                { key: 'redirectPrio', label: 'redirectPrio', mono: true }, { key: 'redirFreqUtra', label: 'redirFreqUtra', mono: true }, { key: 'status', label: 'Status' }
+            ], tableRows);
+            const fullDetail = `${summary}${tableHtml}`;
 
             if (!redirectActive) {
                 return { status: 'FAIL', detail: `LNBTS.actRedirect is not enabled (${actRedirectVal || 'N/A'}) — 3G redirect is inactive site-wide even though ${allRedrt.length} REDRT(s) target utraFDD.`, fullDetail };
@@ -2889,21 +3003,28 @@
             }
 
             let positiveCount = 0;
-            const lines = allRedrt.map(r => {
+            const tableRows = allRedrt.map(r => {
                 const lncelLabel = getParentDistName(r.distName).split('/').pop();
                 const redrtLabel = r.distName.split('/').pop();
                 const redirRat = getParamCaseInsensitive(r.params, 'redirRat');
                 const csFallBPrio = getParamCaseInsensitive(r.params, 'csFallBPrio');
                 const emerCallPrio = getParamCaseInsensitive(r.params, 'emerCallPrio');
                 const redirectPrio = getParamCaseInsensitive(r.params, 'redirectPrio');
-                const redirFreqGeran = getParamCaseInsensitive(r.params, 'redirFreqGeran');
+                // The GSM target ARFCNs live in the redirGeranArfcnStructL list (one redirGeranArfcnValue per item), not a scalar redirFreqGeran.
+                const arfcnItems = (r.lists && r.lists.redirGeranArfcnStructL) || [];
+                const redirArfcns = arfcnItems.map(item => getParamCaseInsensitive(item, 'redirGeranArfcnValue')).filter(v => v !== undefined && v !== null && v !== '');
                 const positive = redirectActive; // redirRat=geran already guaranteed by the filter above
                 if (positive) positiveCount++;
-                return `${positive ? '✅' : '❌'} <strong>${lncelLabel}/${redrtLabel}</strong>: \nredirRat=${redirRat !== undefined ? redirRat : 'N/A'}\ncsFallBPrio=${csFallBPrio !== undefined ? csFallBPrio : 'N/A'}, emerCallPrio=${emerCallPrio !== undefined ? emerCallPrio : 'N/A'}, redirectPrio=${redirectPrio !== undefined ? redirectPrio : 'N/A'}, redirFreqGeran=${redirFreqGeran !== undefined ? redirFreqGeran : 'N/A'}`;
+                return { icon: positive ? '✅' : '❌', mo: `${lncelLabel}/${redrtLabel}`, redirRat, csFallBPrio, emerCallPrio, redirectPrio, redirGeranArfcnStructL: redirArfcns.length > 0 ? redirArfcns.join(',') : 'N/A', status: positive ? 'OK' : 'FAIL' };
             });
 
             const summary = `LNBTS.actRedirect=${actRedirectVal || 'N/A'} | ${positiveCount} of ${allRedrt.length} REDRT (redirRat=geran) positively configured for GSM redirect.`;
-            const fullDetail = `${summary}\n\n${lines.join('\n\n')}`;
+            const tableHtml = renderHcDetailTable([
+                { key: 'icon', label: '' }, { key: 'mo', label: 'MO', mono: true }, { key: 'redirRat', label: 'redirRat', mono: true },
+                { key: 'csFallBPrio', label: 'csFallBPrio', mono: true }, { key: 'emerCallPrio', label: 'emerCallPrio', mono: true },
+                { key: 'redirectPrio', label: 'redirectPrio', mono: true }, { key: 'redirGeranArfcnStructL', label: 'redirGeranArfcnStructL', mono: true }, { key: 'status', label: 'Status' }
+            ], tableRows);
+            const fullDetail = `${summary}${tableHtml}`;
 
             if (!redirectActive) {
                 return { status: 'FAIL', detail: `LNBTS.actRedirect is not enabled (${actRedirectVal || 'N/A'}) — GSM redirect is inactive site-wide even though ${allRedrt.length} REDRT(s) target geran.`, fullDetail };
@@ -3255,25 +3376,84 @@
             return { status: 'WARN', detail: `${summary} ${outliers.length} LNCEL deviate more than 8dB from the site median: ${outliers.slice(0, 3).join(', ')}${outliers.length > 3 ? '…' : ''}`, fullDetail };
         }
 
+        // A2 has two serving-RSRP thresholds that must stay in the right order with enough margin:
+        // threshold2InterFreq starts inter-freq measurements when serving degrades below it, while
+        // threshold2a stops inter-RAT measurements once serving recovers above it. threshold2a must
+        // be at least 3dB *better* (higher/less negative) than threshold2InterFreq, or the two
+        // thresholds sit too close (or inverted), risking the UE flapping measurements on/off right
+        // at the boundary.
+        function checkA2ThresholdMargin(ctx) {
+            if (ctx.allLncel.length === 0) return { status: 'NA', detail: 'No LNCEL found in this SCF.' };
+
+            const MIN_MARGIN_DB = 3;
+            const entries = [];
+            ctx.allLncel.forEach(cell => {
+                const label = cell.distName.split('/').pop();
+                const t2aRaw = parseFloat(getParamCaseInsensitive(cell.params, 'threshold2a'));
+                const tIfRaw = parseFloat(getParamCaseInsensitive(cell.params, 'threshold2InterFreq'));
+                if (isNaN(t2aRaw) || isNaN(tIfRaw)) return;
+                const t2aDbm = t2aRaw - 140, tIfDbm = tIfRaw - 140;
+                entries.push({ label, t2aRaw, tIfRaw, t2aDbm, tIfDbm, margin: t2aDbm - tIfDbm });
+            });
+
+            if (entries.length === 0) return { status: 'NA', detail: 'threshold2a / threshold2InterFreq not found in any LNCEL.' };
+
+            const violations = [];
+            const lines = entries.map(e => {
+                const flagged = e.margin < MIN_MARGIN_DB;
+                if (flagged) violations.push(`${e.label}: margin=${e.margin}dB`);
+                return `${flagged ? '⚠️' : '✅'} <strong>${e.label}</strong>: \nthreshold2a=${e.t2aDbm}dBm(${e.t2aRaw}), threshold2InterFreq=${e.tIfDbm}dBm(${e.tIfRaw}) — margin=${e.margin}dB (min required ${MIN_MARGIN_DB}dB)${flagged ? ' [BELOW MINIMUM]' : ''}`;
+            });
+
+            const summary = `threshold2a vs threshold2InterFreq margin evaluated on ${entries.length} LNCEL — threshold2a must be at least ${MIN_MARGIN_DB}dB better (higher) than threshold2InterFreq.`;
+            const fullDetail = `${summary}\n\n${lines.join('\n')}`;
+
+            if (violations.length === 0) return { status: 'OK', detail: summary, fullDetail };
+            return { status: 'FAIL', detail: `${summary} ${violations.length} LNCEL with margin below ${MIN_MARGIN_DB}dB (or inverted): ${violations.slice(0, 3).join(', ')}${violations.length > 3 ? '…' : ''}`, fullDetail };
+        }
+
         function checkA2RedirectTriggerTimers(ctx) {
             if (ctx.allLncel.length === 0) return { status: 'NA', detail: 'No LNCEL found in this SCF.' };
 
-            const requiredParams = ['a2TimeToTriggerRedirect', 'a2TimeToTriggerActInterFreqMeas', 'a2TimeToTriggerActWcdmaMeas', 'a2TimeToTriggerActGERANMeas'];
+            // a2TimeToTriggerActWcdmaMeas/ActGERANMeas only matter if the site actually has a 3G/2G
+            // neighbor layer (LNRELW/LNRELG) to measure towards — on a site with no WCDMA or GERAN
+            // relations at all, those two timers being MISSING is the expected/correct state, not a gap.
+            const hasWcdma = getMOsByClass('LNRELW').length > 0;
+            const hasGeran = getMOsByClass('LNRELG').length > 0;
+
+            const alwaysRequired = ['a2TimeToTriggerRedirect', 'a2TimeToTriggerActInterFreqMeas'];
+            const conditionalParams = [
+                { key: 'a2TimeToTriggerActWcdmaMeas', requiredIf: hasWcdma, naReason: 'no LNRELW (3G) on this site' },
+                { key: 'a2TimeToTriggerActGERANMeas', requiredIf: hasGeran, naReason: 'no LNRELG (2G) on this site' }
+            ];
+
             let missingCount = 0;
             const lines = ctx.allLncel.map(cell => {
                 const label = cell.distName.split('/').pop();
-                const values = requiredParams.map(p => getParamCaseInsensitive(cell.params, p));
-                const missing = requiredParams.filter((p, i) => values[i] === undefined || values[i] === null || values[i] === '');
-                if (missing.length > 0) missingCount++;
-                const valuesStr = requiredParams.map((p, i) => `${p}=${(values[i] !== undefined && values[i] !== null && values[i] !== '') ? values[i] : 'MISSING'}`).join(', ');
-                return `${missing.length > 0 ? '❌' : '✅'} <strong>${label}</strong>: \n${valuesStr}`;
+                const alwaysValues = alwaysRequired.map(p => getParamCaseInsensitive(cell.params, p));
+                const alwaysMissing = alwaysRequired.filter((p, i) => alwaysValues[i] === undefined || alwaysValues[i] === null || alwaysValues[i] === '');
+
+                const conditionalMissing = [];
+                const conditionalStr = conditionalParams.map(c => {
+                    const v = getParamCaseInsensitive(cell.params, c.key);
+                    const isMissing = v === undefined || v === null || v === '';
+                    if (isMissing && c.requiredIf) conditionalMissing.push(c.key);
+                    if (isMissing && !c.requiredIf) return `${c.key}=N/A (${c.naReason})`;
+                    return `${c.key}=${isMissing ? 'MISSING' : v}`;
+                });
+
+                const alwaysStr = alwaysRequired.map((p, i) => `${p}=${(alwaysValues[i] !== undefined && alwaysValues[i] !== null && alwaysValues[i] !== '') ? alwaysValues[i] : 'MISSING'}`);
+                const hasRealGap = alwaysMissing.length > 0 || conditionalMissing.length > 0;
+                if (hasRealGap) missingCount++;
+                const valuesStr = [...alwaysStr, ...conditionalStr].join(', ');
+                return `${hasRealGap ? '❌' : '✅'} <strong>${label}</strong>: \n${valuesStr}`;
             });
 
-            const summary = `${ctx.allLncel.length - missingCount} of ${ctx.allLncel.length} LNCEL have all 4 A2 trigger timers configured (redirect + inter-freq/WCDMA/GERAN measurement activation).`;
+            const summary = `${ctx.allLncel.length - missingCount} of ${ctx.allLncel.length} LNCEL have all applicable A2 trigger timers configured (redirect + inter-freq always; WCDMA/GERAN measurement activation only when the site has a LNRELW/LNRELG layer).`;
             const fullDetail = `${summary}\n\n${lines.join('\n')}`;
 
             if (missingCount === 0) return { status: 'OK', detail: summary, fullDetail };
-            return { status: 'FAIL', detail: `${missingCount} of ${ctx.allLncel.length} LNCEL are missing at least one A2 trigger timer — inter-RAT/inter-freq measurement activation may not work as expected.`, fullDetail };
+            return { status: 'FAIL', detail: `${missingCount} of ${ctx.allLncel.length} LNCEL are missing at least one applicable A2 trigger timer — inter-RAT/inter-freq measurement activation may not work as expected.`, fullDetail };
         }
 
         function checkA4LoadBalancingConsistency(ctx) {
@@ -3304,43 +3484,189 @@
 
             let warnCount = 0;
             const examples = [];
-            const lines = ctx.allLnhow.map(o => {
+            const tableRows = ctx.allLnhow.map(o => {
                 const label = o.distName.split('/').slice(-2).join('/');
                 const raw = getParamCaseInsensitive(o.params, 'b1TimeToTriggerCSFBUtraMeas');
-                if (raw === undefined || raw === null || raw === '') return `➖ <strong>${label}</strong>: \nb1TimeToTriggerCSFBUtraMeas not found`;
+                if (raw === undefined || raw === null || raw === '') return { icon: '➖', mo: label, b1TimeToTriggerCSFBUtraMeas: 'not found', status: 'N/A' };
                 const ms = parseInt(String(raw).replace(/[^\d]/g, ''), 10);
                 const flagged = !isNaN(ms) && ms > 1000;
                 if (flagged) { warnCount++; if (examples.length < 3) examples.push(`${label}=${raw}`); }
-                return `${flagged ? '⚠️' : '✅'} <strong>${label}</strong>: \nb1TimeToTriggerCSFBUtraMeas=${raw}`;
+                return { icon: flagged ? '⚠️' : '✅', mo: label, b1TimeToTriggerCSFBUtraMeas: raw, status: flagged ? 'WARN' : 'OK' };
             });
 
             const summary = `B1 (CSFB-to-UTRA measurement trigger) evaluated on ${ctx.allLnhow.length} LNHOW.`;
-            const fullDetail = `${summary}\n\n${lines.join('\n')}`;
+            const tableHtml = renderHcDetailTable([
+                { key: 'icon', label: '' }, { key: 'mo', label: 'MO (LNHOW)', mono: true },
+                { key: 'b1TimeToTriggerCSFBUtraMeas', label: 'b1TimeToTriggerCSFBUtraMeas', mono: true }, { key: 'status', label: 'Status' }
+            ], tableRows);
+            const fullDetail = `${summary}${tableHtml}`;
 
             if (warnCount === 0) return { status: 'OK', detail: `${summary} All react within ≤1000ms.`, fullDetail };
             return { status: 'WARN', detail: `${summary} ${warnCount} LNHOW with B1 reaction slower than 1000ms: ${examples.join(', ')}${warnCount > examples.length ? '…' : ''}`, fullDetail };
+        }
+
+        // CSFB-to-GSM depends on a REDRT (redirRat=geran) pointing at an ARFCN that actually
+        // resolves to a real neighbor cell identity in LNADJG — otherwise the UE is redirected to a
+        // frequency with no known CI/LAC/RAC/BSIC and the registration on GSM fails even though the
+        // redirect message itself was sent successfully.
+        function checkCsfbGeranTargetIdentity(ctx) {
+            const allLnadjg = getMOsByClass('LNADJG');
+            const allRedrtGeran = getMOsByClass('REDRT').filter(r => String(getParamCaseInsensitive(r.params, 'redirRat') || '').toLowerCase() === 'geran');
+
+            if (allLnadjg.length === 0 && allRedrtGeran.length === 0) {
+                return { status: 'NA', detail: 'No LNADJG or GSM-targeted REDRT found in this SCF.' };
+            }
+
+            const requiredIdentityParams = ['gTargetCi', 'gTargetLac', 'gTargetRac', 'arfcnValueGeran', 'bandIndicatorGeran'];
+            let incompleteCount = 0;
+            const lnadjgTableRows = allLnadjg.map(o => {
+                const label = o.distName.split('/').slice(-2).join('/');
+                const values = requiredIdentityParams.map(p => getParamCaseInsensitive(o.params, p));
+                const missing = requiredIdentityParams.filter((p, i) => values[i] === undefined || values[i] === null || values[i] === '');
+                const bcc = getParamCaseInsensitive(o.params, 'basestationColourCode');
+                const ncc = getParamCaseInsensitive(o.params, 'networkColourCode');
+                const bsicMissing = bcc === undefined || bcc === null || bcc === '' || ncc === undefined || ncc === null || ncc === '';
+                const incomplete = missing.length > 0 || bsicMissing;
+                if (incomplete) incompleteCount++;
+                return {
+                    icon: incomplete ? '❌' : '✅', mo: label,
+                    gTargetCi: values[0], gTargetLac: values[1], gTargetRac: values[2],
+                    arfcnValueGeran: values[3], bandIndicatorGeran: values[4],
+                    bsic: !bsicMissing ? `${ncc}/${bcc}` : 'MISSING',
+                    status: incomplete ? 'FAIL' : 'OK'
+                };
+            });
+
+            // Cross-check: every GSM-targeted REDRT's frequency should resolve to at least one LNADJG
+            // with the same ARFCN under the same parent LNBTS — a redirect with no matching neighbor
+            // identity means the UE is sent to a cell the site never characterized.
+            const lnadjgArfcnsByBts = new Map();
+            allLnadjg.forEach(o => {
+                const bts = getParentDistName(getParentDistName(o.distName));
+                const arfcn = String(getParamCaseInsensitive(o.params, 'arfcnValueGeran') || '');
+                if (!lnadjgArfcnsByBts.has(bts)) lnadjgArfcnsByBts.set(bts, new Set());
+                lnadjgArfcnsByBts.get(bts).add(arfcn);
+            });
+
+            let orphanRedirectCount = 0;
+            const redrtTableRows = allRedrtGeran.map(r => {
+                const lncelLabel = getParentDistName(r.distName).split('/').pop();
+                const redrtLabel = r.distName.split('/').pop();
+                const bts = getParentDistName(getParentDistName(getParentDistName(r.distName)));
+                // The GSM target ARFCNs live in the redirGeranArfcnStructL list, one redirGeranArfcnValue per item.
+                const arfcnItems = (r.lists && r.lists.redirGeranArfcnStructL) || [];
+                const redirArfcns = arfcnItems.map(item => String(getParamCaseInsensitive(item, 'redirGeranArfcnValue') || '')).filter(v => v !== '');
+                const arfcnSet = lnadjgArfcnsByBts.get(bts);
+                const matchedArfcns = arfcnSet ? redirArfcns.filter(a => arfcnSet.has(a)) : [];
+                const hasMatch = redirArfcns.length > 0 && matchedArfcns.length > 0;
+                if (!hasMatch) orphanRedirectCount++;
+                return {
+                    icon: hasMatch ? '✅' : '⚠️', mo: `${lncelLabel}/${redrtLabel}`,
+                    redirGeranArfcnStructL: redirArfcns.length > 0 ? redirArfcns.join(',') : 'N/A',
+                    resolution: hasMatch ? `${matchedArfcns.length} of ${redirArfcns.length} ARFCNs match a known LNADJG` : 'no LNADJG match under the same LNBTS',
+                    status: hasMatch ? 'OK' : 'WARN'
+                };
+            });
+
+            const summary = `${allLnadjg.length - incompleteCount} of ${allLnadjg.length} LNADJG have complete target identity (CI/LAC/RAC/ARFCN/band/BSIC); ${allRedrtGeran.length - orphanRedirectCount} of ${allRedrtGeran.length} GSM REDRT resolve to a known LNADJG.`;
+            const lnadjgTableHtml = renderHcDetailTable([
+                { key: 'icon', label: '' }, { key: 'mo', label: 'MO (LNADJG)', mono: true },
+                { key: 'gTargetCi', label: 'gTargetCi', mono: true }, { key: 'gTargetLac', label: 'gTargetLac', mono: true }, { key: 'gTargetRac', label: 'gTargetRac', mono: true },
+                { key: 'arfcnValueGeran', label: 'ARFCN', mono: true }, { key: 'bandIndicatorGeran', label: 'Band', mono: true }, { key: 'bsic', label: 'BSIC(NCC/BCC)', mono: true },
+                { key: 'status', label: 'Status' }
+            ], lnadjgTableRows);
+            const redrtTableHtml = renderHcDetailTable([
+                { key: 'icon', label: '' }, { key: 'mo', label: 'MO (REDRT)', mono: true },
+                { key: 'redirGeranArfcnStructL', label: 'redirGeranArfcnStructL', mono: true }, { key: 'resolution', label: 'Resolution' }, { key: 'status', label: 'Status' }
+            ], redrtTableRows);
+            const fullDetail = `${summary}\n\n<strong>LNADJG target cell identity</strong>${lnadjgTableHtml}\n\n<strong>REDRT → LNADJG resolution</strong>${redrtTableHtml}`;
+
+            if (incompleteCount === 0 && orphanRedirectCount === 0) return { status: 'OK', detail: summary, fullDetail };
+            return { status: 'FAIL', detail: `${summary} Incomplete or unresolved target identity can cause CSFB redirect to GSM to point at a cell the UE cannot register on.`, fullDetail };
+        }
+
+        // CSFB admission into GSM also needs the target cell's own minimum access level (qRxLevMinGer)
+        // to be reachable given the RSSI the UE is expected to measure there (b2Threshold2RssiGERAN).
+        // If qRxLevMinGer is set higher than what the site's own B2-GERAN RSSI threshold guarantees,
+        // the UE can be redirected successfully and still get barred from camping on the GSM cell —
+        // a classic RF-marginal-site failure mode (e.g. a rural/mountain road site with weak 2G RF).
+        function checkCsfbGeranAdmissionThresholds(ctx) {
+            const allGnfl = getMOsByClass('GNFL');
+            const allLnhog = getMOsByClass('LNHOG');
+
+            if (allGnfl.length === 0 && allLnhog.length === 0) {
+                return { status: 'NA', detail: 'No GNFL or LNHOG found in this SCF — GERAN B2 admission data not configured.' };
+            }
+
+            const gnflTableRows = allGnfl.map(o => {
+                const label = o.distName.split('/').slice(-2).join('/');
+                const qRxLevMinGer = getParamCaseInsensitive(o.params, 'qRxLevMinGer');
+                const pMaxGer = getParamCaseInsensitive(o.params, 'pMaxGer');
+                const missing = qRxLevMinGer === undefined || qRxLevMinGer === null || qRxLevMinGer === '';
+                return { missing, qRxLevMinGerRaw: qRxLevMinGer, row: { icon: missing ? '❌' : '✅', mo: label, qRxLevMinGer: missing ? 'MISSING' : `${qRxLevMinGer}dBm`, pMaxGer: pMaxGer !== undefined && pMaxGer !== '' ? pMaxGer : 'N/A', status: missing ? 'FAIL' : 'OK' } };
+            });
+            const gnflMissing = gnflTableRows.filter(l => l.missing).length;
+
+            let marginViolations = 0;
+            const lnhogTableRows = allLnhog.map(o => {
+                const label = o.distName.split('/').slice(-2).join('/');
+                const rssiRaw = parseFloat(getParamCaseInsensitive(o.params, 'b2Threshold2RssiGERAN'));
+                if (isNaN(rssiRaw)) return { icon: '➖', mo: label, b2Threshold2RssiGERAN: 'not found', admissionFloor: 'N/A', status: 'N/A' };
+                const rssiDbm = rssiRaw - 110;
+                // Compare against the first GNFL's qRxLevMinGer found (site-level target admission floor).
+                const refGnfl = gnflTableRows.find(l => !l.missing);
+                let flagged = false;
+                let note = 'no GNFL reference to compare against';
+                if (refGnfl) {
+                    // qRxLevMinGer is stored directly in dBm (Internal value formula = UI_value, no offset).
+                    const qRxDbm = parseFloat(refGnfl.qRxLevMinGerRaw);
+                    if (!isNaN(qRxDbm)) {
+                        flagged = rssiDbm < qRxDbm;
+                        note = `${qRxDbm}dBm — ${flagged ? 'BELOW admission floor' : 'clears admission floor'}`;
+                    }
+                }
+                if (flagged) marginViolations++;
+                return { icon: flagged ? '⚠️' : '✅', mo: label, b2Threshold2RssiGERAN: `${rssiDbm}dBm(${rssiRaw})`, admissionFloor: note, status: flagged ? 'FAIL' : 'OK' };
+            });
+
+            const summary = `${allGnfl.length - gnflMissing} of ${allGnfl.length} GNFL have qRxLevMinGer configured; ${allLnhog.length - marginViolations} of ${allLnhog.length} LNHOG B2-GERAN RSSI triggers clear the GSM admission floor.`;
+            const gnflTableHtml = renderHcDetailTable([
+                { key: 'icon', label: '' }, { key: 'mo', label: 'MO (GNFL)', mono: true }, { key: 'qRxLevMinGer', label: 'qRxLevMinGer', mono: true }, { key: 'pMaxGer', label: 'pMaxGer', mono: true }, { key: 'status', label: 'Status' }
+            ], gnflTableRows.map(l => l.row));
+            const lnhogTableHtml = renderHcDetailTable([
+                { key: 'icon', label: '' }, { key: 'mo', label: 'MO (LNHOG)', mono: true }, { key: 'b2Threshold2RssiGERAN', label: 'b2Threshold2RssiGERAN', mono: true }, { key: 'admissionFloor', label: 'vs qRxLevMinGer' }, { key: 'status', label: 'Status' }
+            ], lnhogTableRows);
+            const fullDetail = `${summary}\n\n<strong>GNFL admission floor</strong>${gnflTableHtml}\n\n<strong>LNHOG B2-GERAN RSSI vs admission floor</strong>${lnhogTableHtml}`;
+
+            if (gnflMissing === 0 && marginViolations === 0) return { status: 'OK', detail: summary, fullDetail };
+            const status = marginViolations > 0 ? 'FAIL' : 'WARN';
+            return { status, detail: `${summary} On a weak-RF site this can mean the UE is redirected to GSM and then rejected for insufficient level.`, fullDetail };
         }
 
         function checkB2CsfbFallbackThresholds(ctx) {
             if (ctx.allLnhow.length === 0) return { status: 'NA', detail: 'No LNHOW found in this SCF.' };
 
             let evaluated = 0;
-            const lines = [];
+            const tableRows = [];
             ctx.allLnhow.forEach(o => {
                 const label = o.distName.split('/').slice(-2).join('/');
                 const t1Raw = parseFloat(getParamCaseInsensitive(o.params, 'b2Threshold1Utra'));
                 const rscp = getParamCaseInsensitive(o.params, 'b2Threshold2UtraRscp');
                 const ecn0 = getParamCaseInsensitive(o.params, 'b2Threshold2UtraEcn0');
-                if (isNaN(t1Raw)) { lines.push(`➖ <strong>${label}</strong>: \nb2Threshold1Utra not found`); return; }
+                if (isNaN(t1Raw)) { tableRows.push({ icon: '➖', mo: label, b2Threshold1Utra: 'not found', b2Threshold2UtraRscp: 'N/A', b2Threshold2UtraEcn0: 'N/A', status: 'N/A' }); return; }
                 evaluated++;
                 const t1Dbm = t1Raw - 140;
-                lines.push(`✅ <strong>${label}</strong>: \nb2Threshold1Utra(serving LTE)=${t1Dbm}dBm(${t1Raw}), b2Threshold2UtraRscp(ngbr, raw idx)=${rscp !== undefined && rscp !== '' ? rscp : 'N/A'}, b2Threshold2UtraEcn0(ngbr, raw idx)=${ecn0 !== undefined && ecn0 !== '' ? ecn0 : 'N/A'}`);
+                tableRows.push({ icon: '✅', mo: label, b2Threshold1Utra: `${t1Dbm}dBm(${t1Raw})`, b2Threshold2UtraRscp: rscp !== undefined && rscp !== '' ? `${rscp}(raw idx)` : 'N/A', b2Threshold2UtraEcn0: ecn0 !== undefined && ecn0 !== '' ? `${ecn0}(raw idx)` : 'N/A', status: 'OK' });
             });
 
             if (evaluated === 0) return { status: 'NA', detail: 'b2Threshold1Utra (B2 CSFB/emergency fallback to UTRA) not found in any LNHOW.' };
 
             const summary = `B2 (CSFB/emergency fallback to UTRA) thresholds present on ${evaluated} of ${ctx.allLnhow.length} LNHOW. Serving LTE threshold converted to dBm (value-140); UTRA neighbor RSCP/Ec-N0 shown as raw index — conversion formula not yet confirmed, so left unconverted.`;
-            const fullDetail = `${summary}\n\n${lines.join('\n')}`;
+            const tableHtml = renderHcDetailTable([
+                { key: 'icon', label: '' }, { key: 'mo', label: 'MO (LNHOW)', mono: true }, { key: 'b2Threshold1Utra', label: 'b2Threshold1Utra (serving)', mono: true },
+                { key: 'b2Threshold2UtraRscp', label: 'b2Threshold2UtraRscp (ngbr)', mono: true }, { key: 'b2Threshold2UtraEcn0', label: 'b2Threshold2UtraEcn0 (ngbr)', mono: true }, { key: 'status', label: 'Status' }
+            ], tableRows);
+            const fullDetail = `${summary}${tableHtml}`;
 
             return { status: 'OK', detail: summary, fullDetail };
         }
@@ -3348,6 +3674,7 @@
         const HEALTH_CHECKS = [
             { id: 'a1_serving_threshold', category: 'Mobility (LTE Events)', icon: 'antenna', title: 'A1 Serving Good-Signal Threshold', run: checkA1ServingGoodSignalThreshold },
             { id: 'a2_redirect_timers', category: 'Mobility (LTE Events)', icon: 'antenna', title: 'A2 Redirect & Trigger Timers', run: checkA2RedirectTriggerTimers },
+            { id: 'a2_threshold_margin', category: 'Mobility (LTE Events)', icon: 'antenna', title: 'A2 threshold2a vs threshold2InterFreq Margin', run: checkA2ThresholdMargin },
             { id: 'a3_offset', category: 'Mobility (LTE Events)', icon: 'antenna', title: 'A3 Offset (Intra-Freq HO)', run: checkA3OffsetIntraFreq },
             { id: 'a4_load_balancing', category: 'Mobility (LTE Events)', icon: 'antenna', title: 'A4 Intra-Freq Load Balancing', run: checkA4LoadBalancingConsistency },
             { id: 'a5_ttt', category: 'Mobility (LTE Events)', icon: 'antenna', title: 'A5 Emergency HO Reaction', run: checkA5TimeToTrigger },
@@ -3358,14 +3685,16 @@
             { id: 'nbiot_capacity_alignment', category: 'Radio Configuration', icon: 'radio', title: 'NB-IoT Capacity Alignment', run: checkNbiotCapacityAlignment },
             { id: 'expected_cell_size', category: 'Radio Configuration', icon: 'radio', title: 'Expected Cell Size vs Frequency', run: checkExpectedCellSize },
             { id: 'earfcn_bw_alignment', category: 'Radio Configuration', icon: 'radio', title: 'EARFCN Bandwidth Alignment', run: checkEarfcnBandwidthAlignment },
-            { id: 'b1_csfb_timer', category: 'Mobility (LTE Events)', icon: 'antenna', title: 'B1 CSFB Trigger Timer', run: checkB1CsfbTriggerTimer },
-            { id: 'b2_csfb_thresholds', category: 'Mobility (LTE Events)', icon: 'antenna', title: 'B2 CSFB/Emergency Fallback to UTRA', run: checkB2CsfbFallbackThresholds },
+            { id: 'b1_csfb_timer', category: 'CS Fallback', icon: 'antenna', title: 'B1 CSFB to 3G Trigger Timer', run: checkB1CsfbTriggerTimer },
+            { id: 'b2_csfb_thresholds', category: 'CS Fallback', icon: 'antenna', title: 'B2 CSFB/Emergency Fallback to UTRA', run: checkB2CsfbFallbackThresholds },
             { id: 'srvcc_orphan', category: 'Mobility (LTE Events)', icon: 'antenna', title: 'SRVCC Relation Coverage', run: checkSrvccOrphan },
             { id: 'endc_nsa_leg', category: 'Mobility (LTE Events)', icon: 'antenna', title: '5G NSA LEG', run: checkEndcNsaLegBalance },
             { id: 'lte_nr_tac_alignment', category: 'Mobility (LTE Events)', icon: 'antenna', title: 'LTE/NR TAC Alignment', run: checkLteNrTacAlignment },
             { id: 'inactivity_timer_alignment', category: 'Mobility (LTE Events)', icon: 'antenna', title: 'LTE/NR Inactivity Timer Alignment', run: checkInactivityTimerAlignment },
-            { id: 'redirect_3g', category: 'Mobility (LTE Events)', icon: 'antenna', title: 'LTE to 3G Redirect (REDRT)', run: checkRedirect3G },
-            { id: 'redirect_gsm', category: 'Mobility (LTE Events)', icon: 'antenna', title: 'LTE to GSM Redirect (REDRT)', run: checkRedirectGsm },
+            { id: 'redirect_3g', category: 'CS Fallback', icon: 'antenna', title: 'LTE to 3G Redirect (REDRT)', run: checkRedirect3G },
+            { id: 'redirect_gsm', category: 'CS Fallback', icon: 'antenna', title: 'LTE to GSM Redirect (REDRT)', run: checkRedirectGsm },
+            { id: 'csfb_geran_target_identity', category: 'CS Fallback', icon: 'antenna', title: 'CSFB GERAN Target Cell Identity (LNADJG)', run: checkCsfbGeranTargetIdentity },
+            { id: 'csfb_geran_admission', category: 'CS Fallback', icon: 'antenna', title: 'CSFB GERAN Admission Thresholds (GNFL/LNHOG)', run: checkCsfbGeranAdmissionThresholds },
             { id: 'redirect_nr_to_lte', category: 'Mobility (LTE Events)', icon: 'antenna', title: 'NR to LTE Redirect (NRREDRT)', run: checkRedirectNrToLte },
             { id: 'anr_interfreq', category: 'Mobility (LTE Events)', icon: 'antenna', title: 'ANR Inter-Freq', run: checkAnrInterFreq },
             { id: 'twin_beam_sectors', category: 'Power & Coverage', icon: 'bolt', title: 'Twin Beam Sector Detection', run: checkTwinBeamSectors },
@@ -3807,7 +4136,9 @@
             document.getElementById('btnNavLms')?.classList.toggle('active', tabName === 'priority' || tabName === 'connectedPriority');
             document.getElementById('btnNavIdlePriority')?.classList.toggle('active', tabName === 'priority');
             document.getElementById('btnNavConnectedPriority')?.classList.toggle('active', tabName === 'connectedPriority');
-            document.getElementById('btnNavNeighbor')?.classList.toggle('active', tabName === 'neighbor');
+            document.getElementById('btnNavNeighbor')?.classList.toggle('active', tabName === 'neighbor' || tabName === 'neighborMapping');
+            document.getElementById('btnNavNeighborAudit')?.classList.toggle('active', tabName === 'neighbor');
+            document.getElementById('btnNavNeighborMapping')?.classList.toggle('active', tabName === 'neighborMapping');
             document.getElementById('btnNavHardware')?.classList.toggle('active', tabName === 'hardware');
             document.getElementById('btnNavHealth')?.classList.toggle('active', tabName === 'health');
             document.getElementById('btnNavNrAnchor')?.classList.toggle('active', tabName === 'nranchor');
@@ -3820,6 +4151,7 @@
             const lpV = document.getElementById('layerPriorityView'); if (lpV) lpV.style.display = (tabName === 'priority') ? 'flex' : 'none';
             const cpV = document.getElementById('connectedPriorityView'); if (cpV) cpV.style.display = (tabName === 'connectedPriority') ? 'flex' : 'none';
             const nV = document.getElementById('neighborView'); if (nV) nV.style.display = (tabName === 'neighbor') ? 'flex' : 'none';
+            const nmV = document.getElementById('neighborMappingView'); if (nmV) nmV.style.display = (tabName === 'neighborMapping') ? 'flex' : 'none';
             const hV = document.getElementById('hardwareView'); if (hV) hV.style.display = (tabName === 'hardware') ? 'flex' : 'none';
             const hlV = document.getElementById('healthView'); if (hlV) hlV.style.display = (tabName === 'health') ? 'flex' : 'none';
             const nrV = document.getElementById('nranchorView'); if (nrV) nrV.style.display = (tabName === 'nranchor') ? 'flex' : 'none';
@@ -3833,6 +4165,7 @@
                 if (tabName === 'priority') renderPriorityDashboard();
                 if (tabName === 'connectedPriority') renderConnectedPriorityDashboard();
                 if (tabName === 'neighbor') renderNeighborMapping();
+                if (tabName === 'neighborMapping') renderNeighborMappingDashboard();
                 if (tabName === 'health') renderFeatureHealthDashboard();
                 if (tabName === 'nranchor') renderNrAnchoringDashboard();
                 if (tabName === 'hardware') {
@@ -3854,7 +4187,8 @@
             else if (tabName === 'cio') moduleName = "CIO Analytics";
             else if (tabName === 'priority') moduleName = "Idle Priority";
             else if (tabName === 'connectedPriority') moduleName = "Connected Priority";
-            else if (tabName === 'neighbor') moduleName = "Neighbor Audit";
+            else if (tabName === 'neighbor') moduleName = "Neighbor Analytics - Audit";
+            else if (tabName === 'neighborMapping') moduleName = "Neighbor Analytics - Mapping";
             else if (tabName === 'hardware') moduleName = "Hardware Mapping";
             else if (tabName === 'health') moduleName = "Site Health Check";
             else if (tabName === 'nranchor') moduleName = "NR Anchoring";
@@ -3873,6 +4207,7 @@
                     if (tabName === 'priority') renderPriorityDashboard();
                     if (tabName === 'connectedPriority') renderConnectedPriorityDashboard();
                     if (tabName === 'neighbor') renderNeighborMapping();
+                    if (tabName === 'neighborMapping') renderNeighborMappingDashboard();
                     if (tabName === 'health') renderFeatureHealthDashboard();
                     if (tabName === 'nranchor') renderNrAnchoringDashboard();
                     if (tabName === 'hardware') {
@@ -4047,14 +4382,20 @@
                 const rfData = lncelFddParams[lncelDistName];
                 const earfcnRaw = rfData.earfcnDL || 'N/A';
                 const earfcnInfo = earfcnRaw !== 'N/A' ? earfcnToFreqAndBand(earfcnRaw).text : '';
-                return `<div class="rf-tag-4g">EARFCN: <strong>${earfcnRaw}${earfcnInfo}</strong> | BW: <strong>${rfData.dlChBw || 'N/A'}</strong> | RS Boost: <strong>${rfData.dlRsBoost || 'N/A'} dB</strong></div>`;
+                const adminStateVal = getLncelAdminState(lncelDistName);
+                return `<div class="rf-tag-4g">EARFCN: <strong>${earfcnRaw}${earfcnInfo}</strong> | BW: <strong>${rfData.dlChBw || 'N/A'}</strong> | RS Boost: <strong>${rfData.dlRsBoost || 'N/A'} dB</strong> | State: <strong>${adminStateVal}</strong></div>`;
             }
             const nrcellDistName = getParentNrcellDistName(distName);
             if (nrcellDistName && nrcellRfParams[nrcellDistName]) {
                 const rfData = nrcellRfParams[nrcellDistName];
-                return `<div class="rf-tag-5g">ARFCN/SSB: <strong>${rfData.ssbFrequency || rfData.nrARFCN || 'N/A'}</strong> | BW: <strong>${rfData.chBw || 'N/A'}</strong></div>`;
+                return `<div class="rf-tag-5g">ARFCN/SSB: <strong>${rfData.ssbFrequency || rfData.nrARFCN || 'N/A'}</strong> | BW: <strong>${rfData.chBw || 'N/A'}</strong> | State: <strong>${rfData.adminState ? rfData.adminState.toUpperCase() : 'N/A'}</strong></div>`;
             }
             return '';
+        }
+
+        function getLncelAdminState(lncelDistName) {
+            const raw = lncelFddParams[lncelDistName] && lncelFddParams[lncelDistName].adminState;
+            return raw ? raw.toUpperCase() : 'N/A';
         }
 
         document.getElementById('fileInput')?.addEventListener('click', function() { this.value = null; });
@@ -4185,13 +4526,20 @@
                 if (className && className.endsWith(':LNCEL_FDD')) {
                     const lncelParent = getParentLncelDistName(distName);
                     if (lncelParent) {
-                        lncelFddParams[lncelParent] = {
-                            earfcnDL: getParamCaseInsensitive(params, "earfcnDL") || 'N/A', 
+                        if (!lncelFddParams[lncelParent]) lncelFddParams[lncelParent] = {};
+                        Object.assign(lncelFddParams[lncelParent], {
+                            earfcnDL: getParamCaseInsensitive(params, "earfcnDL") || 'N/A',
                             dlChBw: getParamCaseInsensitive(params, "dlChBw") || 'N/A',
-                            dlRsBoost: getParamCaseInsensitive(params, "dlRsBoost") || '0', 
+                            dlRsBoost: getParamCaseInsensitive(params, "dlRsBoost") || '0',
                             dlpcMimoComp: getParamCaseInsensitive(params, "dlpcMimoComp") || '0'
-                        };
+                        });
                     }
+                }
+
+                // administrativeState (LOCKED/UNLOCKED) lives on LNCEL itself, not LNCEL_FDD.
+                if (className && className.endsWith(':LNCEL')) {
+                    if (!lncelFddParams[distName]) lncelFddParams[distName] = {};
+                    lncelFddParams[distName].adminState = getParamCaseInsensitive(params, "administrativeState") || 'N/A';
                 }
 
                 if (className && (className.includes('NRCELL') || className.includes('NRDU'))) {
@@ -4200,7 +4548,10 @@
                         if (!nrcellRfParams[nrcellParent]) nrcellRfParams[nrcellParent] = {};
                         if (getParamCaseInsensitive(params, "ssbFrequency")) nrcellRfParams[nrcellParent].ssbFrequency = getParamCaseInsensitive(params, "ssbFrequency");
                         if (getParamCaseInsensitive(params, "nrARFCN")) nrcellRfParams[nrcellParent].nrARFCN = getParamCaseInsensitive(params, "nrARFCN");
-                        if (getParamCaseInsensitive(params, "chBw")) nrcellRfParams[nrcellParent].chBw = getParamCaseInsensitive(params, "chBw");
+                        // chBwDl lives on NRCELL_FDD (downlink channel bandwidth) — "chBw" is not a real SCF param and was always undefined.
+                        if (getParamCaseInsensitive(params, "chBwDl")) nrcellRfParams[nrcellParent].chBw = getParamCaseInsensitive(params, "chBwDl");
+                        // administrativeState (LOCKED/UNLOCKED) lives on NRCELL itself, not NRCELL_FDD.
+                        if (className.endsWith(':NRCELL')) nrcellRfParams[nrcellParent].adminState = getParamCaseInsensitive(params, "administrativeState") || 'N/A';
                     }
                 }
 
@@ -4754,12 +5105,15 @@
             const lnadjwMap = {}; // 3G Targets
             const lnadjGnbMap = {}; // 5G Targets
 
-            // 1. Identify Site MRBTS ID
+            // 1. Identify Site LNBTS (eNodeB) ID — this is what adjEnbId/ecgiAdjEnbId on a LNADJ/LNREL
+            // actually refers to (the Nokia eNodeB id), NOT the MRBTS container id, which is a
+            // different, unrelated number. Comparing against MRBTS here would make every intra-site
+            // relation look external.
             let siteMrbtsId = null;
             for (const dName of Object.keys(scfData)) {
-                const mrbtsMatch = dName.match(/MRBTS-(\d+)/);
-                if (mrbtsMatch) {
-                    siteMrbtsId = mrbtsMatch[1];
+                const lnbtsMatch = dName.match(/LNBTS-(\d+)/);
+                if (lnbtsMatch) {
+                    siteMrbtsId = lnbtsMatch[1];
                     break;
                 }
             }
@@ -4789,6 +5143,7 @@
                     const ecgiLcrId = getParamCaseInsensitive(p, 'ecgiLcrId') || getParamCaseInsensitive(p, 'adjLcrId');
                     const phyCellId = getParamCaseInsensitive(p, 'phyCellId') || getParamCaseInsensitive(p, 'physCellId') || getParamCaseInsensitive(p, 'targetPci');
                     const dlEarfcn = getParamCaseInsensitive(p, 'fDlEarfcn') || getParamCaseInsensitive(p, 'tDlEarfcn') || getParamCaseInsensitive(p, 'targetEarfcn') || getParamCaseInsensitive(p, 'dlEarfcn') || getParamCaseInsensitive(p, 'earfcn') || getParamCaseInsensitive(p, 'earfcnDL');
+                    const lnadjlTac = getParamCaseInsensitive(p, 'tac') || getParamCaseInsensitive(p, 'trackingAreaCode');
 
                     if (parentEnbId && ecgiLcrId) {
                         const key = `${parentEnbId}_${ecgiLcrId}`;
@@ -4798,6 +5153,7 @@
                             lcrId: ecgiLcrId,
                             pci: phyCellId !== undefined ? parseInt(phyCellId, 10) : 'N/A',
                             earfcn: dlEarfcn || 'N/A',
+                            tac: lnadjlTac !== undefined ? lnadjlTac : 'N/A',
                             name: getParamCaseInsensitive(p, 'userLabel') || getParamCaseInsensitive(p, 'cPlainName') || `Cell-${ecgiLcrId}`
                         };
                     }
@@ -4860,7 +5216,7 @@
 
                     const p = moObj.params;
                     let relType = '4G';
-                    let adjEnbId = 'N/A', adjLcrId = 'N/A', targetPci = 'N/A', targetEarfcn = 'N/A', targetName = 'Unknown', isOrphan = false, isIntraSite = false;
+                    let adjEnbId = 'N/A', adjLcrId = 'N/A', targetPci = 'N/A', targetEarfcn = 'N/A', targetTac = 'N/A', targetName = 'Unknown', isOrphan = false, isIntraSite = false;
                     let adjDistName = null, adjlDistName = null;
                     
                     if (cls.endsWith(':LNRELW') || cls === 'LNRELW') {
@@ -4908,9 +5264,10 @@
                             isIntraSite = true;
                             let localPci = 'N/A';
                             let localEarfcn = 'N/A';
+                            let localTac = 'N/A';
                             let localFound = false;
                             let localName = 'Unknown';
-                            
+
                             for (const dName of Object.keys(scfData)) {
                                 if (dName.includes('LNCEL-')) {
                                     const cellIdPart = dName.split('/').pop().replace('LNCEL-', '');
@@ -4920,15 +5277,17 @@
                                         const fddData = lncelFddParams[dName] || {};
                                         localPci = getParamCaseInsensitive(lP, 'phyCellId') || getParamCaseInsensitive(lP, 'physCellId') || 'N/A';
                                         localEarfcn = fddData.earfcnDL || getParamCaseInsensitive(lP, 'earfcnDL') || getParamCaseInsensitive(lP, 'dlEarfcn') || getParamCaseInsensitive(lP, 'earfcn') || 'N/A';
+                                        localTac = getParamCaseInsensitive(lP, 'tac') || getParamCaseInsensitive(lP, 'trackingAreaCode') || 'N/A';
                                         localName = getParamCaseInsensitive(lP, 'cellName') || getParamCaseInsensitive(lP, 'userLabel') || `Local Cell-${adjLcrId}`;
                                         break;
                                     }
                                 }
                             }
-                            
+
                             isOrphan = !localFound;
                             targetPci = localFound ? localPci : 'N/A';
                             targetEarfcn = localFound ? localEarfcn : 'N/A';
+                            targetTac = localFound ? localTac : 'N/A';
                             targetName = localFound ? localName : `Local Cell ${adjLcrId}`;
                             // Intra-site 4G relations resolve directly against the local LNCEL, no LNADJ/LNADJL involved.
                             adjDistName = null;
@@ -4941,6 +5300,7 @@
                             isOrphan = !targetLnjl;
                             targetPci = targetLnjl ? targetLnjl.pci : 'N/A';
                             targetEarfcn = targetLnjl ? targetLnjl.earfcn : 'N/A';
+                            targetTac = targetLnjl ? targetLnjl.tac : 'N/A';
                             targetName = targetLnjl ? targetLnjl.name : (targetEnb ? `${targetEnb.cPlainName} / Cell-${adjLcrId}` : `Target eNB ${adjEnbId} Cell ${adjLcrId}`);
                             adjDistName = targetEnb ? targetEnb.distName : null;
                             adjlDistName = targetLnjl ? targetLnjl.distName : null;
@@ -4958,7 +5318,7 @@
 
                     neighborsByServingCell[servingCellId].relations.push({
                         distName: distName, relType: relType, servingCellId: servingCellId, servingCellName: servingCellName,
-                        targetEnbId: adjEnbId, targetLcrId: adjLcrId, targetPci: targetPci, targetEarfcn: targetEarfcn,
+                        targetEnbId: adjEnbId, targetLcrId: adjLcrId, targetPci: targetPci, targetEarfcn: targetEarfcn, targetTac: targetTac,
                         targetName: targetName, cio: cio, noHo: noHo, isOrphan: isOrphan, isIntraSite: isIntraSite,
                         adjDistName: adjDistName, adjlDistName: adjlDistName,
                         hasCollision: false, hasConfusion: false, rawParams: p
@@ -5159,6 +5519,626 @@
             document.getElementById('nbrTotalAdjNodes').innerText = `${totalAdjNodes} LNADJ`;
             document.getElementById('nbrTotalConflicts').innerText = `${totalConflicts} Risks`;
             document.getElementById('nbrTotalOrphans').innerText = `${totalOrphans} Relations`;
+        }
+
+        // ============================================================
+        // NEIGHBOR MAPPING (Phase 1): intra-LTE LNADJ/LNREL event-dynamics graph
+        // ============================================================
+
+        // Standardized LNCEL parameter mapping per event (per spec):
+        // A1 = LNCEL/threshold1, dBm = raw - 140
+        // A2 = LNCEL/threshold2a, dBm = raw - 140
+        // A3 = LNCEL/a3offset (RSRP offset in dB), dB = raw / 2
+        // A5 is not a per-cell parameter: it lives inside the LNHOIF (inter-freq mobility profile)
+        // matched to this specific relation's target frequency (see getA5ForRelation below).
+        const NBR_MAP_EVENT_CONFIG = {
+            A1: { thresholdKeys: ['threshold1'], hysteresisKeys: ['a1a2Hysteresis', 'hysteresisA1A2', 'a1Hysteresis'], tttKeys: ['a1TimeToTrigger', 'timeToTriggerA1'], dbmOffset: 140, derivedSubstr: 'threshold1' },
+            A2: {
+                thresholdKeys: ['threshold2a'], hysteresisKeys: ['a1a2Hysteresis', 'hysteresisA1A2', 'a2Hysteresis'], tttKeys: ['a2TimeToTrigger', 'timeToTriggerA2'], dbmOffset: 140, derivedSubstr: 'threshold2a',
+                // Additional per-RAT/per-QCI A2 serving-RSRP thresholds that live on LNCEL alongside
+                // threshold2a — same "serving degrades" semantics, same raw-140 dBm conversion, just
+                // gating a different target (CatM, GERAN, inter-freq, NR) or QCI.
+                derivedThresholdKeys: ['threshold2aQci1', 'threshold2aCatM', 'threshold2GERAN', 'threshold2GERANQci1', 'threshold2InterFreq', 'threshold2NR']
+            },
+            A3: { offsetKeys: ['a3offset'], offsetDivisor: 2, hysteresisKeys: ['a3hysteresis', 'hysteresisA3'], tttKeys: ['a3TimeToTrigger', 'timeToTriggerA3'], derivedSubstr: 'a3offset' },
+            A5: {
+                thresholdKeys: ['threshold3InterFreq'], threshold2Keys: ['threshold3aInterFreq'], carrierKeys: ['eutraCarrierInfo'],
+                tttKeys: ['a5TimeToTriggerInterFreq', 'a5TimeToTrigger'], dbmOffset: 140,
+                thresholdQci1Keys: ['threshold3InterFreqQci1'], threshold2Qci1Keys: ['threshold3aInterFreqQci1']
+            }
+        };
+
+        function nbrMapIdxToDbm(raw, offset) {
+            const n = parseFloat(raw);
+            if (isNaN(n)) return null;
+            return n - offset;
+        }
+
+        // Nokia TTT params are often stored already suffixed ("320ms"); avoid doubling the unit.
+        function nbrMapFmtMs(raw) {
+            const s = String(raw);
+            return /ms$/i.test(s) ? s : `${s}ms`;
+        }
+
+        function nbrMapFirstParam(params, keys) {
+            for (const k of keys) {
+                const v = getParamCaseInsensitive(params, k);
+                if (v !== undefined && v !== null && v !== '') return { key: k, raw: v };
+            }
+            return null;
+        }
+
+        // Every LNCEL param whose name contains the event's signature substring (case-insensitive),
+        // e.g. all *threshold2a* variants (threshold2a, threshold2aQci1, hysThreshold2a, ...) for A2.
+        // Surfaces per-RAT/per-QCI variants of the same event without having to name each one.
+        function nbrMapFindDerivedParams(params, substr, excludeKey) {
+            if (!params || !substr) return [];
+            const needle = substr.toLowerCase();
+            const excludeLower = excludeKey ? excludeKey.toLowerCase() : null;
+            return Object.keys(params)
+                .filter(k => k.toLowerCase().includes(needle) && k.toLowerCase() !== excludeLower)
+                .sort(naturalCompare)
+                .map(k => ({ key: k, raw: params[k] }));
+        }
+
+        // Explicit list of additional RSRP-threshold-style params (e.g. A2's per-RAT/per-QCI
+        // variants), each converted to dBm the same way as the event's primary threshold.
+        function nbrMapFindDerivedThresholds(params, keys, dbmOffset) {
+            if (!params || !keys) return [];
+            const found = [];
+            keys.forEach(k => {
+                const v = getParamCaseInsensitive(params, k);
+                if (v !== undefined && v !== null && v !== '') found.push({ key: k, raw: v, dbm: nbrMapIdxToDbm(v, dbmOffset) });
+            });
+            return found;
+        }
+
+        // Detects which A1/A2/A3/A5 events are configured on a serving LNCEL and normalizes
+        // their thresholds to dBm/dB where the encoding is known. Returns null per event when
+        // its signature parameters are not found in this SCF (shown as "N/A" in the UI).
+        function getLteEventProfile(servingParams) {
+            const profile = {};
+
+            const a1Thr = nbrMapFirstParam(servingParams, NBR_MAP_EVENT_CONFIG.A1.thresholdKeys);
+            profile.A1 = a1Thr ? {
+                thresholdRaw: a1Thr.raw, thresholdKey: a1Thr.key, thresholdDbm: nbrMapIdxToDbm(a1Thr.raw, NBR_MAP_EVENT_CONFIG.A1.dbmOffset),
+                hysteresis: nbrMapFirstParam(servingParams, NBR_MAP_EVENT_CONFIG.A1.hysteresisKeys),
+                ttt: nbrMapFirstParam(servingParams, NBR_MAP_EVENT_CONFIG.A1.tttKeys),
+                derivedParams: nbrMapFindDerivedParams(servingParams, NBR_MAP_EVENT_CONFIG.A1.derivedSubstr, a1Thr.key)
+            } : null;
+
+            const a2Thr = nbrMapFirstParam(servingParams, NBR_MAP_EVENT_CONFIG.A2.thresholdKeys);
+            profile.A2 = a2Thr ? (() => {
+                // Converted RSRP-threshold variants (explicit list) take priority; any other
+                // *threshold2a* match (e.g. hysThreshold2a) is appended as-is, without conversion,
+                // since it is a relative hysteresis value, not an absolute RSRP level.
+                const convertedKeys = new Set(NBR_MAP_EVENT_CONFIG.A2.derivedThresholdKeys.map(k => k.toLowerCase()));
+                const converted = nbrMapFindDerivedThresholds(servingParams, NBR_MAP_EVENT_CONFIG.A2.derivedThresholdKeys, NBR_MAP_EVENT_CONFIG.A2.dbmOffset);
+                const rest = nbrMapFindDerivedParams(servingParams, NBR_MAP_EVENT_CONFIG.A2.derivedSubstr, a2Thr.key).filter(p => !convertedKeys.has(p.key.toLowerCase()));
+                return {
+                    thresholdRaw: a2Thr.raw, thresholdKey: a2Thr.key, thresholdDbm: nbrMapIdxToDbm(a2Thr.raw, NBR_MAP_EVENT_CONFIG.A2.dbmOffset),
+                    hysteresis: nbrMapFirstParam(servingParams, NBR_MAP_EVENT_CONFIG.A2.hysteresisKeys),
+                    ttt: nbrMapFirstParam(servingParams, NBR_MAP_EVENT_CONFIG.A2.tttKeys),
+                    derivedParams: [...converted, ...rest]
+                };
+            })() : null;
+
+            const a3Off = nbrMapFirstParam(servingParams, NBR_MAP_EVENT_CONFIG.A3.offsetKeys);
+            profile.A3 = a3Off ? {
+                offsetRaw: a3Off.raw, offsetKey: a3Off.key, offsetDb: parseFloat(a3Off.raw) / NBR_MAP_EVENT_CONFIG.A3.offsetDivisor,
+                hysteresis: nbrMapFirstParam(servingParams, NBR_MAP_EVENT_CONFIG.A3.hysteresisKeys),
+                ttt: nbrMapFirstParam(servingParams, NBR_MAP_EVENT_CONFIG.A3.tttKeys),
+                derivedParams: nbrMapFindDerivedParams(servingParams, NBR_MAP_EVENT_CONFIG.A3.derivedSubstr, a3Off.key)
+            } : null;
+
+            // A5 is resolved per-relation (see getA5ForRelation) since it depends on which LNHOIF
+            // matches the relation's own target EARFCN — it is not a single cell-wide value.
+            profile.A5 = null;
+
+            return profile;
+        }
+
+        // A5 is defined per-frequency inside LNHOIF, not on the LNCEL itself. For a given relation,
+        // the applicable LNHOIF is the one (child of the serving LNCEL) whose eutraCarrierInfo matches
+        // the relation's own target EARFCN (sourced from LNADJL's fDlEarfcn). threshold3InterFreq is
+        // the serving-cell RSRP trigger, threshold3aInterFreq is the neighbor-cell RSRP trigger —
+        // together they define A5 for that specific relation. Same-frequency relations (where the
+        // target EARFCN equals the serving EARFCN) are governed by A3 instead, not A5, so no LNHOIF
+        // match is expected there.
+        function getA5ForRelation(sourceLncelDist, sourceEarfcn, rel) {
+            if (!sourceLncelDist || !rel.targetEarfcn || rel.targetEarfcn === 'N/A') return null;
+            if (String(rel.targetEarfcn) === String(sourceEarfcn)) return null; // same-freq -> A3 scope, not A5
+
+            const lnhoifList = getMOsByClass('LNHOIF');
+            for (const o of lnhoifList) {
+                if (getParentDistName(o.distName) !== sourceLncelDist) continue;
+                const carrier = nbrMapFirstParam(o.params, NBR_MAP_EVENT_CONFIG.A5.carrierKeys);
+                if (!carrier || String(carrier.raw) !== String(rel.targetEarfcn)) continue;
+
+                const t3 = nbrMapFirstParam(o.params, NBR_MAP_EVENT_CONFIG.A5.thresholdKeys);
+                const t3a = nbrMapFirstParam(o.params, NBR_MAP_EVENT_CONFIG.A5.threshold2Keys);
+                if (!t3 || !t3a) return null;
+
+                return {
+                    lnhoifDistName: o.distName, lnhoifShort: o.distName.split('/').pop(),
+                    thresholdRaw: t3.raw, thresholdKey: t3.key, thresholdDbm: nbrMapIdxToDbm(t3.raw, NBR_MAP_EVENT_CONFIG.A5.dbmOffset),
+                    threshold2Raw: t3a.raw, threshold2Key: t3a.key, threshold2Dbm: nbrMapIdxToDbm(t3a.raw, NBR_MAP_EVENT_CONFIG.A5.dbmOffset),
+                    ttt: nbrMapFirstParam(o.params, NBR_MAP_EVENT_CONFIG.A5.tttKeys)
+                };
+            }
+            return null; // no LNHOIF configured for this relation's target frequency
+        }
+
+        // Every LNHOIF (inter-freq mobility profile) configured on the source LNCEL, independent of
+        // any specific relation — one card-level summary of "every A5 this cell could trigger",
+        // including the QCI1 (VoLTE/high-priority bearer) threshold variants alongside the normal
+        // ones. threshold3InterFreqQci1/threshold3aInterFreqQci1 share the same raw-140 dBm formula
+        // as their non-QCI1 counterparts (confirmed in reference/nokia_lte_parameters_2026.csv).
+        function getAllA5ProfilesForLncel(sourceLncelDist) {
+            if (!sourceLncelDist) return [];
+            const cfg = NBR_MAP_EVENT_CONFIG.A5;
+            return getMOsByClass('LNHOIF')
+                .filter(o => getParentDistName(o.distName) === sourceLncelDist)
+                .map(o => {
+                    const t3 = nbrMapFirstParam(o.params, cfg.thresholdKeys);
+                    const t3a = nbrMapFirstParam(o.params, cfg.threshold2Keys);
+                    const t3Qci1 = nbrMapFirstParam(o.params, cfg.thresholdQci1Keys);
+                    const t3aQci1 = nbrMapFirstParam(o.params, cfg.threshold2Qci1Keys);
+                    const carrier = nbrMapFirstParam(o.params, cfg.carrierKeys);
+                    return {
+                        lnhoifShort: o.distName.split('/').pop(),
+                        earfcn: carrier ? carrier.raw : 'N/A',
+                        threshold: t3 ? { key: t3.key, raw: t3.raw, dbm: nbrMapIdxToDbm(t3.raw, cfg.dbmOffset) } : null,
+                        threshold2: t3a ? { key: t3a.key, raw: t3a.raw, dbm: nbrMapIdxToDbm(t3a.raw, cfg.dbmOffset) } : null,
+                        thresholdQci1: t3Qci1 ? { key: t3Qci1.key, raw: t3Qci1.raw, dbm: nbrMapIdxToDbm(t3Qci1.raw, cfg.dbmOffset) } : null,
+                        threshold2Qci1: t3aQci1 ? { key: t3aQci1.key, raw: t3aQci1.raw, dbm: nbrMapIdxToDbm(t3aQci1.raw, cfg.dbmOffset) } : null,
+                        ttt: nbrMapFirstParam(o.params, cfg.tttKeys)
+                    };
+                });
+        }
+
+        function nbrMapA5PerLnhoifHtml(profiles) {
+            if (!profiles || profiles.length === 0) {
+                return `<div class="nbr-map-detail-row"><b>A5 (per LNHOIF)</b>: no LNHOIF found on this LNCEL</div>`;
+            }
+            return profiles.map(p => {
+                const bits = [];
+                if (p.threshold && p.threshold2) bits.push(`${p.threshold.key}=${p.threshold.dbm}dBm / ${p.threshold2.key}=${p.threshold2.dbm}dBm`);
+                if (p.thresholdQci1 && p.threshold2Qci1) bits.push(`QCI1: ${p.thresholdQci1.key}=${p.thresholdQci1.dbm}dBm / ${p.threshold2Qci1.key}=${p.threshold2Qci1.dbm}dBm`);
+                if (p.ttt) bits.push(`TTT=${nbrMapFmtMs(p.ttt.raw)}`);
+                return `
+                    <div class="nbr-map-detail-row"><b>${p.lnhoifShort}</b> (EARFCN ${p.earfcn})</div>
+                    <div class="nbr-map-derived-params">${bits.length > 0 ? bits.join(' &nbsp;') : 'threshold3InterFreq/threshold3aInterFreq not found'}</div>`;
+            }).join('');
+        }
+
+        // B1 (inter-RAT neighbor becomes better than threshold) and B2 (serving becomes worse than
+        // threshold1 AND inter-RAT neighbor becomes better than threshold2) live on per-target-RAT
+        // mobility profile MOs that are children of the LNCEL — LNHOW (UTRA), LNHOG (GERAN), LNHOH
+        // (CDMA2000-HRPD), LNHOX (CDMA2000-1xRTT), LNHON/NRDCDPR/NRDCPR/ENDCDMEASCONF/ENDCMEASCONF
+        // (NR). Unlike A1-A5 (a flat raw-140 dBm convention), each B1/B2 threshold here has its own
+        // conversion formula depending on quantity (RSRP/RSCP/RSSI/EcN0/pilot strength) — sourced
+        // from the Nokia parameter reference (reference/nokia_lte_parameters_2026.csv) rather than
+        // assumed, since getting this wrong silently shows a plausible-looking but incorrect dBm.
+        const NBR_MAP_B1B2_CONVERT = {
+            'b1hysthresholdrsrp': { fn: r => parseFloat(r) / 2, unit: 'dB' },
+            'b1hysthresholdrsrq': { fn: r => parseFloat(r) / 2, unit: 'dB' },
+            'b1thresholdcsfbutraecn0': { fn: r => parseFloat(r) / 2 - 24, unit: 'dB' },
+            'b1thresholdcsfbutrarscp': { fn: r => parseFloat(r) - 115, unit: 'dBm' },
+            'b1thresholdnrrsrp': { fn: r => parseFloat(r) - 156, unit: 'dBm' },
+            'b1nrbeamthreshrsrp': { fn: r => parseFloat(r) - 156, unit: 'dBm' },
+            'b1thresholdnrrsrq': { fn: r => parseFloat(r) / 2, unit: 'dB' },
+            'b1nrbeamthreshrsrq': { fn: r => parseFloat(r) / 2, unit: 'dB' },
+            'b1thresholdrsrp': { fn: r => parseFloat(r) - 156, unit: 'dBm' },
+            'b1thresholdrsrq': { fn: r => parseFloat(r) / 2 - 43.5, unit: 'dB' },
+            'b1thresholdutraecn0srvcc': { fn: r => parseFloat(r) / 2 - 24, unit: 'dB' },
+            'b1thresholdutrarscpsrvcc': { fn: r => parseFloat(r) - 115, unit: 'dBm' },
+            'b2threshold1geran': { fn: r => parseFloat(r) - 140, unit: 'dBm' },
+            'b2threshold1geranqci1': { fn: r => parseFloat(r) - 140, unit: 'dBm' },
+            'b2threshold1hrpd': { fn: r => parseFloat(r) - 140, unit: 'dBm' },
+            'b2threshold1rsrqgeran': { fn: r => parseFloat(r) / 10, unit: 'dB' },
+            'b2threshold1rsrqgeranqci1': { fn: r => parseFloat(r) / 10, unit: 'dB' },
+            'b2threshold1rsrqhrpd': { fn: r => parseFloat(r) / 10, unit: 'dB' },
+            'b2threshold1rsrqrtt': { fn: r => parseFloat(r) / 10, unit: 'dB' },
+            'b2threshold1rsrqutra': { fn: r => parseFloat(r) / 10, unit: 'dB' },
+            'b2threshold1rsrqutraqci1': { fn: r => parseFloat(r) / 10, unit: 'dB' },
+            'b2threshold1rtt': { fn: r => parseFloat(r) - 140, unit: 'dBm' },
+            'b2threshold1utra': { fn: r => parseFloat(r) - 140, unit: 'dBm' },
+            'b2threshold1utraqci1': { fn: r => parseFloat(r) - 140, unit: 'dBm' },
+            'b2threshold2pstrhrpd': { fn: r => -parseFloat(r) / 2, unit: 'dB' },
+            'b2threshold2pstrrtt': { fn: r => -parseFloat(r) / 2, unit: 'dB' },
+            'b2threshold2rssigeran': { fn: r => parseFloat(r) - 110, unit: 'dBm' },
+            'b2threshold2rssigeranqci1': { fn: r => parseFloat(r) - 110, unit: 'dBm' },
+            'b2threshold2utraecn0': { fn: r => parseFloat(r) / 2 - 24, unit: 'dB' },
+            'b2threshold2utraecn0qci1': { fn: r => parseFloat(r) / 2 - 24, unit: 'dB' },
+            'b2threshold2utrarscp': { fn: r => parseFloat(r) - 115, unit: 'dBm' },
+            'b2threshold2utrarscpqci1': { fn: r => parseFloat(r) - 115, unit: 'dBm' }
+        };
+
+        // Scans every direct child MO of the source LNCEL for B1/B2 threshold and timeToTrigger
+        // params, grouped by the MO instance that carries them (one LNCEL can have several, one per
+        // target RAT). Converts each recognized threshold via NBR_MAP_B1B2_CONVERT; anything B1/B2
+        // that isn't in that table (e.g. report intervals, beam counts) is left out to keep this
+        // readable — the threshold/TTT pair is what actually defines when the event fires.
+        function getInterRatEventParams(sourceLncelDist) {
+            const groups = [];
+            if (!sourceLncelDist) return groups;
+            for (const dName of Object.keys(scfData)) {
+                if (getParentDistName(dName) !== sourceLncelDist) continue;
+                const params = (scfData[dName] && scfData[dName].params) || {};
+                const b1 = [], b2 = [];
+                Object.keys(params).forEach(k => {
+                    const lower = k.toLowerCase();
+                    if (!(lower.startsWith('b1') || lower.startsWith('b2'))) return;
+                    if (!/threshold|timetotrigger/.test(lower)) return;
+                    const conv = NBR_MAP_B1B2_CONVERT[lower];
+                    const entry = conv
+                        ? { key: k, raw: params[k], value: Math.round(conv.fn(params[k]) * 100) / 100, unit: conv.unit }
+                        : { key: k, raw: lower.includes('timetotrigger') ? nbrMapFmtMs(params[k]) : params[k] };
+                    (lower.startsWith('b1') ? b1 : b2).push(entry);
+                });
+                if (b1.length > 0 || b2.length > 0) groups.push({ moShort: dName.split('/').pop(), b1, b2 });
+            }
+            return groups;
+        }
+
+        function nbrMapInterRatHtml(groups) {
+            const fmtList = (list) => list.map(e => e.unit !== undefined ? `${e.key}=${e.value}${e.unit} (${e.raw})` : `${e.key}=${e.raw}`).join(' &nbsp;');
+            if (!groups || groups.length === 0) {
+                return `<div class="nbr-map-detail-row"><b>B1 / B2</b>: no inter-RAT mobility profile (LNHOW/LNHOG/LNHOH/LNHOX/LNHON/...) found on this LNCEL</div>`;
+            }
+            return groups.map(g => `
+                <div class="nbr-map-detail-row"><b>${g.moShort}</b></div>
+                ${g.b1.length > 0 ? `<div class="nbr-map-derived-params">B1: ${fmtList(g.b1)}</div>` : ''}
+                ${g.b2.length > 0 ? `<div class="nbr-map-derived-params">B2: ${fmtList(g.b2)}</div>` : ''}
+            `).join('');
+        }
+
+        // Conflict/dynamics checks between the events configured on one serving LNCEL.
+        // Phase 1 scope: RSRP only (RSRQ deferred to Phase 2).
+        function detectLteEventConflicts(profile) {
+            const conflicts = [];
+            const MIN_HYSTERESIS_MARGIN_DB = 2;
+
+            if (profile.A1 && profile.A2 && profile.A1.thresholdDbm !== null && profile.A2.thresholdDbm !== null) {
+                const margin = profile.A1.thresholdDbm - profile.A2.thresholdDbm;
+                if (margin < MIN_HYSTERESIS_MARGIN_DB) {
+                    conflicts.push({
+                        code: 'A1_A2_INVERTED', severity: margin < 0 ? 'CONFLICT' : 'WARN',
+                        text: `A2 enter-threshold (${profile.A2.thresholdDbm}dBm) is ${margin < 0 ? 'ABOVE' : 'too close to'} A1 exit-threshold (${profile.A1.thresholdDbm}dBm) — margin ${margin.toFixed(1)}dB (min recommended ${MIN_HYSTERESIS_MARGIN_DB}dB). Risk of A1/A2 oscillation (measurement being enabled/disabled repeatedly).`
+                    });
+                }
+            }
+
+            if (profile.A3 && !isNaN(profile.A3.offsetDb) && profile.A3.offsetDb > 10) {
+                conflicts.push({
+                    code: 'A3_OFFSET_TOO_HIGH', severity: 'WARN',
+                    text: `A3 offset (${profile.A3.offsetDb}dB) is unusually high — the neighbor would need to be far stronger than serving before A3 triggers.`
+                });
+            }
+
+            return conflicts;
+        }
+
+        function findLncelDistByShortId(cellId) {
+            for (const dName of Object.keys(scfData)) {
+                if (dName.endsWith('/' + cellId) && (scfData[dName].class || '').includes('LNCEL')) return dName;
+            }
+            return null;
+        }
+
+        function populateNeighborMappingSourceSelect() {
+            const select = document.getElementById('nbrMapSourceSelect');
+            if (!select) return;
+            const prevVal = select.value;
+
+            const seen = new Map();
+            allNeighborRelationsFlat.forEach(rel => {
+                if (rel.relType === '4G' && !seen.has(rel.servingCellId)) {
+                    seen.set(rel.servingCellId, rel.servingCellName);
+                }
+            });
+
+            const ids = Array.from(seen.keys()).sort(naturalCompare);
+            select.innerHTML = `<option value="">Select a serving cell…</option>` + ids.map(id => `<option value="${id}">${seen.get(id)} (${id})</option>`).join('');
+            if (prevVal && seen.has(prevVal)) select.value = prevVal;
+        }
+
+        function renderNeighborMappingDashboard() {
+            if (allNeighborRelationsFlat.length === 0 && Object.keys(scfData).length > 0) renderNeighborMapping();
+            populateNeighborMappingSourceSelect();
+            renderNeighborMappingGraph();
+        }
+
+        // Finds, for an intra-site reciprocal pair, the reverse relation (target -> source) so we
+        // can flag A->B vs B->A asymmetry. Best-effort: only resolvable when the neighbor is itself
+        // a local LNCEL on this same SCF (isIntraSite), since that is the only case where we can be
+        // sure of the reverse LNCEL's own short cell id.
+        function findReciprocalRelation(rel) {
+            if (!rel.isIntraSite) return null;
+            const reverseServingCellId = 'LNCEL-' + rel.targetLcrId;
+            return allNeighborRelationsFlat.find(r => r.relType === '4G' && r.servingCellId === reverseServingCellId && r.targetLcrId === rel.servingCellId.replace('LNCEL-', '')) || null;
+        }
+
+        let nbrMapCurrentRelations = [];
+        let nbrMapCurrentSourceProfile = null;
+        let nbrMapCurrentSourceLabel = '';
+        let nbrMapCurrentSourceDist = null;
+        let nbrMapCurrentSourceEarfcn = 'N/A';
+        // LNBTS groups are collapsed by default to keep the tree compact; this set tracks which
+        // ones the user explicitly expanded. Reset whenever the selected source cell changes.
+        let nbrMapExpandedGroups = new Set();
+        let nbrMapTreeLastCellId = null;
+
+        let nbrMapExpandedLeaves = new Set();
+
+        function toggleNbrMapGroup(enbId) {
+            const key = String(enbId);
+            if (nbrMapExpandedGroups.has(key)) nbrMapExpandedGroups.delete(key);
+            else nbrMapExpandedGroups.add(key);
+            renderNeighborMappingGraph();
+        }
+
+        function toggleNbrMapLeaf(idx) {
+            if (nbrMapExpandedLeaves.has(idx)) nbrMapExpandedLeaves.delete(idx);
+            else nbrMapExpandedLeaves.add(idx);
+            renderNeighborMappingGraph();
+        }
+
+        // Returns the event (A3 for same-frequency relations, A5 via the matching LNHOIF for
+        // inter-frequency relations) that actually governs this specific relation, plus its
+        // right-aligned label text (with the source parameter name in parentheses).
+        function getGoverningEventForRelation(sourceDist, sourceEarfcn, profile, rel) {
+            if (String(rel.targetEarfcn) === String(sourceEarfcn) && rel.targetEarfcn !== 'N/A') {
+                if (!profile.A3) return { type: 'A3', label: 'A3: not found', data: null };
+                return { type: 'A3', label: `A3:${profile.A3.offsetDb}dB (${profile.A3.offsetKey})`, data: profile.A3 };
+            }
+            const a5 = getA5ForRelation(sourceDist, sourceEarfcn, rel);
+            if (!a5) return { type: 'A5', label: `A5: no matching LNHOIF for EARFCN ${rel.targetEarfcn}`, data: null };
+            return { type: 'A5', label: `A5:${a5.thresholdDbm}/${a5.threshold2Dbm}dBm (${a5.thresholdKey}/${a5.threshold2Key})`, data: a5 };
+        }
+
+        // Builds the Source (CARD1) -> LNBTS group (CARD2) -> target LNCEL (CARD3) hierarchy.
+        function renderNeighborMappingGraph() {
+            const treeScroll = document.getElementById('nbrMapTreeScroll');
+            const select = document.getElementById('nbrMapSourceSelect');
+            if (!treeScroll || !select) return;
+            const cellId = select.value;
+
+            document.getElementById('nbrMapTotalNeighbors').innerText = '0';
+            document.getElementById('nbrMapTotalConflicts').innerText = '0';
+
+            if (!cellId) {
+                treeScroll.innerHTML = `<div style="padding:16px; font-size:0.75rem; color:var(--text-muted); font-style:italic; text-align:center;">Select a source cell above to build its neighbor hierarchy.</div>`;
+                return;
+            }
+
+            if (cellId !== nbrMapTreeLastCellId) { nbrMapExpandedGroups = new Set(); nbrMapExpandedLeaves = new Set(); nbrMapTreeLastCellId = cellId; }
+
+            const sourceDist = findLncelDistByShortId(cellId);
+            const sourceParams = sourceDist ? scfData[sourceDist].params : {};
+            const sourcePci = getParamCaseInsensitive(sourceParams, 'phyCellId') || getParamCaseInsensitive(sourceParams, 'physCellId') || 'N/A';
+            const sourceFddData = sourceDist ? (lncelFddParams[sourceDist] || {}) : {};
+            const sourceEarfcn = sourceFddData.earfcnDL || getParamCaseInsensitive(sourceParams, 'earfcnDL') || 'N/A';
+            let sourceEnbId = 'N/A';
+            for (const dName of Object.keys(scfData)) {
+                const lnbtsMatch = dName.match(/LNBTS-(\d+)/);
+                if (lnbtsMatch) { sourceEnbId = lnbtsMatch[1]; break; }
+            }
+
+            const relations = allNeighborRelationsFlat.filter(r => r.relType === '4G' && r.servingCellId === cellId);
+            // Own-site (intra-eNB) neighbors first, then external ones ordered by EnbId, then CellId.
+            relations.sort((a, b) => {
+                if (a.isIntraSite !== b.isIntraSite) return a.isIntraSite ? -1 : 1;
+                const enbCmp = naturalCompare(String(a.targetEnbId), String(b.targetEnbId));
+                if (enbCmp !== 0) return enbCmp;
+                return naturalCompare(String(a.targetLcrId), String(b.targetLcrId));
+            });
+            const profile = getLteEventProfile(sourceParams);
+            const baseConflicts = detectLteEventConflicts(profile);
+
+            nbrMapCurrentRelations = relations;
+            nbrMapCurrentSourceProfile = profile;
+            nbrMapCurrentSourceLabel = `${relations[0] ? relations[0].servingCellName : cellId} (${cellId})`;
+            nbrMapCurrentSourceDist = sourceDist;
+            nbrMapCurrentSourceEarfcn = sourceEarfcn;
+
+            document.getElementById('nbrMapTotalNeighbors').innerText = String(relations.length);
+
+            const searchTerm = (document.getElementById('nbrMapSearchInput').value || '').toLowerCase().trim();
+            const onlyConflicts = document.getElementById('nbrMapOnlyConflicts').checked;
+
+            // Group relations by target LNBTS (CARD2), preserving the intra-site-first sort order.
+            // A Map (not a plain object) keeps insertion order even for numeric-looking LNBTS ids.
+            const groups = new Map();
+            let totalConflicts = baseConflicts.length > 0 ? 1 : 0; // source-level conflicts count once, surfaced on every leaf
+
+            relations.forEach((rel, i) => {
+                const governing = getGoverningEventForRelation(sourceDist, sourceEarfcn, profile, rel);
+                const reciprocal = findReciprocalRelation(rel);
+                const relConflicts = [...baseConflicts];
+                if (reciprocal && String(reciprocal.cio) !== String(rel.cio)) {
+                    relConflicts.push({ code: 'CIO_ASYMMETRY', severity: 'WARN', text: `Asymmetric CIO: ${cellId}→target = ${rel.cio}, target→${cellId} = ${reciprocal.cio}. Handover favors one direction over the other.` });
+                }
+                if (governing.type === 'A5' && governing.data && governing.data.thresholdDbm !== null && governing.data.threshold2Dbm !== null && governing.data.thresholdDbm >= governing.data.threshold2Dbm) {
+                    relConflicts.push({ code: 'A5_THRESHOLD_INVERSION', severity: 'CONFLICT', text: `A5 serving threshold (${governing.data.thresholdKey}=${governing.data.thresholdDbm}dBm) is not below the neighbor threshold (${governing.data.threshold2Key}=${governing.data.threshold2Dbm}dBm) in ${governing.data.lnhoifShort} — A5 may never trigger as intended.` });
+                }
+                if (relConflicts.length > 0) totalConflicts++;
+                const hasConflict = relConflicts.length > 0;
+
+                let visible = true;
+                if (onlyConflicts && !hasConflict) visible = false;
+                if (visible && searchTerm) {
+                    const haystack = `${rel.targetName} ${rel.targetEnbId} ${rel.targetLcrId} ${rel.targetPci} ${rel.targetEarfcn} ${rel.targetTac}`.toLowerCase();
+                    if (!haystack.includes(searchTerm)) visible = false;
+                }
+                if (!visible) return;
+
+                const groupKey = String(rel.targetEnbId);
+                if (!groups.has(groupKey)) groups.set(groupKey, { enbId: rel.targetEnbId, isIntraSite: rel.isIntraSite, leaves: [] });
+                groups.get(groupKey).leaves.push({ rel, idx: i, hasConflict, governing });
+            });
+
+            document.getElementById('nbrMapTotalConflicts').innerText = String(totalConflicts);
+
+            if (groups.size === 0) {
+                treeScroll.innerHTML = `<div style="padding:16px; font-size:0.75rem; color:var(--text-muted); font-style:italic; text-align:center;">No relations match the current filter.</div>`;
+                return;
+            }
+
+            // A search or "only conflicts" filter forces every matching group open — otherwise a
+            // match hidden inside a collapsed LNBTS would be invisible to the user.
+            const forceExpand = !!searchTerm || onlyConflicts;
+
+            const groupsArr = Array.from(groups.values());
+            const connectorLinks = [];
+
+            const lnbtsGroupsHtml = groupsArr.map(group => {
+                const groupDomId = `nbrMapLnbts-${group.enbId}`;
+                const isExpanded = forceExpand || nbrMapExpandedGroups.has(String(group.enbId));
+                connectorLinks.push({ fromId: 'nbrMapSrcCard', toId: groupDomId, color: 'var(--border-color-strong)' });
+
+                const leavesHtml = isExpanded ? group.leaves.map(leaf => {
+                    const rel = leaf.rel;
+                    const leafDomId = `nbrMapLeaf-${leaf.idx}`;
+                    const isLeafExpanded = nbrMapExpandedLeaves.has(leaf.idx);
+                    connectorLinks.push({ fromId: groupDomId, toId: leafDomId, color: leaf.hasConflict ? '#ef4444' : 'var(--border-color-strong)' });
+                    return `
+                        <div id="${leafDomId}" class="nbr-map-card nbr-map-card-leaf ${leaf.hasConflict ? 'has-conflict' : ''} ${isLeafExpanded ? 'expanded' : ''}" onclick="toggleNbrMapLeaf(${leaf.idx})" title="${leaf.governing.label}${leaf.hasConflict ? ' ⚠' : ''}">
+                            <div class="nbr-map-card-title">${isLeafExpanded ? '▾' : '▸'} ${rel.targetName || 'Unknown'}${leaf.hasConflict ? ' ⚠' : ''}</div>
+                            <div class="nbr-map-card-sub">LNCEL: ${rel.targetLcrId}</div>
+                            <div class="nbr-map-card-sub">TAC: ${rel.targetTac}</div>
+                            <div class="nbr-map-card-sub">EARFCN: ${rel.targetEarfcn}</div>
+                            <div class="nbr-map-card-sub">PCI: ${rel.targetPci}</div>
+                            ${isLeafExpanded ? `<div class="nbr-map-leaf-detail" onclick="event.stopPropagation()">${buildNbrMapLeafDetailHtml(leaf)}</div>` : ''}
+                        </div>`;
+                }).join('') : '';
+
+                return `
+                    <div class="nbr-map-group-row">
+                        <div id="${groupDomId}" class="nbr-map-card nbr-map-card-lnbts ${group.isIntraSite ? 'is-own-site' : ''}" onclick="toggleNbrMapGroup('${group.enbId}')">
+                            <div class="nbr-map-card-title">${isExpanded ? '▾' : '▸'} LNBTS: ${group.enbId}</div>
+                            <div class="nbr-map-card-sub">${group.isIntraSite ? 'Own site' : 'External'} · ${group.leaves.length} cell${group.leaves.length !== 1 ? 's' : ''}</div>
+                        </div>
+                        ${isExpanded ? `<div class="nbr-map-leaves-col">${leavesHtml}</div>` : ''}
+                    </div>`;
+            }).join('');
+
+            treeScroll.innerHTML = `
+                <div class="nbr-map-tree-wrap" id="nbrMapTreeWrap">
+                    <svg class="nbr-map-connector-svg" id="nbrMapConnectorSvg"></svg>
+                    <div id="nbrMapSrcCard" class="nbr-map-card nbr-map-card-source">
+                        <div class="nbr-map-card-title">${nbrMapCurrentSourceLabel}</div>
+                        <div class="nbr-map-card-sub">LNBTS: ${sourceEnbId}</div>
+                        <div class="nbr-map-card-sub">LNCEL: ${cellId}</div>
+                        <div class="nbr-map-card-sub">PCI: ${sourcePci} &nbsp; EARFCN: ${sourceEarfcn}</div>
+                        <div class="nbr-map-event-profile">
+                            ${nbrMapEventProfileHtml(profile)}
+                            ${nbrMapA5PerLnhoifHtml(getAllA5ProfilesForLncel(sourceDist))}
+                            ${nbrMapInterRatHtml(getInterRatEventParams(sourceDist))}
+                            <div style="margin-top:4px;">
+                                ${baseConflicts.length === 0 ? `<span class="nbr-map-ok-badge">No conflicts</span>` : baseConflicts.map(c => `<div class="nbr-map-conflict-badge" style="display:block; margin-bottom:4px;">${c.severity}: ${c.text}</div>`).join('')}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="nbr-map-lnbts-col">${lnbtsGroupsHtml}</div>
+                </div>`;
+
+            drawNbrMapConnectors(connectorLinks);
+        }
+
+        // Draws curved connectors between real card positions — same technique as the Hardware
+        // Mapping > Configuration block diagram (drawHwBlockConnectors): an absolutely-positioned
+        // SVG overlay, redrawn from each card's getBoundingClientRect() after every render.
+        function drawNbrMapConnectors(links) {
+            const wrap = document.getElementById('nbrMapTreeWrap');
+            const svg = document.getElementById('nbrMapConnectorSvg');
+            if (!wrap || !svg || !links || links.length === 0) return;
+
+            const wrapRect = wrap.getBoundingClientRect();
+            svg.setAttribute('width', wrapRect.width);
+            svg.setAttribute('height', wrapRect.height);
+            svg.setAttribute('viewBox', `0 0 ${wrapRect.width} ${wrapRect.height}`);
+
+            let svgContent = '';
+            links.forEach(link => {
+                const fromEl = document.getElementById(link.fromId);
+                const toEl = document.getElementById(link.toId);
+                if (!fromEl || !toEl) return;
+
+                const fRect = fromEl.getBoundingClientRect();
+                const tRect = toEl.getBoundingClientRect();
+
+                const x1 = fRect.right - wrapRect.left;
+                const y1 = (fRect.top + fRect.bottom) / 2 - wrapRect.top;
+                const x2 = tRect.left - wrapRect.left;
+                const y2 = (tRect.top + tRect.bottom) / 2 - wrapRect.top;
+                const midX = (x1 + x2) / 2;
+                const color = link.color || 'var(--text-muted)';
+
+                svgContent += `
+                    <path d="M ${x1.toFixed(1)},${y1.toFixed(1)} C ${midX.toFixed(1)},${y1.toFixed(1)} ${midX.toFixed(1)},${y2.toFixed(1)} ${x2.toFixed(1)},${y2.toFixed(1)}"
+                          fill="none" stroke="${color}" stroke-width="1.5" stroke-opacity="0.7"></path>
+                    <circle cx="${x1.toFixed(1)}" cy="${y1.toFixed(1)}" r="2.2" fill="${color}"></circle>
+                    <circle cx="${x2.toFixed(1)}" cy="${y2.toFixed(1)}" r="2.2" fill="${color}"></circle>`;
+            });
+            svg.innerHTML = svgContent;
+        }
+
+        // Redraw connectors on window resize while the Mapping submenu is visible — card positions
+        // shift with viewport width, so static coordinates would drift out of sync otherwise.
+        let _nbrMapResizeTimer = null;
+        window.addEventListener('resize', () => {
+            clearTimeout(_nbrMapResizeTimer);
+            _nbrMapResizeTimer = setTimeout(() => {
+                const mappingView = document.getElementById('neighborMappingView');
+                if (mappingView && mappingView.style.display !== 'none' && document.getElementById('nbrMapTreeWrap')) {
+                    renderNeighborMappingGraph();
+                }
+            }, 200);
+        });
+
+        function nbrMapEventProfileHtml(profile) {
+            const derivedHtml = (ev) => {
+                if (!ev || !ev.derivedParams || ev.derivedParams.length === 0) return '';
+                return `<div class="nbr-map-derived-params">${ev.derivedParams.map(d => d.dbm !== undefined && d.dbm !== null ? `${d.key}=${d.dbm}dBm (${d.raw})` : `${d.key}=${d.raw}`).join(' &nbsp;')}</div>`;
+            };
+            const fmt = (ev, label) => {
+                if (!ev) return `<div class="nbr-map-detail-row"><b>${label}</b>: not found in this SCF</div>`;
+                if (label === 'A3') return `<div class="nbr-map-detail-row"><b>${label}</b>: offset=${ev.offsetDb}dB (${ev.offsetKey})${ev.hysteresis ? `, hysteresis=${ev.hysteresis.raw}` : ''}${ev.ttt ? `, TTT=${nbrMapFmtMs(ev.ttt.raw)}` : ''}${derivedHtml(ev)}</div>`;
+                return `<div class="nbr-map-detail-row"><b>${label}</b>: threshold=${ev.thresholdDbm}dBm (${ev.thresholdKey})${ev.hysteresis ? `, hysteresis=${ev.hysteresis.raw}` : ''}${ev.ttt ? `, TTT=${nbrMapFmtMs(ev.ttt.raw)}` : ''}${derivedHtml(ev)}</div>`;
+            };
+            return fmt(profile.A1, 'A1') + fmt(profile.A2, 'A2') + fmt(profile.A3, 'A3') +
+                `<div class="nbr-map-detail-row"><b>A5</b>: one profile per LNHOIF (below) — which one governs a given relation depends on its target EARFCN</div>`;
+        }
+
+        // Builds the "Relation Detail" content shown inline inside a LNCEL leaf card once expanded
+        // (replaces the old separate side panel — detail now lives right where it's relevant).
+        function buildNbrMapLeafDetailHtml(leaf) {
+            const rel = leaf.rel;
+            const governing = leaf.governing;
+            const conflicts = detectLteEventConflicts(nbrMapCurrentSourceProfile);
+            const reciprocal = findReciprocalRelation(rel);
+            if (reciprocal && String(reciprocal.cio) !== String(rel.cio)) {
+                conflicts.push({ severity: 'WARN', text: `Asymmetric CIO vs. reverse relation: this direction=${rel.cio}, reverse direction=${reciprocal.cio}.` });
+            }
+            if (governing.type === 'A5' && governing.data && governing.data.thresholdDbm !== null && governing.data.threshold2Dbm !== null && governing.data.thresholdDbm >= governing.data.threshold2Dbm) {
+                conflicts.push({ severity: 'CONFLICT', text: `A5 serving threshold (${governing.data.thresholdKey}=${governing.data.thresholdDbm}dBm) is not below the neighbor threshold (${governing.data.threshold2Key}=${governing.data.threshold2Dbm}dBm) in ${governing.data.lnhoifShort}.` });
+            }
+
+            const governingDetail = governing.type === 'A3'
+                ? (governing.data ? `offset=${governing.data.offsetDb}dB (${governing.data.offsetKey})${governing.data.hysteresis ? `, hysteresis=${governing.data.hysteresis.raw}` : ''}${governing.data.ttt ? `, TTT=${nbrMapFmtMs(governing.data.ttt.raw)}` : ''}` : 'not found')
+                : (governing.data ? `via ${governing.data.lnhoifShort}: ${governing.data.thresholdKey}(serving)=${governing.data.thresholdDbm}dBm, ${governing.data.threshold2Key}(neighbor)=${governing.data.threshold2Dbm}dBm${governing.data.ttt ? `, TTT=${nbrMapFmtMs(governing.data.ttt.raw)}` : ''}` : `no LNHOIF found with eutraCarrierInfo=${rel.targetEarfcn}`);
+
+            return `
+                <div class="nbr-map-detail-row"><b>LNREL / LNADJ / LNADJL</b>: ${rel.distName ? rel.distName.split('/').pop() : 'N/A'} / ${rel.adjDistName ? rel.adjDistName.split('/').pop() : 'N/A'} / ${rel.adjlDistName ? rel.adjlDistName.split('/').pop() : 'N/A'}</div>
+                <div class="nbr-map-detail-row"><b>CIO (cellIndOffNeigh)</b>: ${rel.cio}</div>
+                <div class="nbr-map-detail-row"><b>Intra-site</b>: ${rel.isIntraSite ? 'Yes' : 'No'} ${rel.isOrphan ? ' — ⚠ Orphan (no matching LNADJ/LNADJL target)' : ''}</div>
+                <div class="nbr-map-detail-row"><b>Governing event (${governing.type})</b>: ${governingDetail}</div>
+                ${reciprocal ? `<div class="nbr-map-detail-row"><b>Reverse relation</b>: target→source CIO=${reciprocal.cio}</div>` : `<div class="nbr-map-detail-row" style="font-style:italic;">No reverse (B→A) relation resolved (only checked for intra-site pairs).</div>`}
+                <div style="margin-top:4px;">
+                    ${conflicts.length === 0 ? `<span class="nbr-map-ok-badge">No conflicts detected</span>` : conflicts.map(c => `<div class="nbr-map-conflict-badge" style="display:block; margin-bottom:4px;">${c.severity}: ${c.text}</div>`).join('')}
+                </div>`;
         }
 
         function setNeighborAlertFilter(val) {
