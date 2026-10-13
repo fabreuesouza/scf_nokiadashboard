@@ -43,3 +43,40 @@ Nokia definitions, instead of guessing parameter names, units or conversion form
 
 All are `;`-delimited CSVs with a header row; open with any spreadsheet tool or
 `csv.DictReader(..., delimiter=';')` in Python.
+
+## Known counter family: GSM DL/UL quality classes (DLQ_2A_x / ULQ_2A_x)
+
+`nokia_gsm_kpis_2026.csv` only materializes one instance of this KPI template
+(`dlq_2a, x=5` / `ulq_2a, X=5`), but its `Summarisation Formula with NE Name` and
+`Summarisation Formula With Netact Name` columns expose the full underlying counter
+family, which is **not** otherwise searchable by the `DLQ_2A_x` naming the client uses:
+
+| Client / NetAct name | NE-name counter | Meaning |
+|---|---|---|
+| `DLQ_2A_0` | `FREQ_DL_QUAL0` | Samples in DL quality class 0 (best) |
+| `DLQ_2A_1` | `FREQ_DL_QUAL1` | Samples in DL quality class 1 |
+| `DLQ_2A_2` | `FREQ_DL_QUAL2` | Samples in DL quality class 2 |
+| `DLQ_2A_3` | `FREQ_DL_QUAL3` | Samples in DL quality class 3 |
+| `DLQ_2A_4` | `FREQ_DL_QUAL4` | Samples in DL quality class 4 |
+| `DLQ_2A_5` | `FREQ_DL_QUAL5` | Samples in DL quality class 5 |
+| `DLQ_2A_6` | `FREQ_DL_QUAL6` | Samples in DL quality class 6 |
+| `DLQ_2A_7` | `FREQ_DL_QUAL7` | Samples in DL quality class 7 (worst) |
+
+Class 0 is the best quality bucket; a higher concentration in class 0 is better. The
+mirrored uplink family (`ulq_2a, X=5` in the same file) follows the identical pattern
+with `FREQ_UL_QUAL0`...`FREQ_UL_QUAL7`.
+
+The published KPI (`dlq_2a`/`ulq_2a`, Kpi Class `Quality`, Network Element `BSC`) is a
+**cumulative** ratio up to a chosen class X, e.g. for X=5:
+
+```
+100 * SUM(FREQ_DL_QUAL0..FREQ_DL_QUAL5) / SUM(FREQ_DL_QUAL0..FREQ_DL_QUAL7)
+```
+
+Generalized for any X: `100 * SUM(FREQ_DL_QUAL0..FREQ_DL_QUAL_X) / SUM(FREQ_DL_QUAL0..FREQ_DL_QUAL7)`.
+A single class in isolation (e.g. "just class 0, not cumulative") is
+`100 * FREQ_DL_QUAL0 / SUM(FREQ_DL_QUAL0..FREQ_DL_QUAL7)` — do not confuse the two.
+
+Known caveat from the KPI's own `Formula Notes`: if DL DTX is active, measured samples
+shift toward worse quality classes even though the MS does not actually perceive any
+degradation — relevant before flagging a DLQ regression as a real quality issue.
