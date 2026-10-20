@@ -3968,7 +3968,13 @@
             const allLncelForAnchor = getMOsByClass('LNCEL').filter(c => !nbIotLncelSet.has(c.distName));
             const orphanLncel = allLncelForAnchor.filter(c => !lncelWithAnchor.has(c.distName));
 
-            const gnbList = Object.values(gnbMap).sort((a, b) => naturalCompare(a.distName, b.distName));
+            // Unlocked gNBs first, then locked; within each group, ordered by gNB number.
+            const gnbList = Object.values(gnbMap).sort((a, b) => {
+                const aLocked = a.adminState === 'locked' ? 1 : 0;
+                const bLocked = b.adminState === 'locked' ? 1 : 0;
+                if (aLocked !== bLocked) return aLocked - bLocked;
+                return naturalCompare(String(a.adjGnbId), String(b.adjGnbId));
+            });
             const lockedCount = gnbList.filter(g => g.adminState === 'locked').length;
 
             const nbIotChip = nbIotLncelSet.size > 0
