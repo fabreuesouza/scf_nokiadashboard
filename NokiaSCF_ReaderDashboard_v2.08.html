@@ -3209,20 +3209,20 @@
 
                     evaluated++;
                     const diff = b1Dbm - a2Dbm;
-                    const flagged = diff > 6;
-                    if (flagged) extreme.push(`${endcLabel} vs ${nrLabel} (Δ=+${diff})`);
-                    lines.push(`${flagged ? '⚠️' : '✅'} <strong>${endcLabel} vs ${nrLabel}</strong>: \nb1ThresholdNrRsrp=${b1Dbm}(${b1Raw}), a2ThresholdReleaseSsbRsrp=${a2Dbm}(${a2Raw})\nΔ=${diff > 0 ? '+' : ''}${diff}${flagged ? ' [ABOVE +6]' : ''}`);
+                    const flagged = diff < 3 || diff > 8;
+                    if (flagged) extreme.push(`${endcLabel} vs ${nrLabel} (Δ=${diff > 0 ? '+' : ''}${diff})`);
+                    lines.push(`${flagged ? '❌' : '✅'} <strong>${endcLabel} vs ${nrLabel}</strong>: \nb1ThresholdNrRsrp=${b1Dbm}(${b1Raw}), a2ThresholdReleaseSsbRsrp=${a2Dbm}(${a2Raw})\nΔ=${diff > 0 ? '+' : ''}${diff}${flagged ? ' [OUTSIDE +3..+8]' : ''}`);
                 });
             });
 
             if (evaluated === 0) return { status: 'NA', detail: 'b1ThresholdNrRsrp / a2ThresholdReleaseSsbRsrp not found in this SCF.' };
 
             const pairingNote = multiProfile ? ' Each profile matched to its NRCELL carrier via carrierFreqNrCell ≈ nrarfcn.' : '';
-            const summary = `${evaluated} ENDCDMEASCONF × NRCELL pair(s) evaluated — B1 NR-addition threshold vs. NR A2 release threshold, both converted to dBm (b1ThresholdNrRsrp: value-156, a2ThresholdReleaseSsbRsrp: value-157).${pairingNote}`;
+            const summary = `${evaluated} ENDCDMEASCONF × NRCELL pair(s) evaluated — B1 NR-addition threshold vs. NR A2 release threshold, both converted to dBm (b1ThresholdNrRsrp: value-156, a2ThresholdReleaseSsbRsrp: value-157). Pass requires delta between +3 and +8dB.${pairingNote}`;
             const fullDetail = `${summary}\n\n${lines.join('\n\n')}`;
 
             if (extreme.length === 0) return { status: 'OK', detail: summary, fullDetail };
-            return { status: 'WARN', detail: `${extreme.length} combination(s) with delta above +6: ${extreme.slice(0, 3).join(', ')}${extreme.length > 3 ? '…' : ''}`, fullDetail };
+            return { status: 'FAIL', detail: `${extreme.length} combination(s) with delta outside the +3 to +8dB range: ${extreme.slice(0, 3).join(', ')}${extreme.length > 3 ? '…' : ''}`, fullDetail };
         }
 
         function checkLteNrTacAlignment(ctx) {
