@@ -3205,7 +3205,7 @@
                     const a2Items = (nr.lists && nr.lists.a2MeasReleaseSsbRsrp) || [];
                     const a2Raw = a2Items.length > 0 ? parseFloat(getParamCaseInsensitive(a2Items[0], 'a2ThresholdReleaseSsbRsrp')) : NaN;
                     if (isNaN(a2Raw)) { lines.push(`➖ <strong>${endcLabel} vs ${nrLabel}</strong>: \na2ThresholdReleaseSsbRsrp not found`); return; }
-                    const a2Dbm = a2Raw - 157;
+                    const a2Dbm = a2Raw - 156;
 
                     evaluated++;
                     const diff = b1Dbm - a2Dbm;
@@ -3223,13 +3223,13 @@
             if (evaluated === 0) return { status: 'NA', detail: 'b1ThresholdNrRsrp / a2ThresholdReleaseSsbRsrp not found in this SCF.' };
 
             const pairingNote = multiProfile ? ' Each profile matched to its NRCELL carrier via carrierFreqNrCell ≈ nrarfcn.' : '';
-            const summary = `${evaluated} ENDCDMEASCONF × NRCELL pair(s) evaluated — B1 NR-addition threshold vs. NR A2 release threshold, both converted to dBm (b1ThresholdNrRsrp: value-156, a2ThresholdReleaseSsbRsrp: value-157). Pass requires delta between +3 and +8dB.${pairingNote}`;
+            const summary = `${evaluated} ENDCDMEASCONF × NRCELL pair(s) evaluated — B1 NR-addition threshold vs. NR A2 release threshold, both converted to dBm (b1ThresholdNrRsrp: value-156, a2ThresholdReleaseSsbRsrp: value-156). Pass requires delta between +3 and +8dB.${pairingNote}`;
 
             // Parameter glossary — sourced from the Nokia parameter database (MIND), explains what each
             // MO/param does and why the pass window is a positive +3..+8dB margin rather than any delta.
             const glossary = `<strong>What's being compared</strong>
 • <strong>b1ThresholdNrRsrp</strong> (ENDCDMEASCONF/ENDCMEASCONF, on the LTE anchor): RSRP threshold of a neighbor NR cell that triggers the B1 event — the <strong>SgNB ADDITION</strong> trigger for EN-DC. When the UE reports a NR cell above this level, the LTE anchor adds that cell as the 5G secondary node. Internal value = UI value + 156 (dBm = raw − 156).
-• <strong>a2ThresholdReleaseSsbRsrp</strong> (NRCELL/a2MeasReleaseSsbRsrp, on the NR cell itself): SSB RSRP threshold that triggers the A2 event for <strong>SgNB RELEASE</strong> — when the NR cell's own RSRP drops below this level, the 5G leg is dropped. dBm = raw − 157.
+• <strong>a2ThresholdReleaseSsbRsrp</strong> (NRCELL/a2MeasReleaseSsbRsrp, on the NR cell itself): SSB RSRP threshold that triggers the A2 event for <strong>SgNB RELEASE</strong> — when the NR cell's own RSRP drops below this level, the 5G leg is dropped. dBm = raw − 156 (3GPP TS 38.133 SS-RSRP index mapping, same convention as b1ThresholdNrRsrp).
 
 <strong>Why the delta must be +3 to +8dB</strong>
 B1 (addition) and A2 (release) act on the same NR leg from opposite directions, so B1's threshold needs to sit comfortably <em>above</em> A2's: a margin below +3dB leaves too little hysteresis — the UE's RSRP can hover across both thresholds and the NR leg gets added and released repeatedly (EN-DC ping-pong); a negative delta is worse still, since the leg can qualify for release on the same RSRP that just added it. A margin above +8dB is excessive — it either delays releasing an already-marginal NR leg (B1 never re-triggers soon enough) or keeps it anchored on coverage that's already past its own release point. The +3..+8dB window keeps enough separation to avoid flapping without over-delaying a legitimate release.`;
