@@ -3209,9 +3209,14 @@
 
                     evaluated++;
                     const diff = b1Dbm - a2Dbm;
-                    const flagged = diff < 3 || diff > 8;
+                    const tooLow = diff < 3;
+                    const tooHigh = diff > 8;
+                    const flagged = tooLow || tooHigh;
                     if (flagged) extreme.push(`${endcLabel} vs ${nrLabel} (Δ=${diff > 0 ? '+' : ''}${diff})`);
-                    lines.push(`${flagged ? '❌' : '✅'} <strong>${endcLabel} vs ${nrLabel}</strong>: \nb1ThresholdNrRsrp=${b1Dbm}(${b1Raw}), a2ThresholdReleaseSsbRsrp=${a2Dbm}(${a2Raw})\nΔ=${diff > 0 ? '+' : ''}${diff}${flagged ? ' [OUTSIDE +3..+8]' : ''}`);
+                    const riskNote = tooLow
+                        ? ` [BELOW +3 — margin too tight: serving-cell RSRP oscillating near both thresholds can add and release the NR leg repeatedly (EN-DC ping-pong)${diff < 0 ? ', or B1 sits below A2 entirely, so the leg can be released on the same RSRP that just added it' : ''}]`
+                        : (tooHigh ? ` [ABOVE +8 — margin too wide: the NR leg may be released well before B1 would re-trigger it, or kept anchored unnecessarily long on a layer already past its own release point]` : '');
+                    lines.push(`${flagged ? '❌' : '✅'} <strong>${endcLabel} vs ${nrLabel}</strong>: \nb1ThresholdNrRsrp=${b1Dbm}(${b1Raw}), a2ThresholdReleaseSsbRsrp=${a2Dbm}(${a2Raw})\nΔ=${diff > 0 ? '+' : ''}${diff}${riskNote}`);
                 });
             });
 
@@ -3219,7 +3224,17 @@
 
             const pairingNote = multiProfile ? ' Each profile matched to its NRCELL carrier via carrierFreqNrCell ≈ nrarfcn.' : '';
             const summary = `${evaluated} ENDCDMEASCONF × NRCELL pair(s) evaluated — B1 NR-addition threshold vs. NR A2 release threshold, both converted to dBm (b1ThresholdNrRsrp: value-156, a2ThresholdReleaseSsbRsrp: value-157). Pass requires delta between +3 and +8dB.${pairingNote}`;
-            const fullDetail = `${summary}\n\n${lines.join('\n\n')}`;
+
+            // Parameter glossary — sourced from the Nokia parameter database (MIND), explains what each
+            // MO/param does and why the pass window is a positive +3..+8dB margin rather than any delta.
+            const glossary = `<strong>What's being compared</strong>
+• <strong>b1ThresholdNrRsrp</strong> (ENDCDMEASCONF/ENDCMEASCONF, on the LTE anchor): RSRP threshold of a neighbor NR cell that triggers the B1 event — the <strong>SgNB ADDITION</strong> trigger for EN-DC. When the UE reports a NR cell above this level, the LTE anchor adds that cell as the 5G secondary node. Internal value = UI value + 156 (dBm = raw − 156).
+• <strong>a2ThresholdReleaseSsbRsrp</strong> (NRCELL/a2MeasReleaseSsbRsrp, on the NR cell itself): SSB RSRP threshold that triggers the A2 event for <strong>SgNB RELEASE</strong> — when the NR cell's own RSRP drops below this level, the 5G leg is dropped. dBm = raw − 157.
+
+<strong>Why the delta must be +3 to +8dB</strong>
+B1 (addition) and A2 (release) act on the same NR leg from opposite directions, so B1's threshold needs to sit comfortably <em>above</em> A2's: a margin below +3dB leaves too little hysteresis — the UE's RSRP can hover across both thresholds and the NR leg gets added and released repeatedly (EN-DC ping-pong); a negative delta is worse still, since the leg can qualify for release on the same RSRP that just added it. A margin above +8dB is excessive — it either delays releasing an already-marginal NR leg (B1 never re-triggers soon enough) or keeps it anchored on coverage that's already past its own release point. The +3..+8dB window keeps enough separation to avoid flapping without over-delaying a legitimate release.`;
+
+            const fullDetail = `${summary}\n\n${glossary}\n\n${lines.join('\n\n')}`;
 
             if (extreme.length === 0) return { status: 'OK', detail: summary, fullDetail };
             return { status: 'FAIL', detail: `${extreme.length} combination(s) with delta outside the +3 to +8dB range: ${extreme.slice(0, 3).join(', ')}${extreme.length > 3 ? '…' : ''}`, fullDetail };
