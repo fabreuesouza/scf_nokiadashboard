@@ -4617,7 +4617,7 @@ B1 (addition) and A2 (release) act on the same NR leg from opposite directions, 
                         const cellObj = {
                             tech: '4G', distName: distName, id: lastDistNamePart, name: params["cellName"] || "Unnamed",
                             pMaxRaw: pMaxRaw !== null ? pMaxRaw : 'N/A', pMaxDbm: pMaxDbm !== null ? pMaxDbm : 'N/A',
-                            pMaxWatt: pMaxWatt, dlCellPwrRed: params["dlCellPwrRed"] !== undefined ? parseFloat(params["dlCellPwrRed"]) : 0,
+                            pMaxWatt: pMaxWatt, dlCellPwrRed: params["dlCellPwrRed"] !== undefined ? parseFloat(params["dlCellPwrRed"]) / 10.0 : 0,
                             allowPbIndexZero: params["allowPbIndexZero"] !== undefined ? params["allowPbIndexZero"] : null,
                             dlChBw: getParamCaseInsensitive(params, "dlChBw") || getParamCaseInsensitive(params, "chBw") || null,
                             cellReselPrio: cellReselPrioVal
