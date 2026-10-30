@@ -2707,9 +2707,10 @@
                 const raw = getParamCaseInsensitive(cell.params, 'dlCellPwrRed');
                 const num = raw !== undefined ? parseFloat(String(raw).replace(/[^\-\d.]/g, '')) : NaN;
                 if (isNaN(num)) return `➖ <strong>${label}</strong>: \ndlCellPwrRed not found`;
+                const dB = num / 10;
                 const isZero = num === 0;
-                if (!isZero) active.push(`${label}=${raw}`);
-                return `${isZero ? '✅' : '⚠️'} <strong>${label}</strong>: \ndlCellPwrRed=${raw}${isZero ? ' (no reduction — baseline)' : ' (active power reduction — verify if intentional)'}`;
+                if (!isZero) active.push(`${label}=${dB}dB`);
+                return `${isZero ? '✅' : '⚠️'} <strong>${label}</strong>: \ndlCellPwrRed=${dB}dB(${raw})${isZero ? ' (no reduction — baseline)' : ' (active power reduction — verify if intentional)'}`;
             });
 
             const summary = `${ctx.allLncel.length - active.length} of ${ctx.allLncel.length} LNCEL have dlCellPwrRed=0 (baseline, running at full configured power).`;
