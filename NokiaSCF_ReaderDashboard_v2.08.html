@@ -3605,7 +3605,6 @@ B1 (addition) and A2 (release) act on the same NR leg from opposite directions, 
                     arfcnValueGeran: arfcnNotInRedrt ? redSpan(arfcn) : values[3], bandIndicatorGeran: values[4],
                     bsic: isDuplicate ? redSpan(bsicText) : bsicText,
                     relations: relationsHtml,
-                    targetName: getParamCaseInsensitive(o.params, 'name'),
                     status: failed ? 'FAIL' : 'OK'
                 };
             });
@@ -3647,7 +3646,6 @@ B1 (addition) and A2 (release) act on the same NR leg from opposite directions, 
                 { key: 'relations', label: 'Related LNCEL/LNRELG', mono: true },
                 { key: 'gTargetCi', label: 'gTargetCi', mono: true }, { key: 'gTargetLac', label: 'gTargetLac', mono: true }, { key: 'gTargetRac', label: 'gTargetRac', mono: true },
                 { key: 'arfcnValueGeran', label: 'ARFCN', mono: true }, { key: 'bandIndicatorGeran', label: 'Band', mono: true }, { key: 'bsic', label: 'BSIC(NCC/BCC)', mono: true },
-                { key: 'targetName', label: 'targetName', mono: true },
                 { key: 'status', label: 'Status' }
             ], lnadjgTableRows) + `<div style="font-size:0.7rem; color:var(--text-muted); margin-top:2px;">Related LNRELG matched by same LNBTS + CI/LAC. ${redSpan('Red ARFCN')} / ${redSpan('red LNCEL')}: ARFCN missing from that LNCEL's REDRT redirGeranArfcnStructL. ${redSpan('Red BSIC')}: ARFCN+BSIC duplicated.</div>`;
             const duplicateTableHtml = renderHcDetailTable([
