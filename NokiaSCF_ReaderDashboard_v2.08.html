@@ -536,7 +536,9 @@
            overrides all of them so spacing is always exactly one line, regardless of which check
            produced the content. !important is intentional: it must win over each check's own inline
            margin-top/margin-bottom values scattered across many different functions. */
-        #healthDetailBody { line-height: 1.3 !important; }
+        #healthDetailModalOverlay .modal-content.wide { width: 1080px; }
+        #healthDetailBody { line-height: 1.3 !important; font-size: calc(0.76rem - 1px) !important; }
+        #healthDetailBody .hc-detail-table { font-size: calc(0.7rem - 1px); }
         #healthDetailBody p { margin: 0 !important; line-height: 1.3 !important; }
         #healthDetailBody table { margin: 6px 0 !important; line-height: 1.15 !important; }
         #healthDetailBody div { margin: 0 !important; }
@@ -3605,6 +3607,7 @@ B1 (addition) and A2 (release) act on the same NR leg from opposite directions, 
                     arfcnValueGeran: arfcnNotInRedrt ? redSpan(arfcn) : values[3], bandIndicatorGeran: values[4],
                     bsic: isDuplicate ? redSpan(bsicText) : bsicText,
                     relations: relationsHtml,
+                    targetCellDn: getParamCaseInsensitive(o.params, 'targetCellDn'),
                     status: failed ? 'FAIL' : 'OK'
                 };
             });
@@ -3643,9 +3646,10 @@ B1 (addition) and A2 (release) act on the same NR leg from opposite directions, 
             const summary = `${allLnadjg.length - incompleteCount} of ${allLnadjg.length} LNADJG have complete target identity (CI/LAC/RAC/ARFCN/band/BSIC); ${allLnadjg.length - arfcnNotInRedrtCount} of ${allLnadjg.length} LNADJG have their ARFCN in the redirGeranArfcnStructL of every related LNCEL; ${duplicateGroups.length} duplicated ARFCN+BSIC pair(s); ${allRedrtGeran.length - orphanRedirectCount} of ${allRedrtGeran.length} GSM REDRT resolve to a known LNADJG.`;
             const lnadjgTableHtml = renderHcDetailTable([
                 { key: 'icon', label: '' }, { key: 'mo', label: 'MO (LNADJG)', mono: true },
+                { key: 'relations', label: 'Related LNCEL/LNRELG', mono: true },
                 { key: 'gTargetCi', label: 'gTargetCi', mono: true }, { key: 'gTargetLac', label: 'gTargetLac', mono: true }, { key: 'gTargetRac', label: 'gTargetRac', mono: true },
                 { key: 'arfcnValueGeran', label: 'ARFCN', mono: true }, { key: 'bandIndicatorGeran', label: 'Band', mono: true }, { key: 'bsic', label: 'BSIC(NCC/BCC)', mono: true },
-                { key: 'relations', label: 'Related LNCEL/LNRELG', mono: true },
+                { key: 'targetCellDn', label: 'targetCellDn', mono: true },
                 { key: 'status', label: 'Status' }
             ], lnadjgTableRows) + `<div style="font-size:0.7rem; color:var(--text-muted); margin-top:2px;">Related LNRELG matched by same LNBTS + CI/LAC. ${redSpan('Red ARFCN')} / ${redSpan('red LNCEL')}: ARFCN missing from that LNCEL's REDRT redirGeranArfcnStructL. ${redSpan('Red BSIC')}: ARFCN+BSIC duplicated.</div>`;
             const duplicateTableHtml = renderHcDetailTable([
