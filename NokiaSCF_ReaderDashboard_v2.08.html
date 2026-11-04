@@ -1412,9 +1412,7 @@
             </div>
             <p style="font-size:0.72rem; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.05em; font-weight:700; margin-bottom:10px;" id="healthDetailCategory">-</p>
             <span class="health-card-badge" id="healthDetailBadge" style="margin-bottom:12px;">-</span>
-            <div id="healthDetailBody" style="max-height: 60vh; overflow-y: auto; border: 1px solid var(--border-color); border-radius: 8px; padding: 6px 8px; background: var(--bg-subtle); font-size:0.76rem; color:var(--text-primary); line-height:1.3; white-space:pre-wrap; font-family:'JetBrains Mono', monospace;">
-                <p style="margin:0;" id="healthDetailText">-</p>
-            </div>
+            <div id="healthDetailBody" style="max-height: 60vh; overflow-y: auto; border: 1px solid var(--border-color); border-radius: 8px; padding: 6px 8px; background: var(--bg-subtle); font-size:0.76rem; color:var(--text-primary); line-height:1.3; white-space:pre-wrap; font-family:'JetBrains Mono', monospace;"><p style="margin:0;" id="healthDetailText">-</p></div>
             <div class="modal-actions">
                 <button class="btn-sec" onclick="closeHealthDetailModal()">Close</button>
             </div>
@@ -3954,7 +3952,8 @@ B1 (addition) and A2 (release) act on the same NR leg from opposite directions, 
             if (catEl) catEl.innerText = r.category;
             if (badgeEl) { badgeEl.innerText = statusLabels[r.result.status]; badgeEl.className = `health-card-badge ${statusClass}`; }
             if (ledEl) ledEl.className = `health-led ${statusClass}`;
-            if (textEl) textEl.innerHTML = r.result.fullDetail || r.result.detail;
+            // Body is white-space:pre-wrap, so template indentation between tags would render as blank lines.
+            if (textEl) textEl.innerHTML = String(r.result.fullDetail || r.result.detail).replace(/>\s+</g, '><').replace(/(<\/strong>)\s*\n\s*(<div)/g, '$1$2').trim();
 
             const modal = document.getElementById('healthDetailModalOverlay');
             if (modal) modal.style.display = 'flex';
