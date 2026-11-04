@@ -3532,23 +3532,80 @@ B1 (addition) and A2 (release) act on the same NR leg from opposite directions, 
                 return { status: 'NA', detail: 'No LNADJG or GSM-targeted REDRT found in this SCF.' };
             }
 
+            const isBlank = v => v === undefined || v === null || v === '';
+            const btsOf = dn => { const m = dn.match(/^(.*?LNBTS-[^/]+)/); return m ? m[1] : dn; };
+            const lncelOf = dn => { const m = dn.match(/^(.*?LNCEL-[^/]+)/); return m ? m[1] : getParentDistName(dn); };
+            const shortOf = dn => dn.split('/').pop();
+            const redSpan = t => `<span style="color:var(--status-fail-main, #dc2626); font-weight:700;">${t}</span>`;
+
+            // LNRELG -> LNADJG association: same LNBTS and same GERAN CGI (LNRELG ci/lac = LNADJG gTargetCi/gTargetLac).
+            const lnrelgByKey = new Map();
+            getMOsByClass('LNRELG').forEach(rel => {
+                const ci = getParamCaseInsensitive(rel.params, 'ci');
+                const lac = getParamCaseInsensitive(rel.params, 'lac');
+                if (isBlank(ci) || isBlank(lac)) return;
+                const key = `${btsOf(rel.distName)}|${ci}|${lac}`;
+                if (!lnrelgByKey.has(key)) lnrelgByKey.set(key, []);
+                lnrelgByKey.get(key).push({ lncelDist: lncelOf(rel.distName), label: `${shortOf(lncelOf(rel.distName))}/${shortOf(rel.distName)}` });
+            });
+
+            // ARFCNs listed in redirGeranArfcnStructL across all GSM REDRT of each LNCEL.
+            const redrtArfcnsByLncel = new Map();
+            allRedrtGeran.forEach(r => {
+                const lncelDist = lncelOf(r.distName);
+                if (!redrtArfcnsByLncel.has(lncelDist)) redrtArfcnsByLncel.set(lncelDist, new Set());
+                ((r.lists && r.lists.redirGeranArfcnStructL) || []).forEach(item => {
+                    const v = getParamCaseInsensitive(item, 'redirGeranArfcnValue');
+                    if (!isBlank(v)) redrtArfcnsByLncel.get(lncelDist).add(String(v));
+                });
+            });
+
+            // ARFCN+BSIC must be unique among the LNADJG of one LNBTS, otherwise the eNB can't tell the two GSM targets apart.
+            const arfcnBsicCount = new Map();
+            allLnadjg.forEach(o => {
+                const arfcn = getParamCaseInsensitive(o.params, 'arfcnValueGeran');
+                const ncc = getParamCaseInsensitive(o.params, 'networkColourCode');
+                const bcc = getParamCaseInsensitive(o.params, 'basestationColourCode');
+                if (isBlank(arfcn) || isBlank(ncc) || isBlank(bcc)) return;
+                const key = `${btsOf(o.distName)}|${arfcn}|${ncc}/${bcc}`;
+                if (!arfcnBsicCount.has(key)) arfcnBsicCount.set(key, []);
+                arfcnBsicCount.get(key).push(o.distName.split('/').slice(-2).join('/'));
+            });
+            const duplicateGroups = [...arfcnBsicCount.entries()].filter(([, list]) => list.length > 1);
+
             const requiredIdentityParams = ['gTargetCi', 'gTargetLac', 'gTargetRac', 'arfcnValueGeran', 'bandIndicatorGeran'];
             let incompleteCount = 0;
+            let arfcnNotInRedrtCount = 0;
             const lnadjgTableRows = allLnadjg.map(o => {
                 const label = o.distName.split('/').slice(-2).join('/');
                 const values = requiredIdentityParams.map(p => getParamCaseInsensitive(o.params, p));
-                const missing = requiredIdentityParams.filter((p, i) => values[i] === undefined || values[i] === null || values[i] === '');
+                const missing = requiredIdentityParams.filter((p, i) => isBlank(values[i]));
                 const bcc = getParamCaseInsensitive(o.params, 'basestationColourCode');
                 const ncc = getParamCaseInsensitive(o.params, 'networkColourCode');
-                const bsicMissing = bcc === undefined || bcc === null || bcc === '' || ncc === undefined || ncc === null || ncc === '';
+                const bsicMissing = isBlank(bcc) || isBlank(ncc);
+                const arfcn = isBlank(values[3]) ? null : String(values[3]);
+
+                const relations = lnrelgByKey.get(`${btsOf(o.distName)}|${values[0]}|${values[1]}`) || [];
+                const lncelsMissingArfcn = arfcn === null ? [] : relations.filter(rel => !(redrtArfcnsByLncel.get(rel.lncelDist) || new Set()).has(arfcn));
+                const arfcnNotInRedrt = lncelsMissingArfcn.length > 0;
+                if (arfcnNotInRedrt) arfcnNotInRedrtCount++;
+
+                const isDuplicate = !bsicMissing && arfcn !== null && (arfcnBsicCount.get(`${btsOf(o.distName)}|${arfcn}|${ncc}/${bcc}`) || []).length > 1;
                 const incomplete = missing.length > 0 || bsicMissing;
                 if (incomplete) incompleteCount++;
+                const failed = incomplete || arfcnNotInRedrt || isDuplicate;
+
+                const relationsHtml = relations.length === 0
+                    ? '<span style="color:var(--text-muted); font-style:italic;">no LNRELG</span>'
+                    : relations.map(rel => lncelsMissingArfcn.includes(rel) ? redSpan(rel.label) : rel.label).join('<br>');
+                const bsicText = !bsicMissing ? `${ncc}/${bcc}` : 'MISSING';
                 return {
-                    icon: incomplete ? '❌' : '✅', mo: label,
+                    icon: failed ? '❌' : '✅', mo: label,
                     gTargetCi: values[0], gTargetLac: values[1], gTargetRac: values[2],
-                    arfcnValueGeran: values[3], bandIndicatorGeran: values[4],
-                    bsic: !bsicMissing ? `${ncc}/${bcc}` : 'MISSING',
-                    status: incomplete ? 'FAIL' : 'OK'
+                    arfcnValueGeran: arfcnNotInRedrt ? redSpan(arfcn) : values[3], bandIndicatorGeran: values[4],
+                    bsic: isDuplicate ? redSpan(bsicText) : bsicText,
+                    relations: relationsHtml,
+                    status: failed ? 'FAIL' : 'OK'
                 };
             });
 
@@ -3583,21 +3640,29 @@ B1 (addition) and A2 (release) act on the same NR leg from opposite directions, 
                 };
             });
 
-            const summary = `${allLnadjg.length - incompleteCount} of ${allLnadjg.length} LNADJG have complete target identity (CI/LAC/RAC/ARFCN/band/BSIC); ${allRedrtGeran.length - orphanRedirectCount} of ${allRedrtGeran.length} GSM REDRT resolve to a known LNADJG.`;
+            const summary = `${allLnadjg.length - incompleteCount} of ${allLnadjg.length} LNADJG have complete target identity (CI/LAC/RAC/ARFCN/band/BSIC); ${allLnadjg.length - arfcnNotInRedrtCount} of ${allLnadjg.length} LNADJG have their ARFCN in the redirGeranArfcnStructL of every related LNCEL; ${duplicateGroups.length} duplicated ARFCN+BSIC pair(s); ${allRedrtGeran.length - orphanRedirectCount} of ${allRedrtGeran.length} GSM REDRT resolve to a known LNADJG.`;
             const lnadjgTableHtml = renderHcDetailTable([
                 { key: 'icon', label: '' }, { key: 'mo', label: 'MO (LNADJG)', mono: true },
                 { key: 'gTargetCi', label: 'gTargetCi', mono: true }, { key: 'gTargetLac', label: 'gTargetLac', mono: true }, { key: 'gTargetRac', label: 'gTargetRac', mono: true },
                 { key: 'arfcnValueGeran', label: 'ARFCN', mono: true }, { key: 'bandIndicatorGeran', label: 'Band', mono: true }, { key: 'bsic', label: 'BSIC(NCC/BCC)', mono: true },
+                { key: 'relations', label: 'Related LNCEL/LNRELG', mono: true },
                 { key: 'status', label: 'Status' }
-            ], lnadjgTableRows);
+            ], lnadjgTableRows) + `<div style="font-size:0.7rem; color:var(--text-muted); margin-top:2px;">Related LNRELG matched by same LNBTS + CI/LAC. ${redSpan('Red ARFCN')} / ${redSpan('red LNCEL')}: ARFCN missing from that LNCEL's REDRT redirGeranArfcnStructL. ${redSpan('Red BSIC')}: ARFCN+BSIC duplicated.</div>`;
+            const duplicateTableHtml = renderHcDetailTable([
+                { key: 'icon', label: '' }, { key: 'arfcn', label: 'ARFCN', mono: true }, { key: 'bsic', label: 'BSIC(NCC/BCC)', mono: true },
+                { key: 'mos', label: 'LNADJG sharing the pair', mono: true }, { key: 'status', label: 'Status' }
+            ], duplicateGroups.map(([key, list]) => {
+                const [, arfcn, bsic] = key.split('|');
+                return { icon: '❌', arfcn, bsic, mos: list.join('<br>'), status: 'FAIL' };
+            }));
             const redrtTableHtml = renderHcDetailTable([
                 { key: 'icon', label: '' }, { key: 'mo', label: 'MO (REDRT)', mono: true },
                 { key: 'redirGeranArfcnStructL', label: 'redirGeranArfcnStructL', mono: true }, { key: 'resolution', label: 'Resolution' }, { key: 'status', label: 'Status' }
             ], redrtTableRows);
-            const fullDetail = `${summary}\n\n<strong>LNADJG target cell identity</strong>${lnadjgTableHtml}\n\n<strong>REDRT → LNADJG resolution</strong>${redrtTableHtml}`;
+            const fullDetail = `${summary}\n\n<strong>LNADJG target cell identity</strong>${lnadjgTableHtml}\n\n<strong>Duplicated ARFCN + BSIC (must be unique per LNBTS)</strong>${duplicateGroups.length === 0 ? '<div style="padding:8px 0; color:var(--badge-true-text);">✅ No duplicated ARFCN+BSIC pair among LNADJG.</div>' : duplicateTableHtml}\n\n<strong>REDRT → LNADJG resolution</strong>${redrtTableHtml}`;
 
-            if (incompleteCount === 0 && orphanRedirectCount === 0) return { status: 'OK', detail: summary, fullDetail };
-            return { status: 'FAIL', detail: `${summary} Incomplete or unresolved target identity can cause CSFB redirect to GSM to point at a cell the UE cannot register on.`, fullDetail };
+            if (incompleteCount === 0 && orphanRedirectCount === 0 && arfcnNotInRedrtCount === 0 && duplicateGroups.length === 0) return { status: 'OK', detail: summary, fullDetail };
+            return { status: 'FAIL', detail: `${summary} Incomplete/unresolved target identity, ARFCNs missing from REDRT lists or ambiguous ARFCN+BSIC can make CSFB to GSM fail.`, fullDetail };
         }
 
         // CSFB admission into GSM also needs the target cell's own minimum access level (qRxLevMinGer)
