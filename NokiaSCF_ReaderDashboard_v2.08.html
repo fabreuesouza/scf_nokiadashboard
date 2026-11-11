@@ -7686,7 +7686,7 @@ ${cmDataBlocks}</raml>
                     <td><strong>${bwMhz} MHz</strong></td>
                     <td><strong>${cell.pMaxDbm !== 'N/A' ? cell.pMaxDbm.toFixed(1) : 'N/A'}</strong></td>
                     <td>${(cell.dlCellPwrRed !== undefined && cell.dlCellPwrRed !== null) ? cell.dlCellPwrRed + ' dB' : 'N/A'}</td>
-                    <td>${is4G ? ((fddData.dlRsBoost !== undefined && fddData.dlRsBoost !== '') ? fddData.dlRsBoost + ' dB' : 'N/A') : '<span style="color:var(--text-muted);">—</span>'}</td>
+                    <td>${is4G ? ((fddData.dlRsBoost !== undefined && fddData.dlRsBoost !== '') ? fddData.dlRsBoost : 'N/A') : '<span style="color:var(--text-muted);">—</span>'}</td>
                     <td><strong style="color:${is4G ? 'var(--brand-blue)' : 'var(--tech-5g-text)'}; font-size:1.05em;">${cell.pMaxWatt > 0 ? cell.pMaxWatt.toFixed(2) + ' W' : 'N/A'}</strong></td>
                     <td><span class="psd-badge ${badgeClass}">${psdWattsPerMhz.toFixed(2)} W/MHz</span></td>
                     <td><code>${symbolDbm !== 'N/A' ? symbolDbm + ' dBm/RE' : 'N/A'}</code></td>
