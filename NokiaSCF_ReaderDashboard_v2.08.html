@@ -340,6 +340,8 @@
         .psd-legend-bar { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; background: var(--bg-subtle); padding: 6px 12px; border-radius: 6px; border: 1px solid var(--border-color); font-size: 0.7rem; font-weight: 600; }
         .psd-legend-item { display: flex; align-items: center; gap: 6px; }
         .psd-badge { padding: 2px 7px; border-radius: 4px; font-weight: 700; font-family: 'JetBrains Mono', monospace; font-size: 0.725rem; display: inline-block; white-space: nowrap; }
+        #footprintTable td { font-size: calc(0.775rem - 2px); }
+        #footprintTable td .psd-badge { font-size: calc(0.725rem - 2px); }
         .psd-badge-blue { background-color: var(--prio-high-bg); color: var(--prio-high-text); border: 1px solid var(--prio-high-border); }
         .psd-badge-green { background-color: var(--badge-true-bg); color: var(--badge-true-text); border: 1px solid var(--badge-true-border); }
         .psd-badge-yellow { background-color: var(--prio-low-bg); color: var(--prio-low-text); border: 1px solid var(--prio-low-border); }
@@ -859,10 +861,10 @@
                                     <th>Bandwidth</th>
                                     <th>PMax</th>
                                     <th>PwrRed (dB)</th>
+                                    <th>DL RS Boost</th>
                                     <th>Power (W)</th>
                                     <th>Spectral Density</th>
                                     <th>Symbol Level</th>
-                                    <th>Footprint Assessment</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -4463,13 +4465,14 @@ B1 (addition) and A2 (release) act on the same NR leg from opposite directions, 
             return null;
         }
 
-        function renderLncelRfTag(distName) {
+        function renderLncelRfTag(distName, opts = {}) {
             const lncelDistName = getParentLncelDistName(distName);
             if (lncelDistName && lncelFddParams[lncelDistName]) {
                 const rfData = lncelFddParams[lncelDistName];
                 const earfcnRaw = rfData.earfcnDL || 'N/A';
                 const earfcnInfo = earfcnRaw !== 'N/A' ? earfcnToFreqAndBand(earfcnRaw).text : '';
                 const adminStateVal = getLncelAdminState(lncelDistName);
+                if (opts.compact) return `<div class="rf-tag-4g">EARFCN: <strong>${earfcnRaw}${earfcnInfo}</strong> | State: <strong>${adminStateVal}</strong></div>`;
                 return `<div class="rf-tag-4g">EARFCN: <strong>${earfcnRaw}${earfcnInfo}</strong> | BW: <strong>${rfData.dlChBw || 'N/A'}</strong> | RS Boost: <strong>${rfData.dlRsBoost || 'N/A'} dB</strong> | State: <strong>${adminStateVal}</strong></div>`;
             }
             const nrcellDistName = getParentNrcellDistName(distName);
@@ -7660,27 +7663,22 @@ ${cmDataBlocks}</raml>
 
                 const psdWattsPerMhz = bwMhz > 0 ? (cell.pMaxWatt / bwMhz) : 0;
                 let badgeClass = 'psd-badge-green';
-                let assessmentText = '🟢 Optimal PSD Alignment Target';
 
                 if (psdWattsPerMhz < 2.0) {
                     badgeClass = 'psd-badge-blue';
-                    assessmentText = '🔵 Low Density / Cell Shrinkage Risk';
                     lowCount++;
                 } else if (psdWattsPerMhz >= 2.0 && psdWattsPerMhz <= 4.0) {
                     badgeClass = 'psd-badge-green';
-                    assessmentText = '🟢 Optimal PSD Alignment Target';
                     balancedCount++;
                 } else if (psdWattsPerMhz > 4.0 && psdWattsPerMhz <= 6.0) {
                     badgeClass = 'psd-badge-yellow';
-                    assessmentText = '🟡 High Power / Potential Interference';
                     highCount++;
                 } else {
                     badgeClass = 'psd-badge-red';
-                    assessmentText = '🔴 Critical Dominance / Footprint Inversion';
                     highCount++;
                 }
 
-                const rfTagHtml = renderLncelRfTag(cell.distName);
+                const rfTagHtml = renderLncelRfTag(cell.distName, { compact: true });
                 const tr = document.createElement('tr');
                 tr.innerHTML = `
                     <td class="checkbox-cell"><input type="checkbox" class="power-cell-checkbox" data-watt="${cell.pMaxWatt || 0}" onchange="recalculateSelectedPower()"></td>
@@ -7688,10 +7686,10 @@ ${cmDataBlocks}</raml>
                     <td><strong>${bwMhz} MHz</strong></td>
                     <td><strong>${cell.pMaxDbm !== 'N/A' ? cell.pMaxDbm.toFixed(1) : 'N/A'}</strong></td>
                     <td>${(cell.dlCellPwrRed !== undefined && cell.dlCellPwrRed !== null) ? cell.dlCellPwrRed + ' dB' : 'N/A'}</td>
+                    <td>${is4G ? ((fddData.dlRsBoost !== undefined && fddData.dlRsBoost !== '') ? fddData.dlRsBoost + ' dB' : 'N/A') : '<span style="color:var(--text-muted);">—</span>'}</td>
                     <td><strong style="color:${is4G ? 'var(--brand-blue)' : 'var(--tech-5g-text)'}; font-size:1.05em;">${cell.pMaxWatt > 0 ? cell.pMaxWatt.toFixed(2) + ' W' : 'N/A'}</strong></td>
                     <td><span class="psd-badge ${badgeClass}">${psdWattsPerMhz.toFixed(2)} W/MHz</span></td>
                     <td><code>${symbolDbm !== 'N/A' ? symbolDbm + ' dBm/RE' : 'N/A'}</code></td>
-                    <td><span style="font-weight:600; font-size:0.85em;">${assessmentText}</span></td>
                 `;
                 tbody.appendChild(tr);
             });
