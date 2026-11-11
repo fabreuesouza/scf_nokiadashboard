@@ -341,6 +341,12 @@
         .psd-legend-item { display: flex; align-items: center; gap: 6px; }
         .psd-badge { padding: 2px 7px; border-radius: 4px; font-weight: 700; font-family: 'JetBrains Mono', monospace; font-size: 0.725rem; display: inline-block; white-space: nowrap; }
         #footprintTable td { font-size: calc(0.775rem - 2px); }
+        #powerFootprintView .footprint-sidebar-filters { width: 225px; }
+        #powerFootprintView .footprint-summary-grid { grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 6px; }
+        #powerFootprintView .power-summary-card { padding: 5px 9px; gap: 0; }
+        #powerFootprintView .power-card-title { font-size: 0.6rem; }
+        #powerFootprintView .power-card-value { font-size: 0.95rem; }
+        #powerFootprintView .power-card-sub { font-size: 0.6rem; }
         #footprintTable td .psd-badge { font-size: calc(0.725rem - 2px); }
         /* Value columns from Bandwidth onward (td 1 = checkbox, 2 = cell): one uniform size (the smallest, i.e. the PSD badge) and no bold. */
         #footprintTable td:nth-child(n+3), #footprintTable td:nth-child(n+3) * { font-size: calc(0.725rem - 2px) !important; font-weight: 400 !important; }
@@ -860,6 +866,7 @@
                                 <tr>
                                     <th class="checkbox-cell"><input type="checkbox" id="selectAllPower" onchange="toggleSelectAllPower(this.checked)"></th>
                                     <th>Cell / Object (distName)</th>
+                                    <th title="Radio module and antenna lines carrying the cell (LNCEL lcrId → LCELL → CHANNEL.antlDN)">RMOD</th>
                                     <th>Bandwidth</th>
                                     <th>PMax</th>
                                     <th>PwrRed (dB)</th>
@@ -872,7 +879,7 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                <tr><td colspan="11" style="text-align:center; color:var(--text-muted); font-style:italic;">No SCF file loaded.</td></tr>
+                                <tr><td colspan="12" style="text-align:center; color:var(--text-muted); font-style:italic;">No SCF file loaded.</td></tr>
                             </tbody>
                         </table>
                     </div>
@@ -7604,6 +7611,21 @@ ${cmDataBlocks}</raml>
             }
         }
 
+        // LTE cell → radio mapping: LNCEL.lcrId = LCELL id under MNL/.../CELLMAPPING; each LCELL/CHANNELGROUP/CHANNEL
+        // carries antlDN pointing to the RMOD antenna line (e.g. EQM-1/APEQM-1/RMOD-3/ANTL-1).
+        // Returns { lcrId: { 'RMOD-3': Set(['1','2']) } }.
+        function buildLcellRmodMap() {
+            const map = {};
+            getMOsByClass('CHANNEL').forEach(ch => {
+                const lcell = ch.distName.match(/\/LCELL-(\d+)\//);
+                const antl = String(getParamCaseInsensitive(ch.params, 'antlDN') || '').match(/(RMOD-\d+)\/ANTL-(\d+)/);
+                if (!lcell || !antl) return;
+                const byRmod = map[lcell[1]] || (map[lcell[1]] = {});
+                (byRmod[antl[1]] || (byRmod[antl[1]] = new Set())).add(antl[2]);
+            });
+            return map;
+        }
+
         function renderPowerFootprintDashboard() {
             const tbody = document.querySelector('#footprintTable tbody');
             if (!tbody) return;
@@ -7639,7 +7661,7 @@ ${cmDataBlocks}</raml>
                 : 'Power Spectral Density (PSD) & Footprint Audit (NRCELL)';
 
             if (filteredDataset.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="11" style="text-align:center; color:var(--text-muted); font-style:italic;">No ${is4G ? '4G (LNCEL)' : '5G (NRCELL)'} cells found matching current filter.</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="12" style="text-align:center; color:var(--text-muted); font-style:italic;">No ${is4G ? '4G (LNCEL)' : '5G (NRCELL)'} cells found matching current filter.</td></tr>`;
                 const ftc = document.getElementById('fpTotalCells'); if (ftc) ftc.innerText = `0 Cells`;
                 const fbc = document.getElementById('fpBalancedCount'); if (fbc) fbc.innerText = `0 Cells`;
                 const flc = document.getElementById('fpLowCount'); if (flc) flc.innerText = `0 Cells`;
@@ -7651,6 +7673,7 @@ ${cmDataBlocks}</raml>
             let balancedCount = 0;
             let lowCount = 0;
             let highCount = 0;
+            const lcellRmodMap = is4G ? buildLcellRmodMap() : {};
 
             filteredDataset.forEach((cell) => {
                 const fddData = lncelFddParams[cell.distName] || {};
@@ -7704,6 +7727,18 @@ ${cmDataBlocks}</raml>
                     ? `<code>${(32.44 + 20 * Math.log10(fsplDistKm) + 20 * Math.log10(fsplFreqMhz)).toFixed(2)} dB</code><br><small style="color:var(--text-muted); font-family:'JetBrains Mono', monospace;">f = ${fsplFreqMhz} MHz</small>`
                     : 'N/A';
 
+                // RMOD + antenna lines (LTE only).
+                let rmodHtml = '<span style="color:var(--text-muted);">—</span>';
+                if (is4G) {
+                    const lncelDnR = getParentLncelDistName(cell.distName) || cell.distName;
+                    const lncelMo = scfData[lncelDnR];
+                    const lcrId = String((lncelMo && getParamCaseInsensitive(lncelMo.params, 'lcrId')) ?? lncelDnR.split('LNCEL-').pop());
+                    const byRmod = lcellRmodMap[lcrId];
+                    rmodHtml = byRmod
+                        ? Object.keys(byRmod).sort(naturalCompare).map(r => `${r} (ANTL-${[...byRmod[r]].sort((a, b) => a - b).join('/')})`).join('<br>')
+                        : 'N/A';
+                }
+
                 // SIB-0 qrxLevMin (LTE only): read from the LNCEL's SIB-0 child MO.
                 let qrxLevMinHtml = '<span style="color:var(--text-muted);">—</span>';
                 if (is4G) {
@@ -7720,6 +7755,7 @@ ${cmDataBlocks}</raml>
                 tr.innerHTML = `
                     <td class="checkbox-cell"><input type="checkbox" class="power-cell-checkbox" data-watt="${cell.pMaxWatt || 0}" onchange="recalculateSelectedPower()"></td>
                     <td><strong>${cell.id}</strong>: ${cell.name}<br><small style="color:var(--text-muted); font-family:'JetBrains Mono', monospace;">${cell.distName}</small>${rfTagHtml ? '<br>' + rfTagHtml : ''}</td>
+                    <td style="white-space:nowrap;">${rmodHtml}</td>
                     <td><strong>${bwMhz} MHz</strong></td>
                     <td><strong>${cell.pMaxDbm !== 'N/A' ? cell.pMaxDbm.toFixed(1) : 'N/A'}</strong></td>
                     <td>${(cell.dlCellPwrRed !== undefined && cell.dlCellPwrRed !== null) ? cell.dlCellPwrRed + ' dB' : 'N/A'}</td>
