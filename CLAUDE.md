@@ -76,7 +76,8 @@ Use `grep -n` pelo nome da função em vez de confiar nos números.
   - ARFCN do LNADJG deve estar no `redirGeranArfcnStructL` dos REDRT GSM de cada LNCEL relacionado; ausente → vermelho + FAIL.
   - Par ARFCN + BSIC duplicado na mesma LNBTS → FAIL (tabela própria).
 - **Cell → RMOD** (`buildLcellRmodMap`, `getCellRmods`): LTE `LNCEL.lcrId` → `MNL/.../CELLMAPPING/LCELL-<lcrId>/CHANNELGROUP/CHANNEL.antlDN` → `RMOD-x/ANTL-y` (exibe `RMOD-3 (ANTL-1/2)`); NR `NRCELL.lcrId` → `LCELNR-<lcrId>/.../CHANNEL.resourceDN` → `RMOD-x/PHYANT-y` (exibe `RMOD-21 (PHYANT-1, 8T4R)`, contando canais TX/RX).
-- **Power & Footprint**: células NB-IoT (LNCEL com filho NBIOT_FDD) ocultas da tabela e dos filtros (`getPowerVisibleDataset`); filtro lateral por RMOD; colunas: Cell, RMOD, Bandwidth, PMax, PwrRed, DL RS Boost, qrxLevMin (SIB-0), Power (W), Spectral Density, Symbol Level, FSPL (f e d = 0.5 km em cinza na célula).
+- **Cell → RET** (`buildAntlRetuMap`, `formatCellRet`): `ALD-x/RETU-y.antlDNList` lista as ANTL do RMOD; cruzando com as ANTL da célula obtém-se o tilt. `angle` em 0.1° (110 → 11.0°). NR (PHYANT) normalmente sem RETU → N/A.
+- **Power & Footprint**: células NB-IoT (LNCEL com filho NBIOT_FDD) ocultas da tabela e dos filtros (`getPowerVisibleDataset`); filtro lateral por RMOD; colunas: Cell, RMOD, RET Tilt, Bandwidth, PMax, PwrRed, DL RS Boost, qrxLevMin (SIB-0), Power (W), Spectral Density, Symbol Level, FSPL (f e d = 0.5 km em cinza na célula).
 - **Modal do Health Check**: 1080px de largura; fonte do detalhe `calc(0.76rem - 1px)`, tabela `calc(0.7rem - 1px)`.
 
 ## Pendências / ideias

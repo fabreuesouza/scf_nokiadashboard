@@ -888,6 +888,7 @@
                                     <th class="checkbox-cell"><input type="checkbox" id="selectAllPower" onchange="toggleSelectAllPower(this.checked)"></th>
                                     <th>Cell / Object (distName)</th>
                                     <th title="Radio module carrying the cell — LTE: LNCEL.lcrId → LCELL → CHANNEL.antlDN (ANTL); NR: NRCELL.lcrId → LCELNR → CHANNEL.resourceDN (PHYANT, TxR count)">RMOD</th>
+                                    <th title="Electrical tilt from RETU.angle (0.1° units), linked to the cell's RMOD antenna lines via RETU.antlDNList">RET Tilt</th>
                                     <th>Bandwidth</th>
                                     <th>PMax</th>
                                     <th>PwrRed (dB)</th>
@@ -900,7 +901,7 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                <tr><td colspan="12" style="text-align:center; color:var(--text-muted); font-style:italic;">No SCF file loaded.</td></tr>
+                                <tr><td colspan="13" style="text-align:center; color:var(--text-muted); font-style:italic;">No SCF file loaded.</td></tr>
                             </tbody>
                         </table>
                     </div>
@@ -7726,6 +7727,48 @@ ${cmDataBlocks}</raml>
             return map;
         }
 
+        // RET mapping: each ALD/RETU lists the antenna lines it tilts in RETU.antlDNList (e.g. .../RMOD-1/ANTL-1).
+        // Returns { 'RMOD-1/ANTL-1': [ { dn, label: 'ALD-1/RETU-1', angle, minAngle, maxAngle, antModel, sectorID } ] }.
+        function buildAntlRetuMap() {
+            const map = {};
+            getMOsByClass('RETU').forEach(retu => {
+                const label = (retu.distName.match(/ALD-\d+\/RETU-\d+$/) || [retu.distName.split('/').pop()])[0];
+                const info = {
+                    dn: retu.distName, label,
+                    angle: getParamCaseInsensitive(retu.params, 'angle'),
+                    minAngle: getParamCaseInsensitive(retu.params, 'minAngle'),
+                    maxAngle: getParamCaseInsensitive(retu.params, 'maxAngle'),
+                    antModel: getParamCaseInsensitive(retu.params, 'antModel') || '',
+                    sectorID: getParamCaseInsensitive(retu.params, 'sectorID') || ''
+                };
+                const antls = (retu.lists && retu.lists['antlDNList']) ? retu.lists['antlDNList'] : [];
+                antls.forEach(a => {
+                    const m = String(a).match(/(RMOD-\d+)\/(ANTL|PHYANT)-(\d+)/);
+                    if (!m) return;
+                    const key = `${m[1]}/${m[2]}-${m[3]}`;
+                    (map[key] || (map[key] = [])).push(info);
+                });
+            });
+            return map;
+        }
+
+        // RETUs serving a cell's RMOD antenna lines (deduplicated), as HTML: "11.0°" + gray "ALD-1/RETU-1".
+        function formatCellRet(byRmod, antlRetuMap) {
+            if (!byRmod) return 'N/A';
+            const found = new Map();
+            Object.keys(byRmod).forEach(r => {
+                const e = byRmod[r];
+                [...e.antl].forEach(n => (antlRetuMap[`${r}/ANTL-${n}`] || []).forEach(i => found.set(i.dn, i)));
+                [...e.phyant].forEach(n => (antlRetuMap[`${r}/PHYANT-${n}`] || []).forEach(i => found.set(i.dn, i)));
+            });
+            if (found.size === 0) return 'N/A';
+            const deg = (v) => { const n = parseFloat(v); return isNaN(n) ? (v ?? 'N/A') : `${(n / 10).toFixed(1)}°`; };
+            return [...found.values()].sort((a, b) => naturalCompare(a.label, b.label)).map(i => {
+                const tip = `${i.label} | angle=${i.angle} (0.1°) | range ${deg(i.minAngle)}–${deg(i.maxAngle)}${i.antModel ? ' | ' + i.antModel : ''}${i.sectorID ? ' | sectorID ' + i.sectorID : ''}`;
+                return `<span title="${tip}">${deg(i.angle)}</span><br><small style="color:var(--text-muted); font-family:'JetBrains Mono', monospace; white-space:nowrap;">${i.label}</small>`;
+            }).join('<br>');
+        }
+
         function renderPowerFootprintDashboard() {
             const tbody = document.querySelector('#footprintTable tbody');
             if (!tbody) return;
@@ -7744,6 +7787,7 @@ ${cmDataBlocks}</raml>
             // Hide NB-IoT cells (LNCEL with an NBIOT_FDD child) from the table, same as other LTE modules.
             let filteredDataset = getPowerVisibleDataset(is4G);
             const lcellRmodMap = buildLcellRmodMap();
+            const antlRetuMap = buildAntlRetuMap();
             if (activePowerRmods.size > 0) {
                 filteredDataset = filteredDataset.filter(cell => Object.keys(getCellRmods(cell, lcellRmodMap, is4G) || {}).some(r => activePowerRmods.has(r)));
             }
@@ -7761,7 +7805,7 @@ ${cmDataBlocks}</raml>
                 : 'Power Spectral Density (PSD) & Footprint Audit (NRCELL)';
 
             if (filteredDataset.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="12" style="text-align:center; color:var(--text-muted); font-style:italic;">No ${is4G ? '4G (LNCEL)' : '5G (NRCELL)'} cells found matching current filter.</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="13" style="text-align:center; color:var(--text-muted); font-style:italic;">No ${is4G ? '4G (LNCEL)' : '5G (NRCELL)'} cells found matching current filter.</td></tr>`;
                 const ftc = document.getElementById('fpTotalCells'); if (ftc) ftc.innerText = `0 Cells`;
                 const fbc = document.getElementById('fpBalancedCount'); if (fbc) fbc.innerText = `0 Cells`;
                 const flc = document.getElementById('fpLowCount'); if (flc) flc.innerText = `0 Cells`;
@@ -7847,6 +7891,7 @@ ${cmDataBlocks}</raml>
                     <td class="checkbox-cell"><input type="checkbox" class="power-cell-checkbox" data-watt="${cell.pMaxWatt || 0}" onchange="recalculateSelectedPower()"></td>
                     <td><strong>${cell.id}</strong>: ${cell.name}<br><small style="color:var(--text-muted); font-family:'JetBrains Mono', monospace;">${cell.distName}</small>${rfTagHtml ? '<br>' + rfTagHtml : ''}</td>
                     <td>${rmodHtml}</td>
+                    <td>${formatCellRet(byRmod, antlRetuMap)}</td>
                     <td><strong>${bwMhz} MHz</strong></td>
                     <td><strong>${cell.pMaxDbm !== 'N/A' ? cell.pMaxDbm.toFixed(1) : 'N/A'}</strong></td>
                     <td>${(cell.dlCellPwrRed !== undefined && cell.dlCellPwrRed !== null) ? cell.dlCellPwrRed + ' dB' : 'N/A'}</td>
