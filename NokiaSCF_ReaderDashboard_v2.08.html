@@ -875,7 +875,7 @@
                                 <tr>
                                     <th class="checkbox-cell"><input type="checkbox" id="selectAllPower" onchange="toggleSelectAllPower(this.checked)"></th>
                                     <th>Cell / Object (distName)</th>
-                                    <th title="Radio module and antenna lines carrying the cell (LNCEL lcrId → LCELL → CHANNEL.antlDN)">RMOD</th>
+                                    <th title="Radio module carrying the cell — LTE: LNCEL.lcrId → LCELL → CHANNEL.antlDN (ANTL); NR: NRCELL.lcrId → LCELNR → CHANNEL.resourceDN (PHYANT, TxR count)">RMOD</th>
                                     <th>Bandwidth</th>
                                     <th>PMax</th>
                                     <th>PwrRed (dB)</th>
@@ -6804,12 +6804,23 @@ ${cmDataBlocks}</raml>
             return powerData4G.filter(cell => !nbIotLncelSet.has(getParentLncelDistName(cell.distName) || cell.distName));
         }
 
-        // RMOD → antenna lines carrying this LTE cell ({ 'RMOD-3': Set(['1','2']) }), or null.
-        function getCellRmods(cell, lcellRmodMap) {
-            const lncelDn = getParentLncelDistName(cell.distName) || cell.distName;
-            const lncelMo = scfData[lncelDn];
-            const lcrId = String((lncelMo && getParamCaseInsensitive(lncelMo.params, 'lcrId')) ?? lncelDn.split('LNCEL-').pop());
-            return lcellRmodMap[lcrId] || null;
+        // RMOD resources carrying this cell (see buildLcellRmodMap), or null.
+        // LTE: LNCEL.lcrId → LCELL-<lcrId>; NR: NRCELL.lcrId → LCELNR-<lcrId>.
+        function getCellRmods(cell, lcellRmodMap, is4G = true) {
+            const cellDn = (is4G ? getParentLncelDistName(cell.distName) : getParentNrcellDistName(cell.distName)) || cell.distName;
+            const cellMo = scfData[cellDn];
+            const lcrId = String((cellMo && getParamCaseInsensitive(cellMo.params, 'lcrId')) ?? cellDn.split('-').pop());
+            return lcellRmodMap[`${is4G ? 'LCELL' : 'LCELNR'}-${lcrId}`] || null;
+        }
+
+        // "RMOD-3 (ANTL-1/2)" for LTE antenna lines; "RMOD-21 (PHYANT-1, 8T4R)" for NR massive-MIMO physical antennas.
+        function formatCellRmods(byRmod) {
+            return Object.keys(byRmod).sort(naturalCompare).map(r => {
+                const e = byRmod[r];
+                const sortNum = (set) => [...set].sort((a, b) => a - b);
+                if (e.antl.size) return `${r} (ANTL-${sortNum(e.antl).join('/')})`;
+                return `${r} (PHYANT-${sortNum(e.phyant).join('/')}, ${e.tx}T${e.rx}R)`;
+            }).join('<br>');
         }
 
         function resetPowerRmods() {
@@ -6833,14 +6844,10 @@ ${cmDataBlocks}</raml>
             const is4G = window.activePowerTechTab === '4G';
             container.innerHTML = '';
             activePowerRmods.clear();
-            if (!is4G) {
-                container.innerHTML = '<span style="font-size:0.75rem; color:var(--text-muted);">LTE only</span>';
-                return;
-            }
             const lcellRmodMap = buildLcellRmodMap();
             const rmodCells = {};
-            getPowerVisibleDataset(true).forEach(cell => {
-                Object.keys(getCellRmods(cell, lcellRmodMap) || {}).forEach(r => { rmodCells[r] = (rmodCells[r] || 0) + 1; });
+            getPowerVisibleDataset(is4G).forEach(cell => {
+                Object.keys(getCellRmods(cell, lcellRmodMap, is4G) || {}).forEach(r => { rmodCells[r] = (rmodCells[r] || 0) + 1; });
             });
             const rmods = Object.keys(rmodCells).sort(naturalCompare);
             if (rmods.length === 0) {
@@ -6853,7 +6860,7 @@ ${cmDataBlocks}</raml>
                 const prod = rmodMos[r] ? (getParamCaseInsensitive(rmodMos[r].params, 'prodCodePlanned') || '') : '';
                 const chip = document.createElement('div');
                 chip.className = 'earfcn-chip'; chip.dataset.val = r;
-                chip.title = `${rmodCells[r]} LTE cell(s)`;
+                chip.title = `${rmodCells[r]} ${is4G ? 'LTE' : 'NR'} cell(s)`;
                 chip.innerHTML = `<span>${r}${prod ? ` <small style="opacity:0.7;">(${prod})</small>` : ''}</span>`;
                 chip.onclick = () => togglePowerRmod(r);
                 container.appendChild(chip);
@@ -7686,17 +7693,23 @@ ${cmDataBlocks}</raml>
             }
         }
 
-        // LTE cell → radio mapping: LNCEL.lcrId = LCELL id under MNL/.../CELLMAPPING; each LCELL/CHANNELGROUP/CHANNEL
-        // carries antlDN pointing to the RMOD antenna line (e.g. EQM-1/APEQM-1/RMOD-3/ANTL-1).
-        // Returns { lcrId: { 'RMOD-3': Set(['1','2']) } }.
+        // Cell → radio mapping from MNL/.../CELLMAPPING:
+        //  - LTE: LNCEL.lcrId = LCELL id; LCELL/CHANNELGROUP/CHANNEL.antlDN → .../RMOD-3/ANTL-1
+        //  - NR:  NRCELL.lcrId = LCELNR id; LCELNR/CHANNELGROUP/CHANNEL.resourceDN → .../RMOD-21/PHYANT-1 (massive MIMO)
+        // Returns { 'LCELL-1': { 'RMOD-3': { antl:Set, phyant:Set, tx:n, rx:n } }, 'LCELNR-171': {...} }.
         function buildLcellRmodMap() {
             const map = {};
             getMOsByClass('CHANNEL').forEach(ch => {
-                const lcell = ch.distName.match(/\/LCELL-(\d+)\//);
-                const antl = String(getParamCaseInsensitive(ch.params, 'antlDN') || '').match(/(RMOD-\d+)\/ANTL-(\d+)/);
-                if (!lcell || !antl) return;
-                const byRmod = map[lcell[1]] || (map[lcell[1]] = {});
-                (byRmod[antl[1]] || (byRmod[antl[1]] = new Set())).add(antl[2]);
+                const lcell = ch.distName.match(/\/(LCELL|LCELNR)-(\d+)\//);
+                if (!lcell) return;
+                const ref = String(getParamCaseInsensitive(ch.params, 'antlDN') || getParamCaseInsensitive(ch.params, 'resourceDN') || '');
+                const m = ref.match(/(RMOD-\d+)\/(ANTL|PHYANT)-(\d+)/);
+                if (!m) return;
+                const byRmod = map[`${lcell[1]}-${lcell[2]}`] || (map[`${lcell[1]}-${lcell[2]}`] = {});
+                const e = byRmod[m[1]] || (byRmod[m[1]] = { antl: new Set(), phyant: new Set(), tx: 0, rx: 0 });
+                e[m[2] === 'ANTL' ? 'antl' : 'phyant'].add(m[3]);
+                const dir = String(getParamCaseInsensitive(ch.params, 'direction') || '').toUpperCase();
+                if (dir === 'TX') e.tx++; else if (dir === 'RX') e.rx++;
             });
             return map;
         }
@@ -7718,9 +7731,9 @@ ${cmDataBlocks}</raml>
 
             // Hide NB-IoT cells (LNCEL with an NBIOT_FDD child) from the table, same as other LTE modules.
             let filteredDataset = getPowerVisibleDataset(is4G);
-            const lcellRmodMap = is4G ? buildLcellRmodMap() : {};
-            if (is4G && activePowerRmods.size > 0) {
-                filteredDataset = filteredDataset.filter(cell => Object.keys(getCellRmods(cell, lcellRmodMap) || {}).some(r => activePowerRmods.has(r)));
+            const lcellRmodMap = buildLcellRmodMap();
+            if (activePowerRmods.size > 0) {
+                filteredDataset = filteredDataset.filter(cell => Object.keys(getCellRmods(cell, lcellRmodMap, is4G) || {}).some(r => activePowerRmods.has(r)));
             }
             if (activePowerEarfcns.size > 0) {
                 filteredDataset = filteredDataset.filter(cell => activePowerEarfcns.has(getCellFreq(cell, window.activePowerTechTab)));
@@ -7801,14 +7814,9 @@ ${cmDataBlocks}</raml>
                     ? `<code>${(32.44 + 20 * Math.log10(fsplDistKm) + 20 * Math.log10(fsplFreqMhz)).toFixed(2)} dB</code><br><small style="color:var(--text-muted); font-family:'JetBrains Mono', monospace;">f = ${fsplFreqMhz} MHz</small>`
                     : 'N/A';
 
-                // RMOD + antenna lines (LTE only).
-                let rmodHtml = '<span style="color:var(--text-muted);">—</span>';
-                if (is4G) {
-                    const byRmod = getCellRmods(cell, lcellRmodMap);
-                    rmodHtml = byRmod
-                        ? Object.keys(byRmod).sort(naturalCompare).map(r => `${r} (ANTL-${[...byRmod[r]].sort((a, b) => a - b).join('/')})`).join('<br>')
-                        : 'N/A';
-                }
+                // RMOD + antenna lines (LTE) / physical antenna + TX/RX channel count (NR).
+                const byRmod = getCellRmods(cell, lcellRmodMap, is4G);
+                const rmodHtml = byRmod ? formatCellRmods(byRmod) : 'N/A';
 
                 // SIB-0 qrxLevMin (LTE only): read from the LNCEL's SIB-0 child MO.
                 let qrxLevMinHtml = '<span style="color:var(--text-muted);">—</span>';
