@@ -75,6 +75,8 @@ Use `grep -n` pelo nome da função em vez de confiar nos números.
   - Colunas: ícone, MO, Related LNCEL/LNRELG, CI, LAC, RAC, ARFCN, Band, BSIC, Status. (Colunas `targetCellDn`/`targetName` foram testadas e removidas — sem dado no SCF.)
   - ARFCN do LNADJG deve estar no `redirGeranArfcnStructL` dos REDRT GSM de cada LNCEL relacionado; ausente → vermelho + FAIL.
   - Par ARFCN + BSIC duplicado na mesma LNBTS → FAIL (tabela própria).
+- **Cell → RMOD** (`buildLcellRmodMap`, `getCellRmods`): LTE `LNCEL.lcrId` → `MNL/.../CELLMAPPING/LCELL-<lcrId>/CHANNELGROUP/CHANNEL.antlDN` → `RMOD-x/ANTL-y` (exibe `RMOD-3 (ANTL-1/2)`); NR `NRCELL.lcrId` → `LCELNR-<lcrId>/.../CHANNEL.resourceDN` → `RMOD-x/PHYANT-y` (exibe `RMOD-21 (PHYANT-1, 8T4R)`, contando canais TX/RX).
+- **Power & Footprint**: células NB-IoT (LNCEL com filho NBIOT_FDD) ocultas da tabela e dos filtros (`getPowerVisibleDataset`); filtro lateral por RMOD; colunas: Cell, RMOD, Bandwidth, PMax, PwrRed, DL RS Boost, qrxLevMin (SIB-0), Power (W), Spectral Density, Symbol Level, FSPL @ 0.5 km.
 - **Modal do Health Check**: 1080px de largura; fonte do detalhe `calc(0.76rem - 1px)`, tabela `calc(0.7rem - 1px)`.
 
 ## Pendências / ideias
