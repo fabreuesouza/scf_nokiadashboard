@@ -844,6 +844,15 @@
                     </div>
                     <div>
                         <div class="filter-section-title">
+                            <span>RMOD</span>
+                            <span class="btn-reset" onclick="resetPowerRmods()">Reset</span>
+                        </div>
+                        <div class="sidebar-chip-group" id="powerRmodFilters">
+                            <span style="font-size:0.75rem; color:var(--text-muted);">None</span>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="filter-section-title">
                             <span>Cells (Sector)</span>
                             <span class="btn-reset" onclick="resetPowerCells()">Reset</span>
                         </div>
@@ -1517,6 +1526,7 @@
         let activePowerEarfcns = new Set();
         let activeBoostCells = new Set();
         let activePowerCells = new Set();
+        let activePowerRmods = new Set();
         let parameterSets = JSON.parse(localStorage.getItem('nokia_scf_param_sets_v3')) || {};
         let pendingItemToAdd = null;
 
@@ -4363,6 +4373,7 @@ B1 (addition) and A2 (release) act on the same NR leg from opposite directions, 
             const b4 = document.getElementById('btnPowerTech4G'); if (b4) b4.className = `power-tech-btn ${tech === '4G' ? 'active-4g' : ''}`;
             const b5 = document.getElementById('btnPowerTech5G'); if (b5) b5.className = `power-tech-btn ${tech === '5G' ? 'active-5g' : ''}`;
             buildPowerEarfcnFilter();
+            buildPowerRmodFilter();
             buildPowerCellFilter();
             renderPowerFootprintDashboard();
         }
@@ -4815,6 +4826,7 @@ B1 (addition) and A2 (release) act on the same NR leg from opposite directions, 
             buildBoostEarfcnFilter(); 
             buildBoostCellFilter();
             buildPowerEarfcnFilter();
+            buildPowerRmodFilter();
             buildPowerCellFilter();
             selectedLnrelDistNames.clear();
             buildNeighborCellFilter();
@@ -6785,6 +6797,69 @@ ${cmDataBlocks}</raml>
             });
         }
 
+        // Power & Footprint dataset without NB-IoT cells (LNCEL with an NBIOT_FDD child) — shared by table and sidebar filters.
+        function getPowerVisibleDataset(is4G) {
+            if (!is4G) return powerData5G;
+            const nbIotLncelSet = getNbIotLncelSet();
+            return powerData4G.filter(cell => !nbIotLncelSet.has(getParentLncelDistName(cell.distName) || cell.distName));
+        }
+
+        // RMOD → antenna lines carrying this LTE cell ({ 'RMOD-3': Set(['1','2']) }), or null.
+        function getCellRmods(cell, lcellRmodMap) {
+            const lncelDn = getParentLncelDistName(cell.distName) || cell.distName;
+            const lncelMo = scfData[lncelDn];
+            const lcrId = String((lncelMo && getParamCaseInsensitive(lncelMo.params, 'lcrId')) ?? lncelDn.split('LNCEL-').pop());
+            return lcellRmodMap[lcrId] || null;
+        }
+
+        function resetPowerRmods() {
+            activePowerRmods.clear();
+            document.querySelectorAll('#powerRmodFilters .earfcn-chip').forEach(chip => chip.classList.remove('active'));
+            renderPowerFootprintDashboard();
+        }
+
+        function togglePowerRmod(rmod) {
+            if (activePowerRmods.has(rmod)) activePowerRmods.delete(rmod);
+            else activePowerRmods.add(rmod);
+            document.querySelectorAll('#powerRmodFilters .earfcn-chip').forEach(chip => {
+                chip.classList.toggle('active', activePowerRmods.has(chip.dataset.val));
+            });
+            renderPowerFootprintDashboard();
+        }
+
+        function buildPowerRmodFilter() {
+            const container = document.getElementById('powerRmodFilters');
+            if (!container) return;
+            const is4G = window.activePowerTechTab === '4G';
+            container.innerHTML = '';
+            activePowerRmods.clear();
+            if (!is4G) {
+                container.innerHTML = '<span style="font-size:0.75rem; color:var(--text-muted);">LTE only</span>';
+                return;
+            }
+            const lcellRmodMap = buildLcellRmodMap();
+            const rmodCells = {};
+            getPowerVisibleDataset(true).forEach(cell => {
+                Object.keys(getCellRmods(cell, lcellRmodMap) || {}).forEach(r => { rmodCells[r] = (rmodCells[r] || 0) + 1; });
+            });
+            const rmods = Object.keys(rmodCells).sort(naturalCompare);
+            if (rmods.length === 0) {
+                container.innerHTML = '<span style="font-size:0.75rem; color:var(--text-muted);">None</span>';
+                return;
+            }
+            const rmodMos = {};
+            getMOsByClass('RMOD').forEach(o => { rmodMos[o.distName.split('/').pop()] = o; });
+            rmods.forEach(r => {
+                const prod = rmodMos[r] ? (getParamCaseInsensitive(rmodMos[r].params, 'prodCodePlanned') || '') : '';
+                const chip = document.createElement('div');
+                chip.className = 'earfcn-chip'; chip.dataset.val = r;
+                chip.title = `${rmodCells[r]} LTE cell(s)`;
+                chip.innerHTML = `<span>${r}${prod ? ` <small style="opacity:0.7;">(${prod})</small>` : ''}</span>`;
+                chip.onclick = () => togglePowerRmod(r);
+                container.appendChild(chip);
+            });
+        }
+
         function togglePowerEarfcn(freq) {
             if (activePowerEarfcns.has(freq)) activePowerEarfcns.delete(freq);
             else activePowerEarfcns.add(freq);
@@ -6801,7 +6876,7 @@ ${cmDataBlocks}</raml>
             const is4G = window.activePowerTechTab === '4G';
             container.innerHTML = '';
             activePowerEarfcns.clear();
-            const activeDataset = is4G ? powerData4G : powerData5G;
+            const activeDataset = getPowerVisibleDataset(is4G);
             const freqs = activeDataset.map(cell => getCellFreq(cell, window.activePowerTechTab)).filter(f => f !== 'N/A');
             const uniqueFreqs = [...new Set(freqs)].sort((a,b) => parseInt(a) - parseInt(b));
             if (uniqueFreqs.length === 0) {
@@ -6832,7 +6907,7 @@ ${cmDataBlocks}</raml>
             const is4G = window.activePowerTechTab === '4G';
             container.innerHTML = '';
             activePowerCells.clear();
-            const activeDataset = is4G ? powerData4G : powerData5G;
+            const activeDataset = getPowerVisibleDataset(is4G);
             const uniqueCells = [...new Set(activeDataset.map(cell => cell.id))].sort(naturalCompare);
             if (uniqueCells.length === 0) {
                 container.innerHTML = '<span style="font-size:0.75rem; color:var(--text-muted);">None</span>';
@@ -7642,10 +7717,10 @@ ${cmDataBlocks}</raml>
             const ptsd = document.getElementById('powerTotalSiteDbm'); if (ptsd) ptsd.innerText = `(${wattToDbm(layerTotalWatts).toFixed(1)} dBm / ${(layerTotalWatts/1000).toFixed(3)} kW)`;
 
             // Hide NB-IoT cells (LNCEL with an NBIOT_FDD child) from the table, same as other LTE modules.
-            let filteredDataset = activeDataset;
-            if (is4G) {
-                const nbIotLncelSet = getNbIotLncelSet();
-                filteredDataset = filteredDataset.filter(cell => !nbIotLncelSet.has(getParentLncelDistName(cell.distName) || cell.distName));
+            let filteredDataset = getPowerVisibleDataset(is4G);
+            const lcellRmodMap = is4G ? buildLcellRmodMap() : {};
+            if (is4G && activePowerRmods.size > 0) {
+                filteredDataset = filteredDataset.filter(cell => Object.keys(getCellRmods(cell, lcellRmodMap) || {}).some(r => activePowerRmods.has(r)));
             }
             if (activePowerEarfcns.size > 0) {
                 filteredDataset = filteredDataset.filter(cell => activePowerEarfcns.has(getCellFreq(cell, window.activePowerTechTab)));
@@ -7673,7 +7748,6 @@ ${cmDataBlocks}</raml>
             let balancedCount = 0;
             let lowCount = 0;
             let highCount = 0;
-            const lcellRmodMap = is4G ? buildLcellRmodMap() : {};
 
             filteredDataset.forEach((cell) => {
                 const fddData = lncelFddParams[cell.distName] || {};
@@ -7730,10 +7804,7 @@ ${cmDataBlocks}</raml>
                 // RMOD + antenna lines (LTE only).
                 let rmodHtml = '<span style="color:var(--text-muted);">—</span>';
                 if (is4G) {
-                    const lncelDnR = getParentLncelDistName(cell.distName) || cell.distName;
-                    const lncelMo = scfData[lncelDnR];
-                    const lcrId = String((lncelMo && getParamCaseInsensitive(lncelMo.params, 'lcrId')) ?? lncelDnR.split('LNCEL-').pop());
-                    const byRmod = lcellRmodMap[lcrId];
+                    const byRmod = getCellRmods(cell, lcellRmodMap);
                     rmodHtml = byRmod
                         ? Object.keys(byRmod).sort(naturalCompare).map(r => `${r} (ANTL-${[...byRmod[r]].sort((a, b) => a - b).join('/')})`).join('<br>')
                         : 'N/A';
