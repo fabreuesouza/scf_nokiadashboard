@@ -865,10 +865,11 @@
                                     <th>Power (W)</th>
                                     <th>Spectral Density</th>
                                     <th>Symbol Level</th>
+                                    <th title="Free-Space Path Loss at d = 0.5 km: FSPL(dB) = 32.44 + 20·log10(d_km) + 20·log10(f_MHz)">FSPL @ 0.5 km</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                <tr><td colspan="9" style="text-align:center; color:var(--text-muted); font-style:italic;">No SCF file loaded.</td></tr>
+                                <tr><td colspan="10" style="text-align:center; color:var(--text-muted); font-style:italic;">No SCF file loaded.</td></tr>
                             </tbody>
                         </table>
                     </div>
@@ -7630,7 +7631,7 @@ ${cmDataBlocks}</raml>
                 : 'Power Spectral Density (PSD) & Footprint Audit (NRCELL)';
 
             if (filteredDataset.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="9" style="text-align:center; color:var(--text-muted); font-style:italic;">No ${is4G ? '4G (LNCEL)' : '5G (NRCELL)'} cells found matching current filter.</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="10" style="text-align:center; color:var(--text-muted); font-style:italic;">No ${is4G ? '4G (LNCEL)' : '5G (NRCELL)'} cells found matching current filter.</td></tr>`;
                 const ftc = document.getElementById('fpTotalCells'); if (ftc) ftc.innerText = `0 Cells`;
                 const fbc = document.getElementById('fpBalancedCount'); if (fbc) fbc.innerText = `0 Cells`;
                 const flc = document.getElementById('fpLowCount'); if (flc) flc.innerText = `0 Cells`;
@@ -7678,6 +7679,23 @@ ${cmDataBlocks}</raml>
                     highCount++;
                 }
 
+                // Free-Space Path Loss at a fixed 0.5 km reference distance, using the cell's DL carrier
+                // frequency: FSPL(dB) = 32.44 + 20·log10(d_km) + 20·log10(f_MHz).
+                const fsplDistKm = 0.5;
+                const freqRaw = getCellFreq(cell, window.activePowerTechTab);
+                let fsplFreqMhz = 0;
+                if (freqRaw !== 'N/A') {
+                    if (is4G) {
+                        const bi = earfcnToBandInfo(freqRaw);
+                        fsplFreqMhz = bi ? bi.freqMHz : earfcnToFreqAndBand(freqRaw).freqMhz;
+                    } else {
+                        fsplFreqMhz = nrArfcnToFreqMHz(freqRaw) || 0;
+                    }
+                }
+                const fsplHtml = fsplFreqMhz > 0
+                    ? `<code>${(32.44 + 20 * Math.log10(fsplDistKm) + 20 * Math.log10(fsplFreqMhz)).toFixed(2)} dB</code><br><small style="color:var(--text-muted); font-family:'JetBrains Mono', monospace;">f = ${fsplFreqMhz} MHz</small>`
+                    : 'N/A';
+
                 const rfTagHtml = renderLncelRfTag(cell.distName, { compact: true });
                 const tr = document.createElement('tr');
                 tr.innerHTML = `
@@ -7690,6 +7708,7 @@ ${cmDataBlocks}</raml>
                     <td><strong style="color:${is4G ? 'var(--brand-blue)' : 'var(--tech-5g-text)'}; font-size:1.05em;">${cell.pMaxWatt > 0 ? cell.pMaxWatt.toFixed(2) + ' W' : 'N/A'}</strong></td>
                     <td><span class="psd-badge ${badgeClass}">${psdWattsPerMhz.toFixed(2)} W/MHz</span></td>
                     <td><code>${symbolDbm !== 'N/A' ? symbolDbm + ' dBm/RE' : 'N/A'}</code></td>
+                    <td>${fsplHtml}</td>
                 `;
                 tbody.appendChild(tr);
             });
