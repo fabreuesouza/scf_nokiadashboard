@@ -862,6 +862,15 @@
                     </div>
                     <div>
                         <div class="filter-section-title">
+                            <span>Sector</span>
+                            <span class="btn-reset" onclick="resetPowerSectors()">Reset</span>
+                        </div>
+                        <div class="sidebar-chip-group" id="powerSectorFilters">
+                            <span style="font-size:0.75rem; color:var(--text-muted);">None</span>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="filter-section-title">
                             <span>RMOD</span>
                             <span class="btn-reset" onclick="resetPowerRmods()">Reset</span>
                         </div>
@@ -1546,6 +1555,7 @@
         let activeBoostCells = new Set();
         let activePowerCells = new Set();
         let activePowerRmods = new Set();
+        let activePowerSectors = new Set();
         let parameterSets = JSON.parse(localStorage.getItem('nokia_scf_param_sets_v3')) || {};
         let pendingItemToAdd = null;
 
@@ -4392,6 +4402,7 @@ B1 (addition) and A2 (release) act on the same NR leg from opposite directions, 
             const b4 = document.getElementById('btnPowerTech4G'); if (b4) b4.className = `power-tech-btn ${tech === '4G' ? 'active-4g' : ''}`;
             const b5 = document.getElementById('btnPowerTech5G'); if (b5) b5.className = `power-tech-btn ${tech === '5G' ? 'active-5g' : ''}`;
             buildPowerEarfcnFilter();
+            buildPowerSectorFilter();
             buildPowerRmodFilter();
             buildPowerCellFilter();
             renderPowerFootprintDashboard();
@@ -4845,6 +4856,7 @@ B1 (addition) and A2 (release) act on the same NR leg from opposite directions, 
             buildBoostEarfcnFilter(); 
             buildBoostCellFilter();
             buildPowerEarfcnFilter();
+            buildPowerSectorFilter();
             buildPowerRmodFilter();
             buildPowerCellFilter();
             selectedLnrelDistNames.clear();
@@ -6842,6 +6854,57 @@ ${cmDataBlocks}</raml>
             }).join('<br>');
         }
 
+        // Sector from the cell's RMOD antenna lines (3-sector, 6-port radios): ANTL-1/2 -> 1, ANTL-3/4 -> 2, ANTL-5/6 -> 3.
+        // Returns the sector only when all of the cell's ANTLs fall in the same pair; otherwise null (ambiguous / NR PHYANT).
+        function getCellSector(byRmod) {
+            if (!byRmod) return null;
+            const sectors = new Set();
+            Object.values(byRmod).forEach(e => [...e.antl].forEach(n => sectors.add(Math.ceil(parseInt(n, 10) / 2))));
+            return sectors.size === 1 ? [...sectors][0] : null;
+        }
+
+        function resetPowerSectors() {
+            activePowerSectors.clear();
+            document.querySelectorAll('#powerSectorFilters .earfcn-chip').forEach(chip => chip.classList.remove('active'));
+            renderPowerFootprintDashboard();
+        }
+
+        function togglePowerSector(sec) {
+            if (activePowerSectors.has(sec)) activePowerSectors.delete(sec);
+            else activePowerSectors.add(sec);
+            document.querySelectorAll('#powerSectorFilters .earfcn-chip').forEach(chip => {
+                chip.classList.toggle('active', activePowerSectors.has(chip.dataset.val));
+            });
+            renderPowerFootprintDashboard();
+        }
+
+        function buildPowerSectorFilter() {
+            const container = document.getElementById('powerSectorFilters');
+            if (!container) return;
+            const is4G = window.activePowerTechTab === '4G';
+            container.innerHTML = '';
+            activePowerSectors.clear();
+            const lcellRmodMap = buildLcellRmodMap();
+            const secCells = {};
+            getPowerVisibleDataset(is4G).forEach(cell => {
+                const sec = getCellSector(getCellRmods(cell, lcellRmodMap, is4G));
+                if (sec !== null) secCells[sec] = (secCells[sec] || 0) + 1;
+            });
+            const secs = Object.keys(secCells).sort((a, b) => a - b);
+            if (secs.length === 0) {
+                container.innerHTML = `<span style="font-size:0.75rem; color:var(--text-muted);">${is4G ? 'None' : 'N/A (no ANTL pairs)'}</span>`;
+                return;
+            }
+            secs.forEach(sec => {
+                const chip = document.createElement('div');
+                chip.className = 'earfcn-chip'; chip.dataset.val = sec;
+                chip.title = `${secCells[sec]} cell(s) on ANTL-${sec * 2 - 1}/${sec * 2}`;
+                chip.innerHTML = `<span>Sector ${sec} <small style="opacity:0.7;">(ANTL-${sec * 2 - 1}/${sec * 2})</small></span>`;
+                chip.onclick = () => togglePowerSector(sec);
+                container.appendChild(chip);
+            });
+        }
+
         function resetPowerRmods() {
             activePowerRmods.clear();
             document.querySelectorAll('#powerRmodFilters .earfcn-chip').forEach(chip => chip.classList.remove('active'));
@@ -7796,6 +7859,9 @@ ${cmDataBlocks}</raml>
             const antlRetuMap = buildAntlRetuMap();
             if (activePowerRmods.size > 0) {
                 filteredDataset = filteredDataset.filter(cell => Object.keys(getCellRmods(cell, lcellRmodMap, is4G) || {}).some(r => activePowerRmods.has(r)));
+            }
+            if (activePowerSectors.size > 0) {
+                filteredDataset = filteredDataset.filter(cell => activePowerSectors.has(String(getCellSector(getCellRmods(cell, lcellRmodMap, is4G)))));
             }
             if (activePowerEarfcns.size > 0) {
                 filteredDataset = filteredDataset.filter(cell => activePowerEarfcns.has(getCellFreq(cell, window.activePowerTechTab)));
