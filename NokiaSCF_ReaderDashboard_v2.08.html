@@ -342,8 +342,8 @@
         .psd-badge { padding: 2px 7px; border-radius: 4px; font-weight: 700; font-family: 'JetBrains Mono', monospace; font-size: 0.725rem; display: inline-block; white-space: nowrap; }
         #footprintTable td { font-size: calc(0.775rem - 2px); }
         #footprintTable td .psd-badge { font-size: calc(0.725rem - 2px); }
-        /* Value columns from PMax onward (td 1 = checkbox, 2 = cell, 3 = bandwidth): one uniform size (the smallest, i.e. the PSD badge) and no bold. */
-        #footprintTable td:nth-child(n+4), #footprintTable td:nth-child(n+4) * { font-size: calc(0.725rem - 2px) !important; font-weight: 400 !important; }
+        /* Value columns from Bandwidth onward (td 1 = checkbox, 2 = cell): one uniform size (the smallest, i.e. the PSD badge) and no bold. */
+        #footprintTable td:nth-child(n+3), #footprintTable td:nth-child(n+3) * { font-size: calc(0.725rem - 2px) !important; font-weight: 400 !important; }
         .psd-badge-blue { background-color: var(--prio-high-bg); color: var(--prio-high-text); border: 1px solid var(--prio-high-border); }
         .psd-badge-green { background-color: var(--badge-true-bg); color: var(--badge-true-text); border: 1px solid var(--badge-true-border); }
         .psd-badge-yellow { background-color: var(--prio-low-bg); color: var(--prio-low-text); border: 1px solid var(--prio-low-border); }
