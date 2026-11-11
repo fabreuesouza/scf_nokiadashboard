@@ -7619,7 +7619,12 @@ ${cmDataBlocks}</raml>
             const ptsw = document.getElementById('powerTotalSiteWatt'); if (ptsw) ptsw.innerText = `${layerTotalWatts.toFixed(2)} W`;
             const ptsd = document.getElementById('powerTotalSiteDbm'); if (ptsd) ptsd.innerText = `(${wattToDbm(layerTotalWatts).toFixed(1)} dBm / ${(layerTotalWatts/1000).toFixed(3)} kW)`;
 
+            // Hide NB-IoT cells (LNCEL with an NBIOT_FDD child) from the table, same as other LTE modules.
             let filteredDataset = activeDataset;
+            if (is4G) {
+                const nbIotLncelSet = getNbIotLncelSet();
+                filteredDataset = filteredDataset.filter(cell => !nbIotLncelSet.has(getParentLncelDistName(cell.distName) || cell.distName));
+            }
             if (activePowerEarfcns.size > 0) {
                 filteredDataset = filteredDataset.filter(cell => activePowerEarfcns.has(getCellFreq(cell, window.activePowerTechTab)));
             }
