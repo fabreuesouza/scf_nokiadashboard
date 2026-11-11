@@ -864,8 +864,8 @@
                                     <th>PMax</th>
                                     <th>PwrRed (dB)</th>
                                     <th>DL RS Boost</th>
-                                    <th>Power (W)</th>
                                     <th title="SIB-0 qrxLevMin of the LNCEL (minimum required RX level in the cell)">qrxLevMin (SIB-0)</th>
+                                    <th>Power (W)</th>
                                     <th>Spectral Density</th>
                                     <th>Symbol Level</th>
                                     <th title="Free-Space Path Loss at d = 0.5 km: FSPL(dB) = 32.44 + 20·log10(d_km) + 20·log10(f_MHz)">FSPL @ 0.5 km</th>
@@ -7719,8 +7719,8 @@ ${cmDataBlocks}</raml>
                     <td><strong>${cell.pMaxDbm !== 'N/A' ? cell.pMaxDbm.toFixed(1) : 'N/A'}</strong></td>
                     <td>${(cell.dlCellPwrRed !== undefined && cell.dlCellPwrRed !== null) ? cell.dlCellPwrRed + ' dB' : 'N/A'}</td>
                     <td>${is4G ? ((fddData.dlRsBoost !== undefined && fddData.dlRsBoost !== '') ? fddData.dlRsBoost : 'N/A') : '<span style="color:var(--text-muted);">—</span>'}</td>
-                    <td><strong style="color:${is4G ? 'var(--brand-blue)' : 'var(--tech-5g-text)'}; font-size:1.05em;">${cell.pMaxWatt > 0 ? cell.pMaxWatt.toFixed(2) + ' W' : 'N/A'}</strong></td>
                     <td>${qrxLevMinHtml}</td>
+                    <td><strong style="color:${is4G ? 'var(--brand-blue)' : 'var(--tech-5g-text)'}; font-size:1.05em;">${cell.pMaxWatt > 0 ? cell.pMaxWatt.toFixed(2) + ' W' : 'N/A'}</strong></td>
                     <td><span class="psd-badge ${badgeClass}">${psdWattsPerMhz.toFixed(2)} W/MHz</span></td>
                     <td><code>${symbolDbm !== 'N/A' ? symbolDbm + ' dBm/RE' : 'N/A'}</code></td>
                     <td>${fsplHtml}</td>
