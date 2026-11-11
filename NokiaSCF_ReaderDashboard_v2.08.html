@@ -354,6 +354,12 @@
         #footprintTable .rf-tag-4g { font-size: calc(0.595rem - 2px); padding: 1px 4px; margin-top: 2px; }
         #footprintTable .rf-tag-5g { font-size: calc(0.7rem - 2px); padding: 1px 4px; margin-top: 2px; }
         #powerFootprintView .footprint-sidebar-filters { width: 225px; }
+        /* Sidebar filters use the table's font sizes: section titles = column headers, chips = table values. */
+        #powerFootprintView .footprint-sidebar-filters .filter-section-title { font-size: calc(0.675rem - 2px); }
+        #powerFootprintView .footprint-sidebar-filters .filter-section-title span.btn-reset { font-size: calc(0.725rem - 2px); }
+        #powerFootprintView .footprint-sidebar-filters .earfcn-chip, #powerFootprintView .footprint-sidebar-filters .earfcn-chip * { font-size: calc(0.725rem - 2px); }
+        #powerFootprintView .footprint-sidebar-filters .earfcn-chip { padding: 3px 7px; }
+        #powerFootprintView .footprint-sidebar-filters .sidebar-chip-group > span { font-size: calc(0.725rem - 2px) !important; }
         #powerFootprintView .footprint-summary-grid { grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 6px; }
         #powerFootprintView .power-summary-card { padding: 5px 9px; gap: 0; }
         #powerFootprintView .power-card-title { font-size: 0.6rem; }
