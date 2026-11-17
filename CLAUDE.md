@@ -22,10 +22,9 @@ Leia isto antes de qualquer tarefa. Este arquivo é carregado automaticamente em
 
 ## Design system (Blue Design)
 
-- Visual vem do `blue-design.css` do repo `fabreuesouza/design-system-css`, branch `claude/blue-design` (ainda não está na `main`), linkado via jsDelivr fixado no commit `5e3a24b…`. Ao atualizar o design system, trocar o SHA no `<link>` do `<head>`.
+- Visual vem do `blue-design.css` do repo `fabreuesouza/design-system-css`, branch `claude/blue-design` (ainda não está na `main`), com os tokens (`:root` dos temas) **embutidos** no `<style id="blue-design-tokens">` do `<head>`, copiados do commit `5e3a24b`. O viewer do artifact bloqueia CSS externo, então não usar `<link>` para o jsDelivr; ao atualizar o design system, recopiar o bloco TOKENS do `blue-design.css`.
 - Logo após os blocos de tokens próprios da ferramenta existe um bloco `:root` de mapeamento (`--bg-body: var(--bg)`, `--brand-blue: var(--accent)`, tech 2G/3G/4G/5G → `--num/--den/--kpi/--feature`, etc.). Para mudar cores, mexer nesse mapeamento, não nos hex antigos.
 - Tema escuro é o padrão; claro segue `prefers-color-scheme: light` ou `<html data-theme="light">`. Header sempre escuro, com o filete azul→ciano→âmbar.
-- O sandbox não acessa `cdn.jsdelivr.net`: para screenshots com Playwright, interceptar `**/blue-design.css` e servir uma cópia local.
 
 ## Base de parâmetros Nokia (`fabreuesouza/nokia_database`)
 

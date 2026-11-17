@@ -7,8 +7,226 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400..900&family=JetBrains+Mono:wght@400;500;600;700&family=Montserrat:wght@700;800;900&display=swap" rel="stylesheet">
-    <!-- Blue Design ("Radar") tokens from fabreuesouza/design-system-css, pinned to the claude/blue-design commit. -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/fabreuesouza/design-system-css@5e3a24b0bc4f153c06b21420018909bbfe00d3dd/blue-design.css">
+    <!-- Blue Design ("Radar") tokens, inlined from fabreuesouza/design-system-css blue-design.css @ 5e3a24b
+         (claude/blue-design). Inlined because the artifact viewer blocks external stylesheets. -->
+    <style id="blue-design-tokens">
+/* ============================================================== TOKENS */
+:root {
+  --bg: #0b0f14;
+  --bg-2: #0f1520;
+  --surface: #151c29;
+  --surface-2: #1b2435;
+  --border: rgba(255, 255, 255, 0.07);
+  --border-2: rgba(255, 255, 255, 0.14);
+  --text: #e8edf5;
+  --muted: #8494aa;
+  --faint: #3d4d60;
+  --accent: #1687ff;
+  --accent-soft: rgba(22, 135, 255, 0.14);
+  --accent-glow: rgba(22, 135, 255, 0.38);
+  --cyan: #26d7e8;
+  --cyan-soft: rgba(38, 215, 232, 0.14);
+  --amber: #f5b400;
+  --on-accent: #ffffff;
+  --kpi: #4aa8ff;
+  --kpi-soft: rgba(22, 135, 255, 0.16);
+  --counter: #26d7e8;
+  --counter-soft: rgba(38, 215, 232, 0.13);
+  --feature: #a78bfa;
+  --feature-soft: rgba(167, 139, 250, 0.15);
+  --param: #f5b400;
+  --param-soft: rgba(245, 180, 0, 0.14);
+  --num: #2db86a;
+  --num-soft: rgba(45, 184, 106, 0.15);
+  --den: #f0952a;
+  --den-soft: rgba(224, 140, 0, 0.16);
+  --warn: #f5b400;
+  --warn-soft: rgba(245, 180, 0, 0.14);
+  --bad: #f26b6b;
+  --bad-soft: rgba(224, 80, 80, 0.16);
+  --ok: #2db86a;
+  --ok-soft: rgba(45, 184, 106, 0.15);
+  --edge: #3d4d60;
+  --star: #f5b400;
+  --glow-1: rgba(22, 135, 255, 0.09);
+  --glow-2: rgba(38, 215, 232, 0.05);
+  --header-ink: #07101d;
+  --boot-bg: #0b0f14;
+  --shadow: 0 4px 24px rgba(0, 0, 0, 0.45);
+  --shadow-lg: 0 10px 48px rgba(0, 0, 0, 0.6);
+  --shadow-primary: 0 8px 22px rgba(0, 91, 172, 0.22);
+  --glow-cyan: 0 0 14px rgba(38, 215, 232, 0.45);
+  --filete: linear-gradient(90deg, #1687ff, #26d7e8 62%, #f5b400);
+
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-10: 40px;
+  --radius-xs: 4px;
+  --radius-chip: 7px;
+  --radius-sm: 9px;
+  --radius-icon: 10px;
+  --radius: 14px;
+  --radius-pill: 999px;
+
+  --font-display: Montserrat, Inter, system-ui, sans-serif;
+  --font-sans: Inter, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  --rapido: 160ms;
+  --curva: cubic-bezier(0.2, 0.8, 0.2, 1);
+  --mola: cubic-bezier(0.34, 1.28, 0.64, 1);
+  color-scheme: dark;
+}
+@media (prefers-color-scheme: light) {
+  :root:not([data-theme="dark"]) {
+    --bg: #eef3f9;
+    --bg-2: #e6ecf5;
+    --surface: #ffffff;
+    --surface-2: #f4f7fc;
+    --border: rgba(0, 91, 172, 0.1);
+    --border-2: rgba(0, 91, 172, 0.2);
+    --text: #0d1a2e;
+    --muted: #55698a;
+    --faint: #b0bfcf;
+    --accent: #005bac;
+    --accent-soft: rgba(0, 91, 172, 0.1);
+    --accent-glow: rgba(0, 91, 172, 0.28);
+    --cyan: #00707f;
+    --cyan-soft: rgba(0, 112, 127, 0.1);
+    --amber: #8a6400;
+    --on-accent: #ffffff;
+    --kpi: #005bac;
+    --kpi-soft: rgba(0, 91, 172, 0.1);
+    --counter: #00707f;
+    --counter-soft: rgba(0, 112, 127, 0.1);
+    --feature: #7c3aed;
+    --feature-soft: rgba(124, 58, 237, 0.1);
+    --param: #8a6400;
+    --param-soft: rgba(163, 118, 0, 0.12);
+    --num: #1a7a43;
+    --num-soft: rgba(31, 138, 76, 0.1);
+    --den: #9a5800;
+    --den-soft: rgba(176, 101, 0, 0.12);
+    --warn: #8a6400;
+    --warn-soft: rgba(163, 118, 0, 0.12);
+    --bad: #b83030;
+    --bad-soft: rgba(200, 55, 55, 0.1);
+    --ok: #1a7a43;
+    --ok-soft: rgba(31, 138, 76, 0.1);
+    --edge: #b0bfcf;
+    --star: #b07d00;
+    --glow-1: rgba(0, 91, 172, 0.06);
+    --glow-2: rgba(0, 112, 127, 0.04);
+    --header-ink: #07101d;
+    --boot-bg: #0b0f14;
+    --shadow: 0 4px 24px rgba(0, 91, 172, 0.08);
+    --shadow-lg: 0 10px 48px rgba(0, 91, 172, 0.16);
+    --shadow-primary: 0 8px 22px rgba(0, 91, 172, 0.22);
+    --glow-cyan: 0 0 14px rgba(38, 215, 232, 0.45);
+    --filete: linear-gradient(90deg, #005bac, #00707f 62%, #a37600);
+    color-scheme: light;
+  }
+}
+:root[data-theme="light"] {
+  --bg: #eef3f9;
+  --bg-2: #e6ecf5;
+  --surface: #ffffff;
+  --surface-2: #f4f7fc;
+  --border: rgba(0, 91, 172, 0.1);
+  --border-2: rgba(0, 91, 172, 0.2);
+  --text: #0d1a2e;
+  --muted: #55698a;
+  --faint: #b0bfcf;
+  --accent: #005bac;
+  --accent-soft: rgba(0, 91, 172, 0.1);
+  --accent-glow: rgba(0, 91, 172, 0.28);
+  --cyan: #00707f;
+  --cyan-soft: rgba(0, 112, 127, 0.1);
+  --amber: #8a6400;
+  --on-accent: #ffffff;
+  --kpi: #005bac;
+  --kpi-soft: rgba(0, 91, 172, 0.1);
+  --counter: #00707f;
+  --counter-soft: rgba(0, 112, 127, 0.1);
+  --feature: #7c3aed;
+  --feature-soft: rgba(124, 58, 237, 0.1);
+  --param: #8a6400;
+  --param-soft: rgba(163, 118, 0, 0.12);
+  --num: #1a7a43;
+  --num-soft: rgba(31, 138, 76, 0.1);
+  --den: #9a5800;
+  --den-soft: rgba(176, 101, 0, 0.12);
+  --warn: #8a6400;
+  --warn-soft: rgba(163, 118, 0, 0.12);
+  --bad: #b83030;
+  --bad-soft: rgba(200, 55, 55, 0.1);
+  --ok: #1a7a43;
+  --ok-soft: rgba(31, 138, 76, 0.1);
+  --edge: #b0bfcf;
+  --star: #b07d00;
+  --glow-1: rgba(0, 91, 172, 0.06);
+  --glow-2: rgba(0, 112, 127, 0.04);
+  --header-ink: #07101d;
+  --boot-bg: #0b0f14;
+  --shadow: 0 4px 24px rgba(0, 91, 172, 0.08);
+  --shadow-lg: 0 10px 48px rgba(0, 91, 172, 0.16);
+  --shadow-primary: 0 8px 22px rgba(0, 91, 172, 0.22);
+  --glow-cyan: 0 0 14px rgba(38, 215, 232, 0.45);
+  --filete: linear-gradient(90deg, #005bac, #00707f 62%, #a37600);
+  color-scheme: light;
+}
+:root[data-theme="dark"] {
+  --bg: #0b0f14;
+  --bg-2: #0f1520;
+  --surface: #151c29;
+  --surface-2: #1b2435;
+  --border: rgba(255, 255, 255, 0.07);
+  --border-2: rgba(255, 255, 255, 0.14);
+  --text: #e8edf5;
+  --muted: #8494aa;
+  --faint: #3d4d60;
+  --accent: #1687ff;
+  --accent-soft: rgba(22, 135, 255, 0.14);
+  --accent-glow: rgba(22, 135, 255, 0.38);
+  --cyan: #26d7e8;
+  --cyan-soft: rgba(38, 215, 232, 0.14);
+  --amber: #f5b400;
+  --on-accent: #ffffff;
+  --kpi: #4aa8ff;
+  --kpi-soft: rgba(22, 135, 255, 0.16);
+  --counter: #26d7e8;
+  --counter-soft: rgba(38, 215, 232, 0.13);
+  --feature: #a78bfa;
+  --feature-soft: rgba(167, 139, 250, 0.15);
+  --param: #f5b400;
+  --param-soft: rgba(245, 180, 0, 0.14);
+  --num: #2db86a;
+  --num-soft: rgba(45, 184, 106, 0.15);
+  --den: #f0952a;
+  --den-soft: rgba(224, 140, 0, 0.16);
+  --warn: #f5b400;
+  --warn-soft: rgba(245, 180, 0, 0.14);
+  --bad: #f26b6b;
+  --bad-soft: rgba(224, 80, 80, 0.16);
+  --ok: #2db86a;
+  --ok-soft: rgba(45, 184, 106, 0.15);
+  --edge: #3d4d60;
+  --star: #f5b400;
+  --glow-1: rgba(22, 135, 255, 0.09);
+  --glow-2: rgba(38, 215, 232, 0.05);
+  --header-ink: #07101d;
+  --boot-bg: #0b0f14;
+  --shadow: 0 4px 24px rgba(0, 0, 0, 0.45);
+  --shadow-lg: 0 10px 48px rgba(0, 0, 0, 0.6);
+  --shadow-primary: 0 8px 22px rgba(0, 91, 172, 0.22);
+  --glow-cyan: 0 0 14px rgba(38, 215, 232, 0.45);
+  --filete: linear-gradient(90deg, #1687ff, #26d7e8 62%, #f5b400);
+  color-scheme: dark;
+}
+    </style>
     <style>
         :root {
             --bg-body: #f8fafc;
