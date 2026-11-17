@@ -5,7 +5,7 @@ Leia isto antes de qualquer tarefa. Este arquivo é carregado automaticamente em
 ## O projeto
 
 - Ferramenta web **de arquivo único**: `NokiaSCF_ReaderDashboard_v2.08.html` (~8.8k linhas, HTML + CSS + JS inline, sem build, sem dependências além de Google Fonts).
-- Lê arquivos SCF (XML de configuração de sites Nokia LTE/NR) no navegador e gera módulos de análise. Versão exibida no header: **v2.08**.
+- Lê arquivos SCF (XML de configuração de sites Nokia LTE/NR) no navegador e gera módulos de análise. Versão exibida no header: **v2.09** (o nome do arquivo continua `_v2.08.html`).
 - O dono trabalha com engenharia/otimização de redes Nokia. Comunicação em **português**; código, comentários e commits em **inglês**.
 
 ## Fluxo de trabalho combinado (fazer sempre, sem perguntar)
@@ -17,6 +17,7 @@ Leia isto antes de qualquer tarefa. Este arquivo é carregado automaticamente em
 5. Responder em português, curto, dizendo o que mudou e que não foi testado com SCF real (quando for o caso).
 
 - O aviso do artifact sobre "download link" é conhecido e pode ser ignorado (botões de exportar não funcionam dentro do viewer).
+- **A cada update publicado, incrementar a versão no header** (`<span class="logo-badge" ...>vX.YY</span>` no `<h1>`): +0.01 por update (v2.09 → v2.10 → …) e atualizar a versão citada neste arquivo. O nome do arquivo não muda.
 - Não criar PR sem pedido explícito.
 - Se o nome do arquivo mudar de versão, atualizar este CLAUDE.md e o README.md.
 
