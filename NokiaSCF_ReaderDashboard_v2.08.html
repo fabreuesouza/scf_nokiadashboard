@@ -1010,8 +1010,8 @@
                 <button class="main-nav-btn" id="btnNavNeighbor" onclick="toggleNavDropdown(event, 'neighborDropdownMenu')"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block; vertical-align:-3px; margin-right:2px;"><path d="M9 15l6-6"></path><path d="M8 13l-2 2a3 3 0 0 0 4 4l2-2"></path><path d="M16 11l2-2a3 3 0 0 0-4-4l-2 2"></path></svg>Neighbor Analytics<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block; vertical-align:-1px; margin-left:3px;"><polyline points="6,9 12,15 18,9"></polyline></svg></button>
                 <div class="nav-dropdown-menu" id="neighborDropdownMenu">
                     <button class="nav-dropdown-item" id="btnNavNeighborAudit" onclick="switchMainTab('neighbor'); closeAllNavDropdowns();">Audit</button>
-                    <button class="nav-dropdown-item" id="btnNavNeighborMapping" onclick="switchMainTab('neighborMapping'); closeAllNavDropdowns();">Mapping</button>
                     <button class="nav-dropdown-item" id="btnNavNeighborGsm" onclick="switchMainTab('neighborGsm'); closeAllNavDropdowns();">Audit GSM</button>
+                    <button class="nav-dropdown-item" id="btnNavNeighborMapping" onclick="switchMainTab('neighborMapping'); closeAllNavDropdowns();">Mapping</button>
                 </div>
             </div>
             <button class="main-nav-btn" id="btnNavHardware" onclick="switchMainTab('hardware')"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block; vertical-align:-3px; margin-right:2px;"><path d="M14.7 6.3a4 4 0 0 0-5.4 5.4L4 17l3 3 5.3-5.3a4 4 0 0 0 5.4-5.4l-2.5 2.5-2-2z"></path></svg>Hardware Mapping</button>
@@ -6455,8 +6455,9 @@ B1 (addition) and A2 (release) act on the same NR leg from opposite directions, 
             const term = (document.getElementById('nbrGsmSearch').value || '').toLowerCase().trim();
             const onlyIssues = document.getElementById('nbrGsmOnlyIssues').checked;
             const cols = ['', 'LNRELG', 'LNADJG', 'Target CI', 'LAC', 'RAC', 'ARFCN', 'Band', 'BSIC (NCC/BCC)', 'eNACC', 'SRVCC', 'Redir w/ SI', 'RIM', 'DTM', 'Issues'];
-            const headHtml = `<thead><tr>${cols.map(c => `<th>${c}</th>`).join('')}</tr></thead>`;
-            if (thead) thead.outerHTML = headHtml; else table.insertAdjacentHTML('afterbegin', headHtml);
+            // Column header sits under each LNCEL title row (repeated per LNCEL) instead of a single top header.
+            if (thead) thead.remove();
+            const headRow = `<tr>${cols.map(c => `<th>${c}</th>`).join('')}</tr>`;
 
             const rowsHtml = [];
             allLncel.filter(c => !select.value || c.distName === select.value).forEach(cell => {
@@ -6469,11 +6470,13 @@ B1 (addition) and A2 (release) act on the same NR leg from opposite directions, 
                 });
                 const total = (relsByCell.get(cell.distName) || []).length;
                 if ((onlyIssues || term) && rels.length === 0) return;
-                rowsHtml.push(`<tr><td class="nbr-gsm-group" colspan="${cols.length}">${shortOf(cell.distName)}${p(cell, 'cellName') ? ' — ' + p(cell, 'cellName') : ''}<small>${total} LNRELG</small></td></tr>`);
+                const tac = p(cell, 'tac') ?? p(cell, 'trackingAreaCode');
+                rowsHtml.push(`<tr><td class="nbr-gsm-group" colspan="${cols.length}">${shortOf(cell.distName)}${p(cell, 'cellName') ? ' — ' + p(cell, 'cellName') : ''}<small>TAC: ${isBlank(tac) ? 'N/A' : tac}</small><small>${total} LNRELG</small></td></tr>`);
                 if (total === 0) {
                     rowsHtml.push(`<tr><td colspan="${cols.length}" style="color:var(--text-muted); font-style:italic;">No GSM neighbor (LNRELG) on this LNCEL.</td></tr>`);
                     return;
                 }
+                rowsHtml.push(headRow);
                 rels.forEach(r => {
                     const a = r.adj;
                     const bsic = a && !isBlank(p(a, 'networkColourCode')) && !isBlank(p(a, 'basestationColourCode')) ? `${p(a, 'networkColourCode')}/${p(a, 'basestationColourCode')}` : '';
