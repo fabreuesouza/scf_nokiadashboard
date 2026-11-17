@@ -20,6 +20,13 @@ Leia isto antes de qualquer tarefa. Este arquivo é carregado automaticamente em
 - Não criar PR sem pedido explícito.
 - Se o nome do arquivo mudar de versão, atualizar este CLAUDE.md e o README.md.
 
+## Design system (Blue Design)
+
+- Visual vem do `blue-design.css` do repo `fabreuesouza/design-system-css`, branch `claude/blue-design` (ainda não está na `main`), linkado via jsDelivr fixado no commit `5e3a24b…`. Ao atualizar o design system, trocar o SHA no `<link>` do `<head>`.
+- Logo após os blocos de tokens próprios da ferramenta existe um bloco `:root` de mapeamento (`--bg-body: var(--bg)`, `--brand-blue: var(--accent)`, tech 2G/3G/4G/5G → `--num/--den/--kpi/--feature`, etc.). Para mudar cores, mexer nesse mapeamento, não nos hex antigos.
+- Tema escuro é o padrão; claro segue `prefers-color-scheme: light` ou `<html data-theme="light">`. Header sempre escuro, com o filete azul→ciano→âmbar.
+- O sandbox não acessa `cdn.jsdelivr.net`: para screenshots com Playwright, interceptar `**/blue-design.css` e servir uma cópia local.
+
 ## Base de parâmetros Nokia (`fabreuesouza/nokia_database`)
 
 - Repositório privado com tabelas MIND (CSV) de parâmetros/contadores/KPIs. Usado para definições, fórmulas de conversão (`internal_value_formula`) e textos explicativos dos checks.

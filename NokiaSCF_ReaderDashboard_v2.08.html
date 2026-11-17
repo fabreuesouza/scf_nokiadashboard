@@ -4,7 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Nokia SCF Analytics & Hardware Platform</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400..900&family=JetBrains+Mono:wght@400;500;600;700&family=Montserrat:wght@700;800;900&display=swap" rel="stylesheet">
+    <!-- Blue Design ("Radar") tokens from fabreuesouza/design-system-css, pinned to the claude/blue-design commit. -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/fabreuesouza/design-system-css@5e3a24b0bc4f153c06b21420018909bbfe00d3dd/blue-design.css">
     <style>
         :root {
             --bg-body: #f8fafc;
@@ -172,6 +176,84 @@
             }
         }
 
+        /* Blue Design mapping: the tool's own tokens now point at blue-design.css tokens, which already
+           switch between dark (default) and light (prefers-color-scheme / data-theme). Must stay after
+           the blocks above so it wins over them. */
+        :root {
+            --bg-body: var(--bg);
+            --bg-card: var(--surface);
+            --bg-subtle: var(--surface-2);
+            --border-color: var(--border);
+            --border-color-strong: var(--border-2);
+            --text-primary: var(--text);
+            --text-secondary: var(--muted);
+            --text-muted: var(--muted);
+
+            --brand-blue: var(--accent);
+            --brand-blue-hover: var(--cyan);
+            --brand-blue-bg: var(--accent-soft);
+            --header-grad: radial-gradient(circle at 8% -60%, rgba(22, 135, 255, 0.45), transparent 42%), radial-gradient(circle at 92% 160%, rgba(38, 215, 232, 0.18), transparent 40%), linear-gradient(105deg, #07101d 0%, #0b1a30 52%, #081321 100%);
+            --subnav-grad: linear-gradient(105deg, #0a1628 0%, #0d1f38 52%, #0a1728 100%);
+            --table-header-bg: #0b1a30;
+            --category-header-bg: #13284a;
+
+            --tech-2g-main: var(--num);
+            --tech-2g-bg: var(--num-soft);
+            --tech-2g-border: color-mix(in srgb, var(--num) 35%, transparent);
+            --tech-3g-main: var(--den);
+            --tech-3g-bg: var(--den-soft);
+            --tech-3g-border: color-mix(in srgb, var(--den) 35%, transparent);
+            --tech-4g-main: var(--kpi);
+            --tech-4g-bg: var(--kpi-soft);
+            --tech-4g-border: color-mix(in srgb, var(--kpi) 35%, transparent);
+            --tech-4g-text: var(--kpi);
+            --tech-5g-main: var(--feature);
+            --tech-5g-bg: var(--feature-soft);
+            --tech-5g-border: color-mix(in srgb, var(--feature) 35%, transparent);
+            --tech-5g-text: var(--feature);
+
+            --badge-true-bg: var(--ok-soft);
+            --badge-true-text: var(--ok);
+            --badge-true-border: color-mix(in srgb, var(--ok) 35%, transparent);
+            --badge-false-bg: var(--bad-soft);
+            --badge-false-text: var(--bad);
+            --badge-false-border: color-mix(in srgb, var(--bad) 35%, transparent);
+            --diff-bg: var(--warn-soft);
+            --diff-border: color-mix(in srgb, var(--warn) 35%, transparent);
+            --diff-text: var(--warn);
+
+            --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.12);
+            --shadow-sm: var(--shadow);
+            --shadow-md: var(--shadow-lg);
+
+            --prio-high-bg: var(--accent-soft);
+            --prio-high-border: color-mix(in srgb, var(--accent) 45%, transparent);
+            --prio-high-text: var(--kpi);
+            --prio-mid-bg: var(--ok-soft);
+            --prio-mid-border: color-mix(in srgb, var(--ok) 45%, transparent);
+            --prio-mid-text: var(--ok);
+            --prio-low-bg: var(--warn-soft);
+            --prio-low-border: color-mix(in srgb, var(--warn) 45%, transparent);
+            --prio-low-text: var(--warn);
+            --prio-alert-bg: var(--bad-soft);
+            --prio-alert-border: color-mix(in srgb, var(--bad) 45%, transparent);
+            --prio-alert-text: var(--bad);
+
+            --hw-smod-bg: var(--accent-soft);
+            --hw-smod-border: var(--accent);
+            --hw-smod-text: var(--kpi);
+            --hw-bbmod-bg: var(--feature-soft);
+            --hw-bbmod-border: var(--feature);
+            --hw-bbmod-text: var(--feature);
+            --hw-rmod-bg: var(--den-soft);
+            --hw-rmod-border: var(--den);
+            --hw-rmod-text: var(--den);
+
+            --status-ok-main: var(--ok);
+            --status-fail-main: var(--bad);
+            --text-color: var(--warn);
+        }
+
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; }
         body { background-color: var(--bg-body); color: var(--text-primary); display: flex; flex-direction: column; height: 100vh; overflow: hidden; font-size: 13px; line-height: 1.4; -webkit-font-smoothing: antialiased; }
         
@@ -183,8 +265,8 @@
         header #site-summary { color: rgba(255,255,255,0.85); }
         header .btn-sec { background-color: rgba(255,255,255,0.14); color: #ffffff; border-color: rgba(255,255,255,0.35); }
         header .btn-sec:hover { background-color: rgba(255,255,255,0.24); border-color: rgba(255,255,255,0.55); color: #ffffff; }
-        header .btn-upload { background: #082426; color: #ffffff; }
-        header .btn-upload:hover { background: #0f3d40; color: #ffffff; }
+        header .btn-upload { background: #1687ff; color: #ffffff; box-shadow: var(--shadow-primary); }
+        header .btn-upload:hover { background: #0f74e0; color: #ffffff; }
         input[type="file"] { display: none; }
         .btn-upload { background: linear-gradient(135deg, var(--brand-blue) 0%, var(--brand-blue-hover) 100%); color: #ffffff; padding: 6px 16px; border: none; border-radius: 9999px; cursor: pointer; font-weight: 600; font-size: 0.775rem; transition: all 0.15s ease; box-shadow: var(--shadow-xs); display: inline-flex; align-items: center; gap: 6px; }
         .btn-upload:hover { filter: brightness(1.08); transform: translateY(-1px); }
@@ -196,7 +278,10 @@
         .main-nav-tabs { display: flex; align-items: center; gap: 2px; background: transparent; padding: 0; border-radius: 0; border: none; flex-wrap: wrap; row-gap: 0; }
         .main-nav-btn { padding: 11px 14px; border: none; background: transparent; font-size: 0.775rem; font-weight: 600; color: rgba(255,255,255,0.72); cursor: pointer; border-radius: 0; border-bottom: 2px solid transparent; transition: all 0.15s ease; display: flex; align-items: center; gap: 6px; white-space: nowrap; }
         .main-nav-btn:hover { color: #ffffff; background: rgba(255,255,255,0.08); }
-        .main-nav-btn.active { background: rgba(255,255,255,0.1); color: #ffffff; font-weight: 700; box-shadow: none; border-bottom: 2px solid #ffffff; }
+        .main-nav-btn.active { background: rgba(255,255,255,0.1); color: #ffffff; font-weight: 700; box-shadow: none; border-bottom: 2px solid transparent; border-image: var(--filete) 1; }
+        header { position: relative; }
+        header::after { content: ''; position: absolute; left: 0; right: 0; bottom: 0; height: 2px; background: var(--filete); box-shadow: var(--glow-cyan); }
+        .logo-area h1 { font-family: var(--font-display); font-weight: 800; }
 
         .main-nav-btn-group { position: relative; }
         .nav-dropdown-menu { display: none; position: absolute; top: 100%; left: 0; background: var(--bg-card); border: 1px solid var(--border-color-strong); border-radius: 8px; box-shadow: var(--shadow-md); min-width: 190px; z-index: 100; padding: 6px; margin-top: 2px; }
