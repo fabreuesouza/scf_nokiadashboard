@@ -623,7 +623,7 @@
         .list-title { font-size: 0.725rem; font-weight: 700; color: var(--brand-blue); text-transform: uppercase; letter-spacing: 0.05em; }
         .list-item { background-color: var(--bg-subtle); padding: 8px; border-radius: 6px; border: 1px solid var(--border-color); }
 
-        .boost-view, .cio-view, .power-footprint-view, .layer-priority-view, .hardware-view, .neighbor-view, .neighbor-mapping-view, .health-view { display: none; flex: 1; flex-direction: column; padding: 0; overflow: hidden; gap: 8px; }
+        .boost-view, .cio-view, .power-footprint-view, .layer-priority-view, .hardware-view, .neighbor-view, .neighbor-mapping-view, .neighbor-gsm-view, .health-view { display: none; flex: 1; flex-direction: column; padding: 0; overflow: hidden; gap: 8px; }
         .boost-fixed-header, .footprint-fixed-header { display: flex; flex-direction: column; gap: 8px; flex-shrink: 0; }
         .power-tech-tabs { display: flex; align-items: center; gap: 6px; border-bottom: 1px solid var(--border-color); padding-bottom: 6px; }
         .power-tech-btn { padding: 4px 12px; border-radius: 9999px; border: 1px solid var(--border-color-strong); background: var(--bg-card); font-size: 0.75rem; font-weight: 600; color: var(--text-secondary); cursor: pointer; transition: all 0.15s ease; display: flex; align-items: center; gap: 6px; }
@@ -940,6 +940,12 @@
         .badge-intrasite { background: var(--badge-true-bg); color: var(--badge-true-text); border: 1px solid var(--badge-true-border); }
         .badge-intersite { background: var(--prio-high-bg); color: var(--prio-high-text); border: 1px solid var(--prio-high-border); }
 
+        #nbrGsmTable td.nbr-gsm-group { background: var(--category-header-bg); color: #ffffff; font-weight: 700; font-family: 'JetBrains Mono', monospace; padding: 6px 10px; }
+        #nbrGsmTable td.nbr-gsm-group small { color: rgba(255,255,255,0.75); font-weight: 500; margin-left: 8px; }
+        #nbrGsmTable td { font-family: 'JetBrains Mono', monospace; }
+        .nbr-gsm-bad { color: var(--bad); font-weight: 700; }
+        .nbr-gsm-warn { color: var(--warn); font-weight: 700; }
+        .nbr-gsm-note { font-size: 0.72rem; color: var(--text-muted); padding: 8px 10px; border: 1px dashed var(--border-color-strong); border-radius: 6px; margin-top: 8px; line-height: 1.45; }
         .nbr-summary-container { display: flex; flex-direction: column; flex: 1; overflow: hidden; background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 8px; padding: 10px; box-shadow: var(--shadow-xs); }
         .nbr-summary-scroll { flex: 1; overflow-x: auto; overflow-y: auto; margin-top: 4px; border: 1px solid var(--border-color); border-radius: 6px; }
         .nbr-summary-table { width: 100%; border-collapse: collapse; font-size: 0.725rem; white-space: nowrap; }
@@ -1005,6 +1011,7 @@
                 <div class="nav-dropdown-menu" id="neighborDropdownMenu">
                     <button class="nav-dropdown-item" id="btnNavNeighborAudit" onclick="switchMainTab('neighbor'); closeAllNavDropdowns();">Audit</button>
                     <button class="nav-dropdown-item" id="btnNavNeighborMapping" onclick="switchMainTab('neighborMapping'); closeAllNavDropdowns();">Mapping</button>
+                    <button class="nav-dropdown-item" id="btnNavNeighborGsm" onclick="switchMainTab('neighborGsm'); closeAllNavDropdowns();">Audit GSM</button>
                 </div>
             </div>
             <button class="main-nav-btn" id="btnNavHardware" onclick="switchMainTab('hardware')"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block; vertical-align:-3px; margin-right:2px;"><path d="M14.7 6.3a4 4 0 0 0-5.4 5.4L4 17l3 3 5.3-5.3a4 4 0 0 0 5.4-5.4l-2.5 2.5-2-2z"></path></svg>Hardware Mapping</button>
@@ -1508,6 +1515,61 @@
                     </div>
                     <div class="nbr-map-tree-scroll" id="nbrMapTreeScroll">
                         <div style="padding:16px; font-size:0.75rem; color:var(--text-muted); font-style:italic; text-align:center;">Select a source cell above to build its neighbor hierarchy.</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- MODULE 6c: NEIGHBOR AUDIT GSM (LTE <-> GSM) -->
+        <div class="neighbor-gsm-view" id="neighborGsmView">
+            <div class="footprint-fixed-header">
+                <div class="footprint-summary-grid">
+                    <div class="power-summary-card">
+                        <span class="power-card-title">GSM Targets (LNADJG)</span>
+                        <span class="power-card-value" id="nbrGsmTotalAdj">0</span>
+                        <span class="power-card-sub">GERAN neighbor cells defined on the eNB</span>
+                    </div>
+                    <div class="power-summary-card">
+                        <span class="power-card-title">LTE → GSM Relations (LNRELG)</span>
+                        <span class="power-card-value" id="nbrGsmTotalRel">0</span>
+                        <span class="power-card-sub" id="nbrGsmCellsSub">0 of 0 LNCEL with GSM neighbors</span>
+                    </div>
+                    <div class="power-summary-card" style="border-left: 3px solid var(--bad);">
+                        <span class="power-card-title">Issues</span>
+                        <span class="power-card-value" id="nbrGsmTotalIssues" style="color:var(--bad);">0</span>
+                        <span class="power-card-sub">Orphan LNRELG · ARFCN not in REDRT · ARFCN+BSIC duplicated</span>
+                    </div>
+                    <div class="power-summary-card" style="border-left: 3px solid var(--warn);">
+                        <span class="power-card-title">Unused LNADJG</span>
+                        <span class="power-card-value" id="nbrGsmTotalUnused" style="color:var(--warn);">0</span>
+                        <span class="power-card-sub">No LNRELG points to them</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="footprint-main-content" style="margin-top:4px;">
+                <div class="nbr-summary-container">
+                    <div class="panel-ctrl-row" style="margin-bottom: 6px;">
+                        <div>
+                            <h2><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block; vertical-align:-4px; margin-right:4px;"><path d="M9 15l6-6"></path><path d="M8 13l-2 2a3 3 0 0 0 4 4l2-2"></path><path d="M16 11l2-2a3 3 0 0 0-4-4l-2 2"></path></svg>Neighbor Audit GSM (LTE ↔ GSM)</h2>
+                            <span class="summary-badge">Per LNCEL: LNRELG relations resolved to their LNADJG target (same LNBTS + CI/LAC)</span>
+                        </div>
+                        <div style="display:flex; gap: 8px; align-items: center;">
+                            <select class="class-filter-select" id="nbrGsmCellSelect" style="display:inline-block; margin-bottom:0; width:auto;" onchange="renderNeighborGsmAudit()">
+                                <option value="">All LNCEL</option>
+                            </select>
+                            <input type="text" class="search-box" id="nbrGsmSearch" placeholder="Filter CI, LAC, ARFCN, BSIC..." oninput="renderNeighborGsmAudit()" style="margin-bottom:0; width: 200px;">
+                            <label class="nbr-map-conflict-toggle"><input type="checkbox" id="nbrGsmOnlyIssues" onchange="renderNeighborGsmAudit()"> Only issues</label>
+                        </div>
+                    </div>
+                    <div class="nbr-summary-scroll">
+                        <table class="nbr-summary-table" id="nbrGsmTable">
+                            <tbody>
+                                <tr><td style="text-align:center; color:var(--text-muted); font-style:italic;">No SCF file loaded.</td></tr>
+                            </tbody>
+                        </table>
+                        <div id="nbrGsmUnused"></div>
+                        <div class="nbr-gsm-note"><strong>GSM → LTE:</strong> the GSM-side neighbors (LTE targets defined on the BSC/BTS) are not part of an eNB SCF, so this direction can't be read from this file. It needs the BSC configuration (GSM dump) of the co-located GSM cells.</div>
                     </div>
                 </div>
             </div>
@@ -4578,7 +4640,8 @@ B1 (addition) and A2 (release) act on the same NR leg from opposite directions, 
             document.getElementById('btnNavLms')?.classList.toggle('active', tabName === 'priority' || tabName === 'connectedPriority');
             document.getElementById('btnNavIdlePriority')?.classList.toggle('active', tabName === 'priority');
             document.getElementById('btnNavConnectedPriority')?.classList.toggle('active', tabName === 'connectedPriority');
-            document.getElementById('btnNavNeighbor')?.classList.toggle('active', tabName === 'neighbor' || tabName === 'neighborMapping');
+            document.getElementById('btnNavNeighbor')?.classList.toggle('active', tabName === 'neighbor' || tabName === 'neighborMapping' || tabName === 'neighborGsm');
+            document.getElementById('btnNavNeighborGsm')?.classList.toggle('active', tabName === 'neighborGsm');
             document.getElementById('btnNavNeighborAudit')?.classList.toggle('active', tabName === 'neighbor');
             document.getElementById('btnNavNeighborMapping')?.classList.toggle('active', tabName === 'neighborMapping');
             document.getElementById('btnNavHardware')?.classList.toggle('active', tabName === 'hardware');
@@ -4594,6 +4657,7 @@ B1 (addition) and A2 (release) act on the same NR leg from opposite directions, 
             const cpV = document.getElementById('connectedPriorityView'); if (cpV) cpV.style.display = (tabName === 'connectedPriority') ? 'flex' : 'none';
             const nV = document.getElementById('neighborView'); if (nV) nV.style.display = (tabName === 'neighbor') ? 'flex' : 'none';
             const nmV = document.getElementById('neighborMappingView'); if (nmV) nmV.style.display = (tabName === 'neighborMapping') ? 'flex' : 'none';
+            const ngV = document.getElementById('neighborGsmView'); if (ngV) ngV.style.display = (tabName === 'neighborGsm') ? 'flex' : 'none';
             const hV = document.getElementById('hardwareView'); if (hV) hV.style.display = (tabName === 'hardware') ? 'flex' : 'none';
             const hlV = document.getElementById('healthView'); if (hlV) hlV.style.display = (tabName === 'health') ? 'flex' : 'none';
             const nrV = document.getElementById('nranchorView'); if (nrV) nrV.style.display = (tabName === 'nranchor') ? 'flex' : 'none';
@@ -4608,6 +4672,7 @@ B1 (addition) and A2 (release) act on the same NR leg from opposite directions, 
                 if (tabName === 'connectedPriority') renderConnectedPriorityDashboard();
                 if (tabName === 'neighbor') renderNeighborMapping();
                 if (tabName === 'neighborMapping') renderNeighborMappingDashboard();
+                if (tabName === 'neighborGsm') renderNeighborGsmAudit();
                 if (tabName === 'health') renderFeatureHealthDashboard();
                 if (tabName === 'nranchor') renderNrAnchoringDashboard();
                 if (tabName === 'hardware') {
@@ -4631,6 +4696,7 @@ B1 (addition) and A2 (release) act on the same NR leg from opposite directions, 
             else if (tabName === 'connectedPriority') moduleName = "Connected Priority";
             else if (tabName === 'neighbor') moduleName = "Neighbor Analytics - Audit";
             else if (tabName === 'neighborMapping') moduleName = "Neighbor Analytics - Mapping";
+            else if (tabName === 'neighborGsm') moduleName = "Neighbor Analytics - Audit GSM";
             else if (tabName === 'hardware') moduleName = "Hardware Mapping";
             else if (tabName === 'health') moduleName = "Site Health Check";
             else if (tabName === 'nranchor') moduleName = "NR Anchoring";
@@ -4650,6 +4716,7 @@ B1 (addition) and A2 (release) act on the same NR leg from opposite directions, 
                     if (tabName === 'connectedPriority') renderConnectedPriorityDashboard();
                     if (tabName === 'neighbor') renderNeighborMapping();
                     if (tabName === 'neighborMapping') renderNeighborMappingDashboard();
+                    if (tabName === 'neighborGsm') renderNeighborGsmAudit();
                     if (tabName === 'health') renderFeatureHealthDashboard();
                     if (tabName === 'nranchor') renderNrAnchoringDashboard();
                     if (tabName === 'hardware') {
@@ -6289,6 +6356,155 @@ B1 (addition) and A2 (release) act on the same NR leg from opposite directions, 
             const ids = Array.from(seen.keys()).sort(naturalCompare);
             select.innerHTML = `<option value="">Select a serving cell…</option>` + ids.map(id => `<option value="${id}">${seen.get(id)} (${id})</option>`).join('');
             if (prevVal && seen.has(prevVal)) select.value = prevVal;
+        }
+
+        // ============================================================
+        // NEIGHBOR AUDIT GSM: LTE -> GSM (LNRELG per LNCEL, resolved to LNADJG)
+        // ============================================================
+        // LNRELG <-> LNADJG link: same LNBTS + LNRELG ci/lac = LNADJG gTargetCi/gTargetLac
+        // (same rule as the CSFB GERAN Target Cell Identity health check).
+        function renderNeighborGsmAudit() {
+            const table = document.getElementById('nbrGsmTable');
+            const unusedEl = document.getElementById('nbrGsmUnused');
+            const select = document.getElementById('nbrGsmCellSelect');
+            if (!table || !select) return;
+            const setTxt = (id, v) => { const el = document.getElementById(id); if (el) el.innerText = v; };
+            const tbody = table.querySelector('tbody') || table.appendChild(document.createElement('tbody'));
+            const thead = table.querySelector('thead');
+
+            if (Object.keys(scfData).length === 0) {
+                if (thead) thead.remove();
+                tbody.innerHTML = `<tr><td style="text-align:center; color:var(--text-muted); font-style:italic;">No SCF file loaded.</td></tr>`;
+                if (unusedEl) unusedEl.innerHTML = '';
+                ['nbrGsmTotalAdj', 'nbrGsmTotalRel', 'nbrGsmTotalIssues', 'nbrGsmTotalUnused'].forEach(id => setTxt(id, '0'));
+                return;
+            }
+
+            const isBlank = v => v === undefined || v === null || v === '';
+            const btsOf = dn => { const m = dn.match(/^(.*?LNBTS-[^/]+)/); return m ? m[1] : dn; };
+            const lncelOf = dn => { const m = dn.match(/^(.*?LNCEL-[^/]+)/); return m ? m[1] : getParentDistName(dn); };
+            const shortOf = dn => dn.split('/').pop();
+            const p = (o, k) => getParamCaseInsensitive(o.params, k);
+            const val = v => isBlank(v) ? '<span style="color:var(--text-muted);">N/A</span>' : v;
+            const bad = t => `<span class="nbr-gsm-bad">${t}</span>`;
+
+            const nbIot = getNbIotLncelSet();
+            const allLncel = getMOsByClass('LNCEL').filter(c => !nbIot.has(c.distName)).sort((a, b) => naturalCompare(a.distName, b.distName));
+            const allLnadjg = getMOsByClass('LNADJG');
+            const allLnrelg = getMOsByClass('LNRELG');
+
+            const adjByKey = new Map();
+            allLnadjg.forEach(o => {
+                const key = `${btsOf(o.distName)}|${p(o, 'gTargetCi')}|${p(o, 'gTargetLac')}`;
+                if (!adjByKey.has(key)) adjByKey.set(key, o);
+            });
+
+            // ARFCN+BSIC duplicated among the LNADJG of one LNBTS.
+            const pairCount = new Map();
+            allLnadjg.forEach(o => {
+                const k = `${btsOf(o.distName)}|${p(o, 'arfcnValueGeran')}|${p(o, 'networkColourCode')}/${p(o, 'basestationColourCode')}`;
+                pairCount.set(k, (pairCount.get(k) || 0) + 1);
+            });
+
+            // ARFCNs in redirGeranArfcnStructL of each LNCEL's GSM REDRT.
+            const redrtArfcns = new Map();
+            getMOsByClass('REDRT').filter(r => String(p(r, 'redirRat') || '').toLowerCase() === 'geran').forEach(r => {
+                const cell = lncelOf(r.distName);
+                if (!redrtArfcns.has(cell)) redrtArfcns.set(cell, new Set());
+                ((r.lists && r.lists.redirGeranArfcnStructL) || []).forEach(item => {
+                    const v = getParamCaseInsensitive(item, 'redirGeranArfcnValue');
+                    if (!isBlank(v)) redrtArfcns.get(cell).add(String(v));
+                });
+            });
+
+            const relsByCell = new Map();
+            const usedAdj = new Set();
+            let issueCount = 0;
+            allLnrelg.forEach(rel => {
+                const cell = lncelOf(rel.distName);
+                const adj = adjByKey.get(`${btsOf(rel.distName)}|${p(rel, 'ci')}|${p(rel, 'lac')}`) || null;
+                if (adj) usedAdj.add(adj.distName);
+                const issues = [];
+                let arfcnMissing = false, dupPair = false;
+                if (!adj) issues.push('Orphan: no LNADJG with this CI/LAC');
+                else {
+                    const arfcn = p(adj, 'arfcnValueGeran');
+                    const redrt = redrtArfcns.get(cell);
+                    if (!isBlank(arfcn) && redrt && !redrt.has(String(arfcn))) { arfcnMissing = true; issues.push('ARFCN not in this LNCEL\'s REDRT redirGeranArfcnStructL'); }
+                    if (!redrt) issues.push('No GSM REDRT on this LNCEL');
+                    const k = `${btsOf(adj.distName)}|${arfcn}|${p(adj, 'networkColourCode')}/${p(adj, 'basestationColourCode')}`;
+                    if ((pairCount.get(k) || 0) > 1) { dupPair = true; issues.push('ARFCN+BSIC shared with another LNADJG'); }
+                }
+                if (issues.length > 0) issueCount++;
+                if (!relsByCell.has(cell)) relsByCell.set(cell, []);
+                relsByCell.get(cell).push({ rel, adj, issues, arfcnMissing, dupPair });
+            });
+
+            const cellsWithGsm = allLncel.filter(c => relsByCell.has(c.distName)).length;
+            const unused = allLnadjg.filter(o => !usedAdj.has(o.distName));
+            setTxt('nbrGsmTotalAdj', String(allLnadjg.length));
+            setTxt('nbrGsmTotalRel', String(allLnrelg.length));
+            setTxt('nbrGsmCellsSub', `${cellsWithGsm} of ${allLncel.length} LNCEL with GSM neighbors`);
+            setTxt('nbrGsmTotalIssues', String(issueCount));
+            setTxt('nbrGsmTotalUnused', String(unused.length));
+
+            const prevSel = select.value;
+            select.innerHTML = `<option value="">All LNCEL</option>` + allLncel.map(c => `<option value="${c.distName}">${shortOf(c.distName)}${p(c, 'cellName') ? ' — ' + p(c, 'cellName') : ''} (${(relsByCell.get(c.distName) || []).length})</option>`).join('');
+            if (allLncel.some(c => c.distName === prevSel)) select.value = prevSel;
+
+            const term = (document.getElementById('nbrGsmSearch').value || '').toLowerCase().trim();
+            const onlyIssues = document.getElementById('nbrGsmOnlyIssues').checked;
+            const cols = ['', 'LNRELG', 'LNADJG', 'Target CI', 'LAC', 'RAC', 'ARFCN', 'Band', 'BSIC (NCC/BCC)', 'eNACC', 'SRVCC', 'Redir w/ SI', 'RIM', 'DTM', 'Issues'];
+            const headHtml = `<thead><tr>${cols.map(c => `<th>${c}</th>`).join('')}</tr></thead>`;
+            if (thead) thead.outerHTML = headHtml; else table.insertAdjacentHTML('afterbegin', headHtml);
+
+            const rowsHtml = [];
+            allLncel.filter(c => !select.value || c.distName === select.value).forEach(cell => {
+                let rels = (relsByCell.get(cell.distName) || []).slice().sort((a, b) => naturalCompare(a.rel.distName, b.rel.distName));
+                if (onlyIssues) rels = rels.filter(r => r.issues.length > 0);
+                if (term) rels = rels.filter(r => {
+                    const a = r.adj;
+                    const hay = [shortOf(r.rel.distName), p(r.rel, 'ci'), p(r.rel, 'lac'), a && shortOf(a.distName), a && p(a, 'arfcnValueGeran'), a && `${p(a, 'networkColourCode')}/${p(a, 'basestationColourCode')}`].join(' ').toLowerCase();
+                    return hay.includes(term);
+                });
+                const total = (relsByCell.get(cell.distName) || []).length;
+                if ((onlyIssues || term) && rels.length === 0) return;
+                rowsHtml.push(`<tr><td class="nbr-gsm-group" colspan="${cols.length}">${shortOf(cell.distName)}${p(cell, 'cellName') ? ' — ' + p(cell, 'cellName') : ''}<small>${total} LNRELG</small></td></tr>`);
+                if (total === 0) {
+                    rowsHtml.push(`<tr><td colspan="${cols.length}" style="color:var(--text-muted); font-style:italic;">No GSM neighbor (LNRELG) on this LNCEL.</td></tr>`);
+                    return;
+                }
+                rels.forEach(r => {
+                    const a = r.adj;
+                    const bsic = a && !isBlank(p(a, 'networkColourCode')) && !isBlank(p(a, 'basestationColourCode')) ? `${p(a, 'networkColourCode')}/${p(a, 'basestationColourCode')}` : '';
+                    rowsHtml.push(`<tr>
+                        <td>${r.issues.length > 0 ? '❌' : '✅'}</td>
+                        <td>${shortOf(r.rel.distName)}</td>
+                        <td>${a ? shortOf(a.distName) : bad('none')}</td>
+                        <td>${val(p(r.rel, 'ci'))}</td>
+                        <td>${val(p(r.rel, 'lac'))}</td>
+                        <td>${a ? val(p(a, 'gTargetRac')) : val('')}</td>
+                        <td>${a ? (r.arfcnMissing ? bad(p(a, 'arfcnValueGeran')) : val(p(a, 'arfcnValueGeran'))) : val('')}</td>
+                        <td>${a ? val(p(a, 'bandIndicatorGeran')) : val('')}</td>
+                        <td>${r.dupPair ? bad(bsic) : val(bsic)}</td>
+                        <td>${val(p(r.rel, 'eNACCAllowed'))}</td>
+                        <td>${val(p(r.rel, 'srvccAllowed'))}</td>
+                        <td>${val(p(r.rel, 'redirWithSysInfoAllowed'))}</td>
+                        <td>${a ? val(p(a, 'rimStatus')) : val('')}</td>
+                        <td>${a ? val(p(a, 'dtm')) : val('')}</td>
+                        <td style="white-space:normal; min-width:180px;">${r.issues.length > 0 ? r.issues.map(bad).join('<br>') : '<span style="color:var(--ok);">OK</span>'}</td>
+                    </tr>`);
+                });
+            });
+            tbody.innerHTML = rowsHtml.length > 0 ? rowsHtml.join('') : `<tr><td colspan="${cols.length}" style="text-align:center; color:var(--text-muted); font-style:italic;">${allLncel.length === 0 ? 'No LNCEL found in this SCF.' : 'No relation matches the current filter.'}</td></tr>`;
+
+            if (unusedEl) {
+                unusedEl.innerHTML = unused.length === 0 ? '' : `
+                    <div style="padding:8px 10px 4px; font-weight:700; font-size:0.75rem; color:var(--warn);">Unused LNADJG (no LNRELG on any LNCEL points to them)</div>
+                    <table class="nbr-summary-table"><thead><tr><th>LNADJG</th><th>Target CI</th><th>LAC</th><th>RAC</th><th>ARFCN</th><th>Band</th><th>BSIC (NCC/BCC)</th></tr></thead><tbody>
+                    ${unused.sort((a, b) => naturalCompare(a.distName, b.distName)).map(a => `<tr><td>${a.distName.split('/').slice(-2).join('/')}</td><td>${val(p(a, 'gTargetCi'))}</td><td>${val(p(a, 'gTargetLac'))}</td><td>${val(p(a, 'gTargetRac'))}</td><td>${val(p(a, 'arfcnValueGeran'))}</td><td>${val(p(a, 'bandIndicatorGeran'))}</td><td>${val(isBlank(p(a, 'networkColourCode')) ? '' : `${p(a, 'networkColourCode')}/${p(a, 'basestationColourCode')}`)}</td></tr>`).join('')}
+                    </tbody></table>`;
+            }
         }
 
         function renderNeighborMappingDashboard() {
