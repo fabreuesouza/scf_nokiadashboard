@@ -510,7 +510,7 @@
 
         .container { display: flex; flex: 1; overflow: hidden; position: relative; padding: 8px; gap: 8px; min-height: 0; }
         .analytics-view { display: flex; flex: 1; width: 100%; height: 100%; overflow: hidden; gap: 8px; }
-        .stats-sidebar { width: max-content; min-width: 211px; max-width: 356px; background-color: var(--bg-card); border: 1px solid var(--border-color); border-radius: 8px; display: none; flex-direction: column; padding: 12px; gap: 8px; overflow-y: auto; flex-shrink: 0; box-shadow: var(--shadow-xs); }
+        .stats-sidebar { width: 280px; min-width: 211px; max-width: 45vw; background-color: var(--bg-card); border: 1px solid var(--border-color); border-radius: 8px; display: none; flex-direction: column; padding: 12px; gap: 8px; overflow-y: auto; flex-shrink: 0; box-shadow: var(--shadow-xs); }
         
         .kpi-card { background: var(--bg-subtle); border: 1px solid var(--border-color); border-radius: 6px; padding: 10px 12px; display: flex; flex-direction: column; gap: 6px; border-left: 3px solid transparent; }
         .card-2g { border-left-color: var(--tech-2g-main); background-color: var(--tech-2g-bg); }
@@ -525,7 +525,7 @@
         .badge-5g { background-color: var(--bg-card); border: 1px solid var(--tech-5g-border); color: var(--tech-5g-main); }
         .kpi-counter { font-size: 0.85rem; font-weight: 700; font-family: 'JetBrains Mono', monospace; color: var(--text-primary); white-space: nowrap; }
         .cell-chips-container { display: flex; flex-direction: column; gap: 4px; padding-top: 6px; border-top: 1px dashed var(--border-color-strong); }
-        .cell-chip { font-size: 0.7rem; padding: 4px 8px; border-radius: 4px; background: var(--bg-card); border: 1px solid var(--border-color); color: var(--text-secondary); font-family: 'JetBrains Mono', monospace; cursor: pointer; transition: all 0.15s ease; user-select: none; white-space: nowrap; display: block; }
+        .cell-chip { overflow: hidden; text-overflow: ellipsis; font-size: 0.7rem; padding: 4px 8px; border-radius: 4px; background: var(--bg-card); border: 1px solid var(--border-color); color: var(--text-secondary); font-family: 'JetBrains Mono', monospace; cursor: pointer; transition: all 0.15s ease; user-select: none; white-space: nowrap; display: block; }
         .cell-chip:hover { border-color: var(--brand-blue); color: var(--brand-blue); transform: translateX(2px); box-shadow: var(--shadow-xs); }
         .cell-chip strong { color: var(--text-primary); font-weight: 700; }
         
@@ -5244,6 +5244,7 @@ B1 (addition) and A2 (release) act on the same NR leg from opposite directions, 
             renderNrAnchoringDashboard();
             
             const sp = document.getElementById('statsPanel'); if (sp) sp.style.display = 'flex';
+            fitStatsPanelWidth();
             const sb = document.getElementById('sidebar'); if (sb) sb.style.display = 'flex';
             const tc = document.getElementById('treeControls'); if (tc) tc.style.display = 'flex';
             const mp = document.getElementById('mainPanel'); if (mp) mp.style.display = 'block';
@@ -6363,6 +6364,22 @@ B1 (addition) and A2 (release) act on the same NR leg from opposite directions, 
         // ============================================================
         // LNRELG <-> LNADJG link: same LNBTS + LNRELG ci/lac = LNADJG gTargetCi/gTargetLac
         // (same rule as the CSFB GERAN Target Cell Identity health check).
+        // Sizes the stats panel to its longest cell chip (LNCEL/WNCEL/NRCELL "id: name"), between 211px and 45% of the viewport;
+        // chips still too long after the cap are cut with an ellipsis and keep the full text in their tooltip.
+        function fitStatsPanelWidth() {
+            const sp = document.getElementById('statsPanel');
+            if (!sp || sp.style.display === 'none') return;
+            const chips = sp.querySelectorAll('.cell-chip');
+            let widest = 0;
+            chips.forEach(c => { widest = Math.max(widest, c.scrollWidth); if (!c.title) c.title = c.textContent; });
+            const card = sp.querySelector('.kpi-card');
+            const cardPad = card ? (card.offsetWidth - card.clientWidth) + parseFloat(getComputedStyle(card).paddingLeft) + parseFloat(getComputedStyle(card).paddingRight) : 30;
+            const panelPad = (sp.offsetWidth - sp.clientWidth) + parseFloat(getComputedStyle(sp).paddingLeft) + parseFloat(getComputedStyle(sp).paddingRight);
+            const target = Math.ceil(widest + cardPad + panelPad + 4);
+            sp.style.width = `${Math.min(Math.max(211, target), Math.floor(window.innerWidth * 0.45))}px`;
+        }
+        window.addEventListener('resize', () => fitStatsPanelWidth());
+
         function renderNeighborGsmAudit() {
             const table = document.getElementById('nbrGsmTable');
             const unusedEl = document.getElementById('nbrGsmUnused');
