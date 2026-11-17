@@ -1053,10 +1053,18 @@
                         <span class="mo-pill" onclick="event.stopPropagation(); quickFilterMoClass('LNADJW')">LNADJW: <strong id="moCntLnadjw">0</strong></span>
                         <span class="mo-pill" onclick="event.stopPropagation(); quickFilterMoClass('LNADJG')">LNADJG: <strong id="moCntLnadjg">0</strong></span>
                         <span class="mo-pill" onclick="event.stopPropagation(); quickFilterMoClass('LNRELG')">LNRELG: <strong id="moCntLnrelg">0</strong></span>
+                        <span class="mo-pill" onclick="event.stopPropagation(); quickFilterMoClass('LNADJN')">LNADJN: <strong id="moCntLnadjn">0</strong></span>
+                        <span class="mo-pill" onclick="event.stopPropagation(); quickFilterMoClass('LNADJNL')">LNADJNL: <strong id="moCntLnadjnl">0</strong></span>
+                        <span class="mo-pill" onclick="event.stopPropagation(); quickFilterMoClass('GFIM')">GFIM: <strong id="moCntGfim">0</strong></span>
+                        <span class="mo-pill" onclick="event.stopPropagation(); quickFilterMoClass('GNFL')">GNFL: <strong id="moCntGnfl">0</strong></span>
                         <span class="mo-pill" onclick="event.stopPropagation(); quickFilterMoClass('IRFIM')">IRFIM: <strong id="moCntIrfim">0</strong></span>
                         <span class="mo-pill" onclick="event.stopPropagation(); quickFilterMoClass('LNHOIF')">LNHOIF: <strong id="moCntLnhoif">0</strong></span>
                         <span class="mo-pill" onclick="event.stopPropagation(); quickFilterMoClass('LNHOW')">LNHOW: <strong id="moCntLnhow">0</strong></span>
                         <span class="mo-pill" onclick="event.stopPropagation(); quickFilterMoClass('LNHOG')">LNHOG: <strong id="moCntLnhog">0</strong></span>
+                        <span class="mo-pill" onclick="event.stopPropagation(); quickFilterMoClass('LNHON')">LNHON: <strong id="moCntLnhon">0</strong></span>
+                        <span class="mo-pill" onclick="event.stopPropagation(); quickFilterMoClass('NRMEASDPR')">NRMEASDPR: <strong id="moCntNrmeasdpr">0</strong></span>
+                        <span class="mo-pill" onclick="event.stopPropagation(); quickFilterMoClass('NRMEASPR')">NRMEASPR: <strong id="moCntNrmeaspr">0</strong></span>
+                        <span class="mo-pill" onclick="event.stopPropagation(); quickFilterMoClass('PSGRP')">PSGRP: <strong id="moCntPsgrp">0</strong></span>
                         <span class="mo-pill" onclick="event.stopPropagation(); quickFilterMoClass('ENDCDMEASCONF')">ENDCDMEAS: <strong id="moCntEndcd">0</strong></span>
                         <span class="mo-pill" onclick="event.stopPropagation(); quickFilterMoClass('RMOD')">RMOD: <strong id="moCntRmod">0</strong></span>
                         <span class="mo-pill" onclick="event.stopPropagation(); quickFilterMoClass('SMOD')">SMOD: <strong id="moCntSmod">0</strong></span>
@@ -4975,7 +4983,7 @@ B1 (addition) and A2 (release) act on the same NR leg from opposite directions, 
             let moCounts = {
                 GNBTS: 0, GNBCF: 0, GNCEL: 0,
                 WNBTS: 0, WNCEL: 0, WNCELG: 0, WNPMRNL: 0,
-                LNBTS: 0, LNCEL: 0, CAREL: 0, LNREL: 0, LNADJ: 0, LNADJGNB: 0, LNADJW: 0, LNADJL: 0, LNADJG: 0, LNRELG: 0, LNHOG: 0, IRFIM: 0, LNHOIF: 0, LNHOW: 0, ENDCDMEASCONF: 0, RMOD: 0, SMOD: 0, ALD: 0, RETU: 0, LNRELGNBCELL: 0,
+                LNBTS: 0, LNCEL: 0, CAREL: 0, LNREL: 0, LNADJ: 0, LNADJGNB: 0, LNADJW: 0, LNADJL: 0, LNADJG: 0, LNRELG: 0, LNHOG: 0, LNADJN: 0, LNADJNL: 0, GFIM: 0, GNFL: 0, LNHON: 0, NRMEASDPR: 0, NRMEASPR: 0, PSGRP: 0, IRFIM: 0, LNHOIF: 0, LNHOW: 0, ENDCDMEASCONF: 0, RMOD: 0, SMOD: 0, ALD: 0, RETU: 0, LNRELGNBCELL: 0,
                 NRBTS: 0, NRCELL: 0, NRADJNRCELL: 0, NRADJGNB: 0, NRREL: 0, XNLINK: 0
             };
 
@@ -5178,6 +5186,14 @@ B1 (addition) and A2 (release) act on the same NR leg from opposite directions, 
             setTxt('moCntLnadjg', moCounts.LNADJG);
             setTxt('moCntLnrelg', moCounts.LNRELG);
             setTxt('moCntLnhog', moCounts.LNHOG);
+            setTxt('moCntLnadjn', moCounts.LNADJN);
+            setTxt('moCntLnadjnl', moCounts.LNADJNL);
+            setTxt('moCntGfim', moCounts.GFIM);
+            setTxt('moCntGnfl', moCounts.GNFL);
+            setTxt('moCntLnhon', moCounts.LNHON);
+            setTxt('moCntNrmeasdpr', moCounts.NRMEASDPR);
+            setTxt('moCntNrmeaspr', moCounts.NRMEASPR);
+            setTxt('moCntPsgrp', moCounts.PSGRP);
             setTxt('moCntEndcd', moCounts.ENDCDMEASCONF);
             setTxt('moCntRmod', moCounts.RMOD);
             setTxt('moCntSmod', moCounts.SMOD);
