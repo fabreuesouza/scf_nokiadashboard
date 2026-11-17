@@ -1049,10 +1049,14 @@
                         <span class="mo-pill" onclick="event.stopPropagation(); quickFilterMoClass('LNREL')">LNREL: <strong id="moCntLnrel">0</strong></span>
                         <span class="mo-pill" onclick="event.stopPropagation(); quickFilterMoClass('LNADJ')">LNADJ: <strong id="moCntLnadj">0</strong></span>
                         <span class="mo-pill" onclick="event.stopPropagation(); quickFilterMoClass('LNADJGNB')">LNADJGNB: <strong id="moCntLnadjgnb">0</strong></span>
+                        <span class="mo-pill" onclick="event.stopPropagation(); quickFilterMoClass('LNADJL')">LNADJL: <strong id="moCntLnadjl">0</strong></span>
                         <span class="mo-pill" onclick="event.stopPropagation(); quickFilterMoClass('LNADJW')">LNADJW: <strong id="moCntLnadjw">0</strong></span>
+                        <span class="mo-pill" onclick="event.stopPropagation(); quickFilterMoClass('LNADJG')">LNADJG: <strong id="moCntLnadjg">0</strong></span>
+                        <span class="mo-pill" onclick="event.stopPropagation(); quickFilterMoClass('LNRELG')">LNRELG: <strong id="moCntLnrelg">0</strong></span>
                         <span class="mo-pill" onclick="event.stopPropagation(); quickFilterMoClass('IRFIM')">IRFIM: <strong id="moCntIrfim">0</strong></span>
                         <span class="mo-pill" onclick="event.stopPropagation(); quickFilterMoClass('LNHOIF')">LNHOIF: <strong id="moCntLnhoif">0</strong></span>
                         <span class="mo-pill" onclick="event.stopPropagation(); quickFilterMoClass('LNHOW')">LNHOW: <strong id="moCntLnhow">0</strong></span>
+                        <span class="mo-pill" onclick="event.stopPropagation(); quickFilterMoClass('LNHOG')">LNHOG: <strong id="moCntLnhog">0</strong></span>
                         <span class="mo-pill" onclick="event.stopPropagation(); quickFilterMoClass('ENDCDMEASCONF')">ENDCDMEAS: <strong id="moCntEndcd">0</strong></span>
                         <span class="mo-pill" onclick="event.stopPropagation(); quickFilterMoClass('RMOD')">RMOD: <strong id="moCntRmod">0</strong></span>
                         <span class="mo-pill" onclick="event.stopPropagation(); quickFilterMoClass('SMOD')">SMOD: <strong id="moCntSmod">0</strong></span>
@@ -4971,7 +4975,7 @@ B1 (addition) and A2 (release) act on the same NR leg from opposite directions, 
             let moCounts = {
                 GNBTS: 0, GNBCF: 0, GNCEL: 0,
                 WNBTS: 0, WNCEL: 0, WNCELG: 0, WNPMRNL: 0,
-                LNBTS: 0, LNCEL: 0, CAREL: 0, LNREL: 0, LNADJ: 0, LNADJGNB: 0, LNADJW: 0, IRFIM: 0, LNHOIF: 0, LNHOW: 0, ENDCDMEASCONF: 0, RMOD: 0, SMOD: 0, ALD: 0, RETU: 0, LNRELGNBCELL: 0,
+                LNBTS: 0, LNCEL: 0, CAREL: 0, LNREL: 0, LNADJ: 0, LNADJGNB: 0, LNADJW: 0, LNADJL: 0, LNADJG: 0, LNRELG: 0, LNHOG: 0, IRFIM: 0, LNHOIF: 0, LNHOW: 0, ENDCDMEASCONF: 0, RMOD: 0, SMOD: 0, ALD: 0, RETU: 0, LNRELGNBCELL: 0,
                 NRBTS: 0, NRCELL: 0, NRADJNRCELL: 0, NRADJGNB: 0, NRREL: 0, XNLINK: 0
             };
 
@@ -5170,6 +5174,10 @@ B1 (addition) and A2 (release) act on the same NR leg from opposite directions, 
             setTxt('moCntIrfim', moCounts.IRFIM);
             setTxt('moCntLnhoif', moCounts.LNHOIF);
             setTxt('moCntLnhow', moCounts.LNHOW);
+            setTxt('moCntLnadjl', moCounts.LNADJL);
+            setTxt('moCntLnadjg', moCounts.LNADJG);
+            setTxt('moCntLnrelg', moCounts.LNRELG);
+            setTxt('moCntLnhog', moCounts.LNHOG);
             setTxt('moCntEndcd', moCounts.ENDCDMEASCONF);
             setTxt('moCntRmod', moCounts.RMOD);
             setTxt('moCntSmod', moCounts.SMOD);
