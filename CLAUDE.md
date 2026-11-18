@@ -90,7 +90,7 @@ Use `grep -n` pelo nome da função em vez de confiar nos números.
 
 ## Agentes
 
-- `lte-agent` (`.claude/agents/lte-agent.md`): especialista LTE Nokia; analisa e recomenda melhorias em toda a parte LTE do viewer, usando o `nokia_database` e 3GPP como fonte. Só edita código se pedido.
+- `lte-agent` (`.claude/agents/lte-agent.md`): especialista LTE Nokia; analisa e recomenda melhorias em toda a parte LTE do viewer e escreve prompts prontos para busca de dados no SCF e organização na ferramenta, usando o `nokia_database` e 3GPP como fonte. Só edita código se pedido.
 
 ## Pendências / ideias
 
