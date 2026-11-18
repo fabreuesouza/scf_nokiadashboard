@@ -868,6 +868,8 @@
            produced the content. !important is intentional: it must win over each check's own inline
            margin-top/margin-bottom values scattered across many different functions. */
         #healthDetailModalOverlay .modal-content.wide { width: 1080px; }
+        #healthDetailBody .hc-guidance { margin: 6px 0 !important; padding: 6px 10px !important; border-left: 3px solid var(--amber); background: var(--warn-soft); border-radius: 4px; white-space: normal; font-family: var(--font-sans); line-height: 1.45 !important; }
+        #healthDetailBody .hc-guidance div { margin: 2px 0 !important; }
         #healthDetailBody { line-height: 1.3 !important; font-size: calc(0.76rem - 1px) !important; }
         #healthDetailBody .hc-detail-table { font-size: calc(0.7rem - 1px); }
         #healthDetailBody p { margin: 0 !important; line-height: 1.3 !important; }
@@ -978,7 +980,7 @@
     <!-- LINE 1: MAIN BRANDING & FILE ACTIONS HEADER -->
     <header>
         <div class="logo-area">
-            <h1>SCF Nokia Analytics <span class="logo-badge">Pro Suite</span> <span class="logo-badge" style="background:rgba(255,255,255,0.1); font-weight:600;">v2.12</span></h1>
+            <h1>SCF Nokia Analytics <span class="logo-badge">Pro Suite</span> <span class="logo-badge" style="background:rgba(255,255,255,0.1); font-weight:600;">v2.13</span></h1>
         </div>
         <div class="upload-area">
             <span class="summary-badge" id="site-summary">No SCF file loaded</span>
@@ -4490,6 +4492,75 @@ B1 (addition) and A2 (release) act on the same NR leg from opposite directions, 
             return { status: 'WARN', detail: `${rows.length} LNCEL locked or barred: ${rows.slice(0, 4).map(r => r.mo).join(', ')}${rows.length > 4 ? '…' : ''}`, fullDetail };
         }
 
+        // RF good-practice guidance shown above the detail table when a card is WARN/FAIL (typical values, not vendor mandates).
+        const HC_GUIDANCE = {
+            a1_serving_threshold: { why: `threshold2a is where the UE stops inter-freq/inter-RAT measurements (serving good again). A cell far from the site norm stops measuring too early (stays on a weak layer) or too late (wastes measurement gaps, lower throughput).`, ideal: `threshold2a ≈ −100dBm (40) on all cells of the same layer, threshold1 (s-Measure) at the default −50dBm (90).` },
+            a2_redirect_timers: { why: `Missing A2 time-to-trigger timers leave the eNB defaults in place, so measurement activation/redirect can react too fast (ping-pong) or too slow (drops).`, ideal: `a2TimeToTriggerActInterFreqMeas = 320ms, a2TimeToTriggerRedirect = 640ms, and WCDMA/GERAN activation timers (320–640ms) only when LNRELW/LNRELG exist.` },
+            a2_threshold_margin: { why: `If the stop threshold (threshold2a) is not clearly above the start thresholds, RSRP fluctuating around them switches measurement gaps on/off repeatedly (flapping, throughput loss).`, ideal: `threshold2a = −100dBm (40); threshold2InterFreq = −110dBm (30); threshold2Wcdma = −115dBm (25); threshold2GERAN = −118dBm (22) → ≥ 10dB margin to every start threshold.` },
+            a3_offset: { why: `The effective A3 margin (a3Offset + hysA3Offset) below ~1dB causes intra-freq ping-pong; above ~6dB the UE is held too long on a degrading cell (late HO, drops).`, ideal: `a3Offset = 3dB (6) + hysA3Offset = 1dB (2) → effective 4dB, with a3TimeToTrigger 320ms.` },
+            a4_load_balancing: { why: `A loadBalancingProfile without actIntraFreqLoadBal (or the reverse) means load balancing is either configured but never used, or enabled without a profile.`, ideal: `actIntraFreqLoadBal = true AND a valid loadBalancingProfile on every cell that should balance; both off on the others.` },
+            a5_ttt: { why: `A slow A5 time-to-trigger delays the coverage (emergency) HO when serving RSRP collapses — the UE drops before the HO is triggered.`, ideal: `a5TimeToTrigger ≤ 640ms; 320–480ms (ms320/ms480) is typical for coverage HO.` },
+            a5_interfreq_balance: { why: `A large gap between the A5 serving and neighbour thresholds either holds the UE on a bad layer or moves it to a target barely better than the source.`, ideal: `threshold3InterFreq = −112dBm (28) and threshold3aInterFreq = −108dBm (32) → target ~4dB better than the serving trigger (2–6dB window).` },
+            interfreq_coverage: { why: `A cell without LNHOIF has no inter-frequency HO profile: UEs at the cell edge can only drop or be redirected.`, ideal: `One LNHOIF per target EARFCN on every LNCEL of the site (e.g. L1800 cell with LNHOIF for L700 and L2600).` },
+            meas_report_config: { why: `Report interval/amount/quantity outside the usual values generates excessive signalling or too few reports to decide the HO.`, ideal: `reportInterval 240–480ms, reportAmount infinity (or r8), triggerQuantity RSRP, reportQuantity both (RSRP+RSRQ).` },
+            transmitted_ss_blocks: { why: `The number of transmitted SSBs must match the beams set in basicBeamSet, otherwise the UE expects beams that are not sent (or misses real ones) — initial access and beam management fail.`, ideal: `numberOfTransmittedSsBlocks equal to the number of '1' bits in basicBeamSet (e.g. 8 beams ↔ 11111111).` },
+            nbiot_capacity_alignment: { why: `NB-IoT capacity parameters off the recommended values reduce the number of devices served or the coverage-enhancement margin.`, ideal: `Use the vendor-recommended NB-IoT capacity set (same values on every NB-IoT carrier of the site).` },
+            expected_cell_size: { why: `expectedCellSize drives PRACH/timing-advance dimensioning: oversized values waste PRACH capacity on high bands; undersized values reject distant UEs on low bands.`, ideal: `High band (≥1800MHz): ≤ 10km (urban 2–5km); low band (700/850MHz): 10–30km depending on site distance.` },
+            earfcn_bw_alignment: { why: `The EARFCN must leave room for the whole channel bandwidth inside the band; otherwise the carrier overlaps the band edge or a neighbour carrier.`, ideal: `Centre EARFCN at least BW/2 from the band edges (e.g. 20MHz carrier ≥ 10MHz from the edge) and carriers not overlapping each other.` },
+            b1_csfb_timer: { why: `A slow B1 time-to-trigger delays CSFB call setup (higher call setup time).`, ideal: `b1TimeToTriggerCSFBUtraMeas ≤ 640ms; 256–320ms is typical for CSFB.` },
+            b2_csfb_thresholds: { why: `B2 serving threshold above the WCDMA A2 start can never fire as configured, because the UE isn't measuring 3G yet; the real trigger becomes threshold2Wcdma.`, ideal: `threshold2Wcdma = −115dBm (25), b2Threshold1Utra = −120dBm (20), b2Threshold2UtraRscp = −105dBm (10), b2Threshold2UtraEcn0 = −14dB (20).` },
+            srvcc_orphan: { why: `With SRVCC enabled, a cell without any 3G neighbour that allows SRVCC drops the VoLTE call when LTE coverage ends.`, ideal: `Every LNCEL has ≥ 1 LNRELW with srvccAllowed = true towards the co-located/overlapping 3G cells.` },
+            endc_nsa_leg: { why: `The B1 (NR add) threshold must be 3–8dB above the A2 (NR release) threshold: smaller margin → EN-DC add/release ping-pong; bigger margin → late NR add.`, ideal: `b1ThresholdNrRsrp = −110dBm (46) and a2ThresholdReleaseSsbRsrp = −116dBm (40) → Δ = +6dB.` },
+            lte_nr_tac_alignment: { why: `In EN-DC the LTE anchor TAC must match the NR configuredEpsTac, otherwise paging/TAU and NR cell identity checks fail.`, ideal: `LNCEL tac = NRCELL configuredEpsTac (e.g. both 5501) on every co-located anchor.` },
+            inactivity_timer_alignment: { why: `Different LTE and NSA inactivity timers release one leg earlier than the other, causing extra RRC transitions and EN-DC re-setup.`, ideal: `LNCEL inactivityTimer = NRBTS nsaInactivityTimer (e.g. both 10s).` },
+            redirect_3g: { why: `Redirect enabled without REDRT targets (or REDRT present with redirect off) means the UE has no 3G fallback at LTE coverage loss.`, ideal: `LNBTS actRedirect enabled + REDRT with redirRat = utraFDD and the 3G UARFCNs of the area on every LNCEL.` },
+            redirect_gsm: { why: `Same as 3G: without a coherent GSM REDRT the UE can't be redirected to 2G at the LTE edge / CSFB.`, ideal: `actRedirect enabled + REDRT redirRat = geran with redirGeranArfcnStructL listing the BCCH ARFCNs of the overlapping GSM cells.` },
+            csfb_geran_target_identity: { why: `Incomplete LNADJG identity, ARFCNs missing from REDRT or duplicated ARFCN+BSIC make CSFB/redirect to GSM land on the wrong or an unknown cell.`, ideal: `Each LNADJG with CI/LAC/RAC/ARFCN/band/BSIC filled, its ARFCN present in redirGeranArfcnStructL of the related LNCEL, and a unique ARFCN+BSIC pair per LNBTS.` },
+            csfb_geran_admission: { why: `If the B2-GERAN RSSI trigger is below the GSM cell admission floor (qRxLevMinGer), the UE is sent to a GSM cell it can't camp on.`, ideal: `b2Threshold2RssiGERAN ≈ −100dBm (10) ≥ qRxLevMinGer ≈ −105dBm, i.e. the trigger at least 3–5dB above the admission floor.` },
+            redirect_nr_to_lte: { why: `NR→LTE redirect enabled without NRREDRT (or the reverse) leaves NR UEs without a defined LTE fallback at NR coverage loss.`, ideal: `NRBTS actRedirect enabled + NRREDRT pointing to the anchor LTE EARFCN(s).` },
+            anr_interfreq: { why: `Without UE-based inter-freq ANR, missing inter-freq neighbours are never learned automatically.`, ideal: `actUeBasedAnrInterFreqLte = true on every LNBTS (with neighbour cleanup policy active).` },
+            twin_beam_sectors: { why: `Twin-beam sectors need consistent configuration on both beams; inconsistencies split the sector unevenly.`, ideal: `Both beams with the same EARFCN/BW/power settings and mirrored azimuth/tilt planning.` },
+            blocked_handover_relations: { why: `Relations with handover blocked prevent HO to that neighbour; unless intentional (border/blacklist) this causes drops.`, ideal: `handoverAllowed = allowed on all LNREL except documented blacklist relations.` },
+            ca_events: { why: `CAPR with A3/A6 disabled cannot add or swap the SCell when the radio changes, reducing CA usage.`, ideal: `A3 and A6 events enabled in every CAPR (e.g. a6Offset 2–3dB).` },
+            ca_coverage: { why: `Cells without CAPR are excluded from carrier aggregation, losing peak/average throughput.`, ideal: `One CAPR on every LNCEL that has co-located carriers to aggregate.` },
+            pcell_swap: { why: `Without PCell swap the UE keeps a weak PCell even when the SCell is better, degrading CA performance.`, ideal: `PCell swap allowed (true) on all CAREL of CA-capable cells.` },
+            volte_quality: { why: `A missing/inconsistent VoLTE quality profile disables the quality-triggered mobility for voice.`, ideal: `VOLTEQUALPR configured and referenced, with thresholds aligned to the coverage plan.` },
+            volte_srvcc: { why: `Without any SRVCC destination VoLTE calls drop at the edge of LTE coverage.`, ideal: `SRVCC to WCDMA and/or GSM enabled where 2G/3G coverage exists.` },
+            volte_interfreq: { why: `With VoLTE inter-freq mobility disabled, voice UEs can't move to another LTE layer on quality degradation.`, ideal: `actVoLTEQualInterFreqMobility = true on multi-layer sites.` },
+            volte_rrc_reest: { why: `VoLTE RLF timers shorter than the SIB defaults make voice UEs declare radio link failure earlier than data UEs.`, ideal: `SIB t310 = 1000ms / n310 = n10 and t310Qci1 = 2000ms / n310Qci1 = n20 (voice at least as tolerant as data).` },
+            bler_targets: { why: `Non-standard BLER targets trade throughput for robustness in the wrong direction (too aggressive → retransmissions, too conservative → low MCS).`, ideal: `Data ≈ 10% initial BLER target; VoLTE (QCI1) ≈ 1–2%.` },
+            prach_random_access: { why: `Non-standard Cat-M PRACH settings reduce access success for low-cost devices in coverage enhancement.`, ideal: `Vendor-recommended Cat-M PRACH set, with repetition levels matching the CE levels in use.` },
+            rlc_pdcp_profile: { why: `Invalid RLC/PDCP profile references make bearer setup fail for the affected QCI.`, ideal: `Every QCI referenced on the cell points to an existing RLC/PDCP profile.` },
+            harq_initial_mcs: { why: `Aggressive initial MCS or HARQ settings for delay-sensitive QCIs increase retransmissions and voice quality issues.`, ideal: `Conservative initial MCS for QCI1 (robust start), HARQ max transmissions per vendor default (e.g. 5 DL / 7 UL).` },
+            dl_rs_boost: { why: `An RS boost is only power-neutral when a matching pB exists; any other value leaves the RS symbols over/under the PA budget. Boost at 0dB with allowPbIndexZero=false wastes ~1dB of PDSCH power.`, ideal: `dlRsBoost = 0dB with allowPbIndexZero = true (pB0), or dlRsBoost = 3dB (pB1) when RS coverage must be extended; dlpcMimoComp aligned with the MIMO mode.` },
+            dl_cell_pwr_red: { why: `A power reduction shrinks the cell; it should only exist when planned (interference control, small cells).`, ideal: `dlCellPwrRed = 0dB (0) unless a planned reduction is documented.` },
+            qrxlevmin_access: { why: `A qrxlevmin above −110dBm cuts camping coverage; cells of the same EARFCN with very different values create uneven idle borders.`, ideal: `qrxlevmin = −124 to −130dBm, the same value on all cells of the same EARFCN; qRxLevMinOffset = 0dB.` },
+            nr_csirs_ssb_alignment: { why: `CSI-RS should not be weaker than the SSB by design; otherwise CSI reports underestimate the channel.`, ideal: `csirsPower ≥ ssPbchBlockPower + 3dB.` },
+            nr_tilt_offset: { why: `An NR tilt offset different from the plan changes the NR footprint vs. the LTE anchor.`, ideal: `NR tilt offset per the RF design (typically 0 when the NR antenna follows the anchor tilt).` },
+            power_saving_4g: { why: `Power-saving features switch carriers/MIMO off at low traffic; verify the schedule and thresholds are intended.`, ideal: `Power saving only on capacity layers, never on the coverage layer, with a night window (e.g. 01:00–06:00).` },
+            power_saving_nr: { why: `NR power saving switches NR resources off at low traffic; check it doesn't hit busy hours.`, ideal: `NR power saving restricted to low-traffic windows, coverage layer always on.` },
+            idle_connected_coherence: { why: `Idle UEs start inter-freq measurements at qrxlevmin + sNonIntrsearch; connected UEs at threshold2InterFreq. A big gap means idle and connected UEs leave the layer at very different RSRP (layer imbalance).`, ideal: `qrxlevmin −124dBm + sNonIntrsearch 10dB = −114dBm vs threshold2InterFreq −112dBm (28) → Δ ≈ −2dB (within ±6dB).` },
+            a5_vs_a2_activation: { why: `The A5 serving threshold above the A2 start can't trigger as configured, because measurements only start at A2; the HO happens later than planned.`, ideal: `threshold3InterFreq = −112dBm (28) ≤ threshold2InterFreq = −110dBm (30).` },
+            intrafreq_a5: { why: `threshold3a below threshold3 allows a coverage HO to a neighbour weaker than the serving cell; a gap > 6dB delays the coverage HO.`, ideal: `threshold3 = −116dBm (24), threshold3a = −112dBm (28) → Δ = +4dB; hysThreshold3 = 0–1dB.` },
+            cio_asymmetry: { why: `Large CIOs shift HO borders strongly; asymmetric co-site pairs move the border differently in each direction (ping-pong or one-way traffic).`, ideal: `cellIndOffNeigh = 0dB by default, ±1–3dB only for tuned relations, and the same value in A→B and B→A.` },
+            reselection_priority_map: { why: `A carrier announced with different priorities (SIB serving vs IRFIM target) makes idle UEs bounce between layers.`, ideal: `One priority per EARFCN everywhere, e.g. L700 = 3, L1800 = 5, L2600 = 6 in every SIB cellReSelPrio and IRFIM eutCelResPrio.` },
+            tac_consistency: { why: `Different TACs inside the same site cause tracking-area updates at sector borders (signalling, paging misses).`, ideal: `Single TAC per site (all LNCEL of the LNBTS with the same tac); TAC borders placed between sites in low-traffic areas.` },
+            pci_mod_cosite: { why: `Same PCI mod 3 on co-site cells of one EARFCN makes their CRS collide (SINR/CQI loss); same mod 30 collides UL DMRS.`, ideal: `Co-site sectors with PCIs 3k, 3k+1, 3k+2 (e.g. 30/31/32) and different mod 30 values.` },
+            prach_root_overlap: { why: `Overlapping root-sequence ranges make co-site cells share preambles: false RACH detections and access failures.`, ideal: `rootSeqIndex spaced by at least the roots each cell uses (prachCS 12 → Ncs 119 → 10 roots: e.g. 0 / 10 / 20 on the three sectors).` },
+            locked_barred_cells: { why: `Locked or barred cells carry no traffic; check they are intentionally out of service.`, ideal: `All planned cells unlocked and SIB cellBarred = notBarred; locked cells only during maintenance/swap.` }
+        };
+
+        // Inserts the guidance block right after the card's summary sentence (before its table / line list).
+        function addHcGuidance(id, result) {
+            const g = HC_GUIDANCE[id];
+            if (!g || (result.status !== 'WARN' && result.status !== 'FAIL')) return result;
+            const block = `\n<div class="hc-guidance"><div><strong>Why it matters:</strong> ${g.why}</div><div><strong>Ideal setup (RF good practice):</strong> ${g.ideal}</div></div>`;
+            const full = result.fullDetail || result.detail || '';
+            const cut = full.search(/\n|<div|<table|<strong>/);
+            const fullDetail = cut > 0 ? full.slice(0, cut) + block + full.slice(cut) : full + block;
+            return { ...result, fullDetail };
+        }
+
         const HEALTH_CHECKS = [
             { id: 'a1_serving_threshold', category: 'Mobility (LTE Events)', icon: 'antenna', title: 'A1 Stop Inter-Freq/RAT Meas (threshold2a)', run: checkA1ServingGoodSignalThreshold },
             { id: 'a2_redirect_timers', category: 'Mobility (LTE Events)', icon: 'antenna', title: 'A2 Redirect & Trigger Timers', run: checkA2RedirectTriggerTimers },
@@ -4598,7 +4669,7 @@ B1 (addition) and A2 (release) act on the same NR leg from opposite directions, 
                 lockedSet
             };
 
-            const results = HEALTH_CHECKS.map(chk => ({ ...chk, result: chk.run(ctx) }));
+            const results = HEALTH_CHECKS.map(chk => ({ ...chk, result: addHcGuidance(chk.id, chk.run(ctx)) }));
             if (lockedLncel.length > 0) {
                 const lockedNote = `\n\n<strong>🔒 Locked cells skipped (N/A)</strong>` + renderHcDetailTable([{ key: 'icon', label: '' }, { key: 'mo', label: 'LNCEL', mono: true }, { key: 'name', label: 'cellName' }, { key: 'status', label: 'Status' }],
                     lockedLncel.map(c => ({ icon: '🔒', mo: hcShort(c.distName), name: getParamCaseInsensitive(c.params, 'cellName') || '', status: 'N/A' })));
