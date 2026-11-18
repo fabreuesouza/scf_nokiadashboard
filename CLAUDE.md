@@ -5,7 +5,7 @@ Leia isto antes de qualquer tarefa. Este arquivo é carregado automaticamente em
 ## O projeto
 
 - Ferramenta web **de arquivo único**: `NokiaSCF_ReaderDashboard_v2.08.html` (~8.8k linhas, HTML + CSS + JS inline, sem build, sem dependências além de Google Fonts).
-- Lê arquivos SCF (XML de configuração de sites Nokia LTE/NR) no navegador e gera módulos de análise. Versão exibida no header: **v2.10** (o nome do arquivo continua `_v2.08.html`).
+- Lê arquivos SCF (XML de configuração de sites Nokia LTE/NR) no navegador e gera módulos de análise. Versão exibida no header: **v2.14** (o nome do arquivo continua `_v2.08.html`).
 - O dono trabalha com engenharia/otimização de redes Nokia. Comunicação em **português**; código, comentários e commits em **inglês**.
 
 ## Fluxo de trabalho combinado (fazer sempre, sem perguntar)
@@ -68,9 +68,15 @@ Use `grep -n` pelo nome da função em vez de confiar nos números.
 | `b1ThresholdNrRsrp` (ENDCDMEASCONF) | dBm = raw − 156 |
 | `a2ThresholdReleaseSsbRsrp` (NRCELL) | dBm = raw − 156 (TS 38.133) |
 | `threshold1`, `threshold2a`, `threshold2InterFreq`, `threshold3(a)InterFreq` | dBm = raw − 140 |
-| `a3offset` | dB = raw / 2 |
+| `a3Offset`, `hysA3Offset`, `hysThreshold3` (LNCEL) | dB = raw / 2 |
+| `b2Threshold2UtraRscp` (LNHOW) | dBm = raw − 115 |
+| `b2Threshold2UtraEcn0` (LNHOW) | dB = raw / 2 − 24 |
+| `threshold2Wcdma`, `threshold2GERAN`, `threshold3`, `threshold3a` (LNCEL) | dBm = raw − 140 |
 | `pMax` | dBm = raw / 10 |
 | `dlCellPwrRed` | dB = raw / 10 |
+| `dlpcMimoComp` (LNCEL_FDD) | dB = raw / 100 |
+| `dlRsBoost` | enum (`dB3`, `dB1_77`…) → lido com `hcDbEnum` |
+| pB (derivado) | `getEffectivePbIndex(boost, allowPbIndexZero)`; B no_RS = A + 10·log10(ρB/ρA) via `parsePbToDb(allowPbIndexZero, dlRsBoost)` |
 | `b2Threshold2RssiGERAN` | dBm = raw − 110 |
 
 ## Regras de negócio já decididas
@@ -86,6 +92,18 @@ Use `grep -n` pelo nome da função em vez de confiar nos números.
 - **Cell → RET** (`buildAntlRetuMap`, `formatCellRet`): `ALD-x/RETU-y.antlDNList` lista as ANTL do RMOD; cruzando com as ANTL da célula obtém-se o tilt. `angle` em 0.1° (110 → 11.0°). NR (PHYANT) normalmente sem RETU → N/A.
 - **Power & Footprint**: células NB-IoT (LNCEL com filho NBIOT_FDD) ocultas da tabela e dos filtros (`getPowerVisibleDataset`); filtros laterais por Sector (ANTL-1/2→1, 3/4→2, 5/6→3; só LTE) e RMOD; colunas: Cell, RMOD, RET Tilt, Bandwidth, PMax, PwrRed, DL RS Boost, qrxLevMin (SIB-0), Power (W), Spectral Density, Symbol Level (LTE: 3 linhas — RE Type A, B RS, B no_RS, mesmas fórmulas do Boost Analytics; NR: só A), FSPL (f e d = 0.5 km em cinza na célula).
 - **Neighbor Analytics → Audit GSM** (`renderNeighborGsmAudit`, view `neighborGsmView`, tab `neighborGsm`): por LNCEL, lista as LNRELG resolvidas para a LNADJG (mesma regra LNBTS + CI/LAC). Colunas: LNRELG, LNADJG, CI, LAC, RAC, ARFCN, Band, BSIC, eNACC, SRVCC, Redir w/ SI, RIM, DTM, Issues. Issues: LNRELG órfã, ARFCN fora do REDRT GSM do LNCEL, ARFCN+BSIC duplicado. Cabeçalho de colunas repetido sob cada linha de LNCEL (que mostra também o TAC). Tabela extra de LNADJG não usadas. Ordem do menu: Audit, Audit GSM, Mapping. GSM → LTE não existe no SCF (precisa do dump da BSC).
+- **Health Check — revisão LTE (v2.11)**:
+  - Células LNCEL com `administrativeState=locked` são excluídas de todos os checks (e seus filhos); cada card lista as locked com 🔒 / N/A e há um chip no topo. Card próprio "Locked / Barred Cells".
+  - A3: margem efetiva = a3Offset + hysA3Offset (dB); WARN fora de 1–6 dB.
+  - dlRsBoost: boost ≠ 0 continua WARN; o pB é derivado (36.213 Tab. 5.2-1, 2/4 Tx): 0dB→pB0 (pB1 se `allowPbIndexZero=false`, WARN legado), 3dB→pB1, 4.77dB→pB2, 6dB→pB3; qualquer outro boost (ou negativo) → FAIL (Critical).
+  - A2 Stop/Start Margin: threshold2a ≥ max(threshold2InterFreq, threshold2Wcdma se há LNRELW, threshold2GERAN se há LNRELG) + 3 dB, senão FAIL.
+  - B2 UTRA: WARN se b2Threshold1Utra > threshold2Wcdma do LNCEL.
+  - qrxlevmin: mostra piso efetivo (qrxlevmin + qRxLevMinOffset); WARN se > −110 dBm ou > 6 dB da mediana da mesma EARFCN.
+  - VoLTE t310/n310: WARN se t310Qci1/n310Qci1 < t310/n310 do SIB.
+  - Novos cards: Idle↔Connected Inter-Freq Trigger (|Δ| > 6 dB WARN), A5 Inter-Freq vs A2 Activation (FAIL se threshold3InterFreq > threshold2InterFreq), Intra-Freq A5 (threshold3a − threshold3 fora de 0–6 dB WARN), CIO Range & Asymmetry (|CIO| > 6 dB ou par co-site assimétrico WARN), Reselection Priority Map (mesma EARFCN com prioridades diferentes SIB/IRFIM → FAIL), TAC Consistency per Site, PCI Mod-3/Mod-30 co-site (mesmo PCI ou mod 3 → FAIL, mod 30 → WARN), PRACH Root Sequence Overlap (faixas sobrepostas → FAIL, Ncs pela Tab. 5.7.2-2), Locked/Barred Cells.
+  - Helpers compartilhados: `hcTtt`, `hcDbEnum`, `hcCellEarfcn`, `hcSibOf`, `hcBtsOf`, `hcLncelOf`.
+- **Guidance nos cards** (`HC_GUIDANCE`, `addHcGuidance`): quando o status é WARN/FAIL, o detalhe ganha um bloco âmbar logo após o resumo com "Why it matters" e "Ideal setup (RF good practice)" com valores típicos (dBm(raw)). Card novo → adicionar entrada no `HC_GUIDANCE`.
+- **EARFCN junto do LNCEL**: toda tabela do detalhe do Health Check que lista LNCEL ganha a coluna EARFCN logo após a coluna da célula (`hcAddEarfcnColumns`, aplicado no modal; tabelas que já têm EARFCN ficam como estão).
 - **Modal do Health Check**: 1080px de largura; fonte do detalhe `calc(0.76rem - 1px)`, tabela `calc(0.7rem - 1px)`.
 
 ## Agentes

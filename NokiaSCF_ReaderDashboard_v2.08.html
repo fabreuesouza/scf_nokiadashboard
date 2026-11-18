@@ -868,6 +868,8 @@
            produced the content. !important is intentional: it must win over each check's own inline
            margin-top/margin-bottom values scattered across many different functions. */
         #healthDetailModalOverlay .modal-content.wide { width: 1080px; }
+        #healthDetailBody .hc-guidance { margin: 6px 0 !important; padding: 6px 10px !important; border-left: 3px solid var(--amber); background: var(--warn-soft); border-radius: 4px; white-space: normal; font-family: var(--font-sans); line-height: 1.45 !important; }
+        #healthDetailBody .hc-guidance div { margin: 2px 0 !important; }
         #healthDetailBody { line-height: 1.3 !important; font-size: calc(0.76rem - 1px) !important; }
         #healthDetailBody .hc-detail-table { font-size: calc(0.7rem - 1px); }
         #healthDetailBody p { margin: 0 !important; line-height: 1.3 !important; }
@@ -978,7 +980,7 @@
     <!-- LINE 1: MAIN BRANDING & FILE ACTIONS HEADER -->
     <header>
         <div class="logo-area">
-            <h1>SCF Nokia Analytics <span class="logo-badge">Pro Suite</span> <span class="logo-badge" style="background:rgba(255,255,255,0.1); font-weight:600;">v2.10</span></h1>
+            <h1>SCF Nokia Analytics <span class="logo-badge">Pro Suite</span> <span class="logo-badge" style="background:rgba(255,255,255,0.1); font-weight:600;">v2.14</span></h1>
         </div>
         <div class="upload-area">
             <span class="summary-badge" id="site-summary">No SCF file loaded</span>
@@ -2048,27 +2050,59 @@
         // Each check receives a shared "ctx" object with pre-collected MO lists and returns
         // { status: 'OK' | 'WARN' | 'FAIL' | 'NA', detail: '<short human-readable summary>' }.
 
+        // ---- Shared helpers for Health Check cards ----
+        const hcBlank = v => v === undefined || v === null || v === '';
+        const hcShort = dn => String(dn).split('/').pop();
+        const hcBtsOf = dn => { const m = String(dn).match(/^(.*?LNBTS-[^/]+)/); return m ? m[1] : dn; };
+        const hcLncelOf = dn => { const m = String(dn).match(/^(.*?LNCEL-[^/]+)/); return m ? m[1] : getParentDistName(dn); };
+        // Time-to-trigger enums ("ms640", "640ms") -> { ms, text: "640ms(ms640)" }.
+        function hcTtt(raw) {
+            if (hcBlank(raw)) return { ms: NaN, text: 'N/A' };
+            const ms = parseInt(String(raw).replace(/[^\d]/g, ''), 10);
+            return { ms, text: isNaN(ms) ? String(raw) : (String(raw) === `${ms}ms` ? `${ms}ms` : `${ms}ms(${raw})`) };
+        }
+        // Enum-like dB values ("dB3", "3dB", "dB1_77", "-3") -> number in dB.
+        function hcDbEnum(raw) {
+            if (hcBlank(raw)) return NaN;
+            const m = String(raw).replace(/_/g, '.').match(/-?\d+(\.\d+)?/);
+            return m ? parseFloat(m[0]) : NaN;
+        }
+        function hcCellEarfcn(lncelDist) {
+            const fdd = lncelFddParams[lncelDist] || {};
+            return fdd.earfcnDL !== undefined && fdd.earfcnDL !== '' ? String(fdd.earfcnDL) : null;
+        }
+        function hcSibOf(lncelDist) {
+            return getMOsByClass('SIB').find(o => getParentDistName(o.distName) === lncelDist) || null;
+        }
+
+        // a3Offset and hysA3Offset (LNCEL) are stored as UI*2 (0.5 dB steps). A3 entry condition (TS 36.331 §5.5.4.4):
+        // Mn + Ocn - Hys > Mp + Off, so the effective margin the neighbour must exceed is Off + Hys.
         function checkA3OffsetIntraFreq(ctx) {
             if (ctx.allLncel.length === 0) return { status: 'NA', detail: 'No LNCEL found in this SCF.' };
-            let warnCount = 0;
+            const MIN_DB = 1, MAX_DB = 6;
+            let warnCount = 0, evaluated = 0;
             const examples = [];
-            const lines = [];
+            const tableRows = [];
             ctx.allLncel.forEach(cell => {
-                const label = cell.distName.split('/').pop();
-                const raw = getParamCaseInsensitive(cell.params, 'a3Offset');
-                const val = parseInt(raw, 10);
-                if (isNaN(val)) { lines.push(`➖ <strong>${label}</strong>: \na3Offset not found`); return; }
-                if (val <= 0 || val > 16) {
-                    warnCount++;
-                    if (examples.length < 3) examples.push(`${label}=${val}`);
-                    lines.push(`⚠️ <strong>${label}</strong>: \na3Offset=${val} (out of 1–16 range)`);
-                } else {
-                    lines.push(`✅ <strong>${label}</strong>: \na3Offset=${val} (OK)`);
-                }
+                const label = hcShort(cell.distName);
+                const offRaw = parseFloat(getParamCaseInsensitive(cell.params, 'a3Offset'));
+                const hysRawStr = getParamCaseInsensitive(cell.params, 'hysA3Offset');
+                const hysRaw = hcBlank(hysRawStr) ? 0 : parseFloat(hysRawStr);
+                if (isNaN(offRaw)) { tableRows.push({ icon: '➖', mo: label, off: 'not found', hys: 'N/A', eff: 'N/A', status: 'N/A' }); return; }
+                evaluated++;
+                const offDb = offRaw / 2, hysDb = (isNaN(hysRaw) ? 0 : hysRaw) / 2, eff = offDb + hysDb;
+                const flagged = eff < MIN_DB || eff > MAX_DB;
+                if (flagged) { warnCount++; if (examples.length < 3) examples.push(`${label}=${eff}dB`); }
+                tableRows.push({ icon: flagged ? '⚠️' : '✅', mo: label, off: `${offDb}dB(${offRaw})`, hys: hcBlank(hysRawStr) ? '0dB (default)' : `${hysDb}dB(${hysRaw})`, eff: `${eff}dB${flagged ? (eff < MIN_DB ? ' — ping-pong risk' : ' — late HO risk') : ''}`, status: flagged ? 'WARN' : 'OK' });
             });
-            const fullDetail = `${warnCount} of ${ctx.allLncel.length} LNCEL with a3Offset out of the recommended 1–16 range.\n\n${lines.join('\n')}`;
-            if (warnCount === 0) return { status: 'OK', detail: `All ${ctx.allLncel.length} LNCEL have a3Offset within the recommended 1–16 range.`, fullDetail };
-            return { status: 'WARN', detail: `${warnCount} of ${ctx.allLncel.length} LNCEL with a3Offset ≤0 or >16 (ping-pong / delayed HO risk). e.g: ${examples.join(', ')}${warnCount > examples.length ? '…' : ''}`, fullDetail };
+            if (evaluated === 0) return { status: 'NA', detail: 'a3Offset not found in any LNCEL.' };
+            const summary = `${evaluated - warnCount} of ${evaluated} LNCEL have an effective A3 margin (a3Offset + hysA3Offset) within ${MIN_DB}–${MAX_DB}dB. Both are stored as dB×2 (a3Offset raw 6 = 3dB).`;
+            const fullDetail = summary + renderHcDetailTable([
+                { key: 'icon', label: '' }, { key: 'mo', label: 'LNCEL', mono: true }, { key: 'off', label: 'a3Offset', mono: true },
+                { key: 'hys', label: 'hysA3Offset', mono: true }, { key: 'eff', label: 'Effective margin', mono: true }, { key: 'status', label: 'Status' }
+            ], tableRows);
+            if (warnCount === 0) return { status: 'OK', detail: summary, fullDetail };
+            return { status: 'WARN', detail: `${warnCount} of ${evaluated} LNCEL with effective A3 margin outside ${MIN_DB}–${MAX_DB}dB (ping-pong / late HO risk). e.g: ${examples.join(', ')}${warnCount > examples.length ? '…' : ''}`, fullDetail };
         }
 
         function checkA5TimeToTrigger(ctx) {
@@ -2084,10 +2118,10 @@
                 if (isNaN(ms)) { lines.push(`➖ <strong>${label}</strong>: \na5TimeToTrigger=${raw} (unparseable)`); return; }
                 if (ms > 1000) {
                     warnCount++;
-                    if (examples.length < 3) examples.push(`${label}=${raw}`);
-                    lines.push(`⚠️ <strong>${label}</strong>: \na5TimeToTrigger=${raw} (slower than 1000ms)`);
+                    if (examples.length < 3) examples.push(`${label}=${hcTtt(raw).text}`);
+                    lines.push(`⚠️ <strong>${label}</strong>: \na5TimeToTrigger=${hcTtt(raw).text} (slower than 1000ms)`);
                 } else {
-                    lines.push(`✅ <strong>${label}</strong>: \na5TimeToTrigger=${raw} (OK)`);
+                    lines.push(`✅ <strong>${label}</strong>: \na5TimeToTrigger=${hcTtt(raw).text} (OK)`);
                 }
             });
             const fullDetail = `${warnCount} of ${ctx.allLncel.length} LNCEL with A5 reaction slower than 1000ms.\n\n${lines.join('\n')}`;
@@ -3037,94 +3071,81 @@
             block.classList.toggle('expanded');
         }
 
+        // t310Qci1/n310Qci1 (LNCEL, LTE1569) overwrite the SIB2 t310/n310 for UEs with a QCI1 bearer. VoLTE should be at
+        // least as tolerant as the default (QCI1 >= SIB), otherwise voice UEs declare RLF earlier than data UEs.
         function checkT310N310Qci1(ctx) {
             if (ctx.allLncel.length === 0) return { status: 'NA', detail: 'No LNCEL found in this SCF.' };
-
             const issues = [];
             const tableRows = [];
             let evaluated = 0;
-
+            const num = v => { const m = String(v ?? '').match(/\d+/); return m ? parseInt(m[0], 10) : NaN; };
             ctx.allLncel.forEach(cell => {
-                const lncelShort = cell.distName.split('/').pop();
-                const lncelCellName = getParamCaseInsensitive(cell.params, 'cellName') || 'N/A';
-
-                const t310Raw = getParamCaseInsensitive(cell.params, 't310qci1');
-                const n310Raw = getParamCaseInsensitive(cell.params, 'n310qci1');
-
-                if ((t310Raw === undefined || t310Raw === null || t310Raw === '') &&
-                    (n310Raw === undefined || n310Raw === null || n310Raw === '')) {
-                    tableRows.push({ icon: '⚪', lncel: lncelShort, cellName: lncelCellName, t310: 'N/A', n310: 'N/A', status: 'N/A' });
-                    return;
-                }
+                const label = hcShort(cell.distName);
+                const t310q = getParamCaseInsensitive(cell.params, 't310Qci1');
+                const n310q = getParamCaseInsensitive(cell.params, 'n310Qci1');
+                const sib = hcSibOf(cell.distName);
+                const t310s = sib ? getParamCaseInsensitive(sib.params, 't310') : undefined;
+                const n310s = sib ? getParamCaseInsensitive(sib.params, 'n310') : undefined;
+                if (hcBlank(t310q) && hcBlank(n310q)) { tableRows.push({ icon: '➖', mo: label, t310q: 'N/A', t310s: hcBlank(t310s) ? 'N/A' : `${num(t310s)}ms`, n310q: 'N/A', n310s: hcBlank(n310s) ? 'N/A' : num(n310s), status: 'N/A' }); return; }
                 evaluated++;
-
-                // t310qci1 is stored with a trailing unit (e.g. "1000ms") — parseInt handles that fine.
-                // n310qci1 is stored with a leading "n" enum prefix (e.g. "n20") — parseInt can't skip a
-                // leading non-digit character, so the actual count is extracted via regex instead.
-                const t310ms = parseInt(t310Raw, 10);
-                const n310Match = String(n310Raw).match(/\d+/);
-                const n310count = n310Match ? parseInt(n310Match[0], 10) : NaN;
-
-                const t310Valid = !isNaN(t310ms) && t310ms >= 500 && t310ms <= 5000;
-                const n310Valid = !isNaN(n310count) && n310count >= 1 && n310count <= 20;
-
-                const hasIssue = !t310Valid || !n310Valid;
-                if (hasIssue) issues.push(`${lncelShort}: t310qci1=${isNaN(t310ms) ? 'N/A' : t310ms + 'ms'}, n310qci1=${isNaN(n310count) ? 'N/A' : n310count}`);
-
-                tableRows.push({
-                    icon: hasIssue ? '🔴' : '🟢',
-                    lncel: lncelShort, cellName: lncelCellName,
-                    t310: isNaN(t310ms) ? 'N/A' : t310ms + 'ms',
-                    n310: isNaN(n310count) ? 'N/A' : n310count,
-                    status: hasIssue ? 'NOK' : 'OK'
-                });
+                const tq = num(t310q), ts = num(t310s), nq = num(n310q), ns = num(n310s);
+                const probs = [];
+                if (!isNaN(tq) && !isNaN(ts) && tq < ts) probs.push(`t310Qci1 ${tq}ms < SIB t310 ${ts}ms`);
+                if (!isNaN(nq) && !isNaN(ns) && nq < ns) probs.push(`n310Qci1 ${nq} < SIB n310 ${ns}`);
+                if (isNaN(ts) && isNaN(ns)) probs.push('no SIB t310/n310 to compare');
+                const bad = probs.length > 0 && !(isNaN(ts) && isNaN(ns));
+                if (bad) issues.push(`${label}: ${probs.join(', ')}`);
+                tableRows.push({ icon: bad ? '⚠️' : (isNaN(ts) && isNaN(ns) ? '➖' : '✅'), mo: label, t310q: isNaN(tq) ? 'N/A' : `${tq}ms`, t310s: isNaN(ts) ? 'N/A' : `${ts}ms`, n310q: isNaN(nq) ? 'N/A' : nq, n310s: isNaN(ns) ? 'N/A' : ns, status: bad ? 'WARN' : (isNaN(ts) && isNaN(ns) ? 'N/A' : 'OK') });
             });
-
-            if (evaluated === 0) return { status: 'NA', detail: 'No LNCEL with t310qci1/n310qci1 parameters configured.' };
-
-            const summary = `${evaluated} LNCEL evaluated for RRC Reestablishment timer (t310qci1: 500-5000ms) and counter (n310qci1: 1-20 attempts).`;
-            const tableHtml = `
-                <div style="width:100%; overflow-x:auto;">
-                <table class="hc-detail-table">
-                    <thead><tr><th>Alert</th><th>LNCEL</th><th>Cell Name</th><th>t310qci1</th><th>n310qci1</th><th>Status</th></tr></thead>
-                    <tbody>
-                        ${tableRows.map(r => `
-                        <tr>
-                            <td>${r.icon}</td>
-                            <td style="font-family:'JetBrains Mono', monospace;">${r.lncel}</td>
-                            <td>${r.cellName}</td>
-                            <td style="font-family:'JetBrains Mono', monospace;">${r.t310}</td>
-                            <td style="font-family:'JetBrains Mono', monospace;">${r.n310}</td>
-                            <td style="font-weight:700; color:${r.status === 'NOK' ? 'var(--status-fail-main, #dc2626)' : (r.status === 'N/A' ? 'var(--text-muted)' : 'var(--status-ok-main, #16a34a)')};">${r.status}</td>
-                        </tr>`).join('')}
-                    </tbody>
-                </table>
-                </div>`;
-            const fullDetail = `${summary}${tableHtml}`;
-
-            if (issues.length === 0) return { status: 'OK', detail: `All ${evaluated} LNCEL have appropriate RRC Reestablishment timers and counters configured for VoLTE.`, fullDetail };
-            return { status: 'WARN', detail: `${issues.length} of ${evaluated} LNCEL have non-standard t310qci1/n310qci1 values: ${issues.slice(0, 3).join('; ')}${issues.length > 3 ? '…' : ''}`, fullDetail };
+            if (evaluated === 0) return { status: 'NA', detail: 'No LNCEL with t310Qci1/n310Qci1 configured.' };
+            const summary = `${evaluated - issues.length} of ${evaluated} LNCEL have VoLTE RLF timers (t310Qci1/n310Qci1) at least as tolerant as the SIB2 defaults (t310/n310).`;
+            const fullDetail = summary + renderHcDetailTable([
+                { key: 'icon', label: '' }, { key: 'mo', label: 'LNCEL', mono: true },
+                { key: 't310q', label: 't310Qci1', mono: true }, { key: 't310s', label: 'SIB t310', mono: true },
+                { key: 'n310q', label: 'n310Qci1', mono: true }, { key: 'n310s', label: 'SIB n310', mono: true }, { key: 'status', label: 'Status' }
+            ], tableRows);
+            if (issues.length === 0) return { status: 'OK', detail: summary, fullDetail };
+            return { status: 'WARN', detail: `${issues.length} of ${evaluated} LNCEL have VoLTE RLF timers shorter than the SIB defaults: ${issues.slice(0, 3).join('; ')}${issues.length > 3 ? '…' : ''}`, fullDetail };
         }
 
+        // pB (PDSCH Type B / Type A EPRE ratio, TS 36.213 Table 5.2-1, 2/4 Tx ports: pB0=5/4, pB1=1, pB2=3/4, pB3=1/2) is not
+        // configured directly: the eNB derives it from dlRsBoost (allowPbIndexZero only matters at 0dB — 'false' forces pB1).
+        // Power balance of an RS symbol per port (2 own RS REs at the boost, 2 muted, 8 PDSCH) keeps it equal to a Type A
+        // symbol only for 0dB->pB0, 3dB->pB1, 4.77dB->pB2, 6dB->pB3 (inference from 36.213). Any other boost has no pB
+        // that balances it, so the RS symbols are either over or under the PA budget.
         function checkDlRsBoost(ctx) {
             if (ctx.allLncelFdd.length === 0) return { status: 'NA', detail: 'No LNCEL_FDD found in this SCF.' };
-
-            const active = [];
-            const lines = ctx.allLncelFdd.map(o => {
-                const lncelLabel = getParentDistName(o.distName).split('/').pop();
+            const active = [], incoherent = [];
+            const tableRows = [];
+            ctx.allLncelFdd.forEach(o => {
+                const lncelDist = getParentDistName(o.distName);
+                const label = hcShort(lncelDist);
                 const raw = getParamCaseInsensitive(o.params, 'dlRsBoost');
-                const num = raw !== undefined ? parseFloat(String(raw).replace(/[^\-\d.]/g, '')) : NaN;
-                if (isNaN(num)) return `➖ <strong>${lncelLabel}</strong>: \ndlRsBoost not found`;
-                const isZero = num === 0;
-                if (!isZero) active.push(`${lncelLabel}=${raw}`);
-                return `${isZero ? '✅' : '⚠️'} <strong>${lncelLabel}</strong>: \ndlRsBoost=${raw}${isZero ? ' (no boost — baseline)' : ' (active power boost — verify if intentional)'}`;
+                const boost = hcDbEnum(raw);
+                const lncel = scfData[lncelDist];
+                const apzRaw = lncel ? getParamCaseInsensitive(lncel.params, 'allowPbIndexZero') : undefined;
+                const apz = hcBlank(apzRaw) ? null : String(apzRaw).toLowerCase() === 'true';
+                if (isNaN(boost)) { tableRows.push({ icon: '➖', mo: label, boost: 'not found', apz: hcBlank(apzRaw) ? 'N/A' : apzRaw, pb: 'N/A', note: '', status: 'N/A' }); return; }
+                let pb = null, status = 'OK', note = 'no boost — baseline';
+                if (boost === 0) {
+                    pb = apz === false ? 1 : 0;
+                    if (apz === false) { status = 'WARN'; note = 'allowPbIndexZero=false forces pB1 with 0dB boost — ~1dB of PDSCH power unused on RS symbols (legacy setting)'; }
+                } else {
+                    const matchPb = getEffectivePbIndex(boost, apzRaw);
+                    active.push(`${label}=${boost}dB`);
+                    if (matchPb !== null) { pb = matchPb; status = 'WARN'; note = `active RS boost — balanced by pB${pb}, verify it is intentional`; }
+                    else { status = 'FAIL'; note = boost < 0 ? 'RS de-boost — no pB balances it, PDSCH on RS symbols exceeds the Type A budget' : 'no pB balances this boost (coherent values: 3 / 4.77 / 6dB) — RS symbols over/under the PA budget'; incoherent.push(`${label}=${boost}dB`); }
+                }
+                tableRows.push({ icon: status === 'FAIL' ? '❌' : (status === 'WARN' ? '⚠️' : '✅'), mo: label, boost: `${boost}dB${String(raw) !== String(boost) ? `(${raw})` : ''}`, apz: hcBlank(apzRaw) ? 'N/A' : apzRaw, pb: pb === null ? '—' : `pB${pb}`, note, status });
             });
-
-            const summary = `${ctx.allLncelFdd.length - active.length} of ${ctx.allLncelFdd.length} LNCEL_FDD have dlRsBoost=0 (baseline, no RS power boost applied).`;
-            const fullDetail = `${summary}\n\n${lines.join('\n')}`;
-
-            if (active.length === 0) return { status: 'OK', detail: summary, fullDetail };
-            return { status: 'WARN', detail: `${active.length} of ${ctx.allLncelFdd.length} LNCEL_FDD have an active dlRsBoost (≠0) — verify it's intentional: ${active.slice(0, 3).join(', ')}${active.length > 3 ? '…' : ''}`, fullDetail };
+            const summary = `${ctx.allLncelFdd.length - active.length} of ${ctx.allLncelFdd.length} LNCEL_FDD without RS boost; ${active.length - incoherent.length} with a boost balanced by a valid pB; ${incoherent.length} incoherent. pB derived from dlRsBoost + allowPbIndexZero (TS 36.213 Table 5.2-1).`;
+            const fullDetail = summary + renderHcDetailTable([
+                { key: 'icon', label: '' }, { key: 'mo', label: 'LNCEL', mono: true }, { key: 'boost', label: 'dlRsBoost', mono: true },
+                { key: 'apz', label: 'allowPbIndexZero', mono: true }, { key: 'pb', label: 'Effective pB', mono: true }, { key: 'note', label: 'Assessment' }, { key: 'status', label: 'Status' }
+            ], tableRows);
+            if (incoherent.length > 0) return { status: 'FAIL', detail: `${incoherent.length} LNCEL with dlRsBoost not balanced by any pB: ${incoherent.slice(0, 3).join(', ')}${incoherent.length > 3 ? '…' : ''}`, fullDetail };
+            if (tableRows.some(r => r.status === 'WARN')) return { status: 'WARN', detail: `${active.length} of ${ctx.allLncelFdd.length} LNCEL_FDD with active dlRsBoost (pB coherent) or legacy pB1 at 0dB — verify it's intentional.`, fullDetail };
+            return { status: 'OK', detail: summary, fullDetail };
         }
 
         function checkDlCellPwrRed(ctx) {
@@ -3149,25 +3170,41 @@
             return { status: 'WARN', detail: `${active.length} of ${ctx.allLncel.length} LNCEL have an active dlCellPwrRed (≠0) — verify it's intentional: ${active.slice(0, 3).join(', ')}${active.length > 3 ? '…' : ''}`, fullDetail };
         }
 
+        // Effective camping floor (TS 36.304 §5.2.3.2, Srxlev): qrxlevmin + qRxLevMinOffset (offset only applies to UEs
+        // coming from a higher-priority PLMN search, but it's shown so the effective floor is visible).
         function checkQRxLevMinCoverage(ctx) {
             if (ctx.allSib.length === 0) return { status: 'NA', detail: 'No SIB found in this SCF.' };
-
-            const tooHigh = [];
-            const lines = ctx.allSib.map(o => {
-                const lncelLabel = getParentDistName(o.distName).split('/').pop();
-                const raw = getParamCaseInsensitive(o.params, 'qrxlevmin');
-                const num = parseFloat(raw);
-                if (isNaN(num)) return `➖ <strong>${lncelLabel}</strong>: \nSIB/qrxlevmin not found`;
-                const flagged = num > -110;
-                if (flagged) tooHigh.push(`${lncelLabel}=${num}`);
-                return `${flagged ? '⚠️' : '✅'} <strong>${lncelLabel}</strong>: \nSIB/qrxlevmin=${num}${flagged ? ' (>-110 — may restrict cell camping range)' : ' (OK)'}`;
+            const entries = [];
+            const tableRows = [];
+            ctx.allSib.forEach(o => {
+                const lncelDist = getParentDistName(o.distName);
+                const label = hcShort(lncelDist);
+                const q = parseFloat(getParamCaseInsensitive(o.params, 'qrxlevmin'));
+                const offRaw = getParamCaseInsensitive(o.params, 'qRxLevMinOffset');
+                const off = hcBlank(offRaw) ? 0 : parseFloat(offRaw);
+                if (isNaN(q)) { tableRows.push({ icon: '➖', mo: label, earfcn: hcCellEarfcn(lncelDist) || 'N/A', q: 'not found', off: 'N/A', eff: 'N/A', note: '', status: 'N/A' }); return; }
+                entries.push({ label, earfcn: hcCellEarfcn(lncelDist) || 'N/A', q, off: isNaN(off) ? 0 : off, offRaw, eff: q + (isNaN(off) ? 0 : off) });
             });
-
-            const summary = `${ctx.allSib.length - tooHigh.length} of ${ctx.allSib.length} LNCEL have SIB/qrxlevmin ≤ -110 (adequate minimum access level).`;
-            const fullDetail = `${summary}\n\n${lines.join('\n')}`;
-
-            if (tooHigh.length === 0) return { status: 'OK', detail: summary, fullDetail };
-            return { status: 'WARN', detail: `${tooHigh.length} of ${ctx.allSib.length} LNCEL have SIB/qrxlevmin above -110 — may unnecessarily restrict cell access/coverage: ${tooHigh.slice(0, 3).join(', ')}${tooHigh.length > 3 ? '…' : ''}`, fullDetail };
+            const byEarfcn = {};
+            entries.forEach(e => (byEarfcn[e.earfcn] = byEarfcn[e.earfcn] || []).push(e.q));
+            const median = arr => { const a = [...arr].sort((x, y) => x - y); const m = Math.floor(a.length / 2); return a.length % 2 ? a[m] : (a[m - 1] + a[m]) / 2; };
+            const flagged = [];
+            entries.forEach(e => {
+                const med = median(byEarfcn[e.earfcn]);
+                const notes = [];
+                if (e.q > -110) notes.push('above -110dBm — restricts camping range');
+                if (byEarfcn[e.earfcn].length > 1 && Math.abs(e.q - med) > 6) notes.push(`${Math.abs(e.q - med)}dB from the EARFCN ${e.earfcn} median (${med}dBm)`);
+                if (notes.length) flagged.push(`${e.label}=${e.q}dBm`);
+                tableRows.push({ icon: notes.length ? '⚠️' : '✅', mo: e.label, earfcn: e.earfcn, q: `${e.q}dBm`, off: hcBlank(e.offRaw) ? '0dB' : `${e.off}dB`, eff: `${e.eff}dBm`, note: notes.join('; ') || 'OK', status: notes.length ? 'WARN' : 'OK' });
+            });
+            if (entries.length === 0) return { status: 'NA', detail: 'SIB/qrxlevmin not found.', fullDetail: renderHcDetailTable([{ key: 'mo', label: 'LNCEL' }], []) };
+            const summary = `${entries.length - flagged.length} of ${entries.length} LNCEL have SIB/qrxlevmin ≤ -110dBm and aligned (±6dB) with the other cells on the same EARFCN. Effective floor = qrxlevmin + qRxLevMinOffset.`;
+            const fullDetail = summary + renderHcDetailTable([
+                { key: 'icon', label: '' }, { key: 'mo', label: 'LNCEL', mono: true }, { key: 'earfcn', label: 'EARFCN', mono: true }, { key: 'q', label: 'qrxlevmin', mono: true },
+                { key: 'off', label: 'qRxLevMinOffset', mono: true }, { key: 'eff', label: 'Effective floor', mono: true }, { key: 'note', label: 'Assessment' }, { key: 'status', label: 'Status' }
+            ], tableRows);
+            if (flagged.length === 0) return { status: 'OK', detail: summary, fullDetail };
+            return { status: 'WARN', detail: `${flagged.length} of ${entries.length} LNCEL with qrxlevmin above -110dBm or out of line with their EARFCN: ${flagged.slice(0, 3).join(', ')}${flagged.length > 3 ? '…' : ''}`, fullDetail };
         }
 
         function checkNrCsirsSsbPowerAlignment(ctx) {
@@ -3796,7 +3833,8 @@ B1 (addition) and A2 (release) act on the same NR leg from opposite directions, 
                 const label = cell.distName.split('/').pop();
                 const raw = parseFloat(getParamCaseInsensitive(cell.params, 'threshold2a'));
                 if (isNaN(raw)) return;
-                entries.push({ label, raw, dbm: raw - 140 });
+                const t1 = parseFloat(getParamCaseInsensitive(cell.params, 'threshold1'));
+                entries.push({ label, raw, dbm: raw - 140, t1Raw: t1, t1Dbm: isNaN(t1) ? null : t1 - 140 });
             });
 
             if (entries.length === 0) return { status: 'NA', detail: 'threshold2a (A1 serving good-signal threshold) not found in any LNCEL.' };
@@ -3810,7 +3848,7 @@ B1 (addition) and A2 (release) act on the same NR leg from opposite directions, 
                 const dev = e.dbm - median;
                 const flagged = Math.abs(dev) > 8;
                 if (flagged) outliers.push(`${e.label}=${e.dbm}dBm(${e.raw})`);
-                return `${flagged ? '⚠️' : '✅'} <strong>${e.label}</strong>: \nthreshold2a(A1)=${e.dbm}dBm(${e.raw}) — ${flagged ? `${Math.abs(dev).toFixed(0)}dB away from site median (${median}dBm)` : 'within site norm'}`;
+                return `${flagged ? '⚠️' : '✅'} <strong>${e.label}</strong>: \nthreshold2a(A1, stop inter-freq/RAT meas)=${e.dbm}dBm(${e.raw}), threshold1(s-Measure)=${e.t1Dbm === null ? 'N/A' : `${e.t1Dbm}dBm(${e.t1Raw})`} — ${flagged ? `${Math.abs(dev).toFixed(0)}dB away from site median (${median}dBm)` : 'within site norm'}`;
             });
 
             const summary = `A1 serving good-signal threshold (threshold2a) evaluated on ${entries.length} LNCEL — site median ${median}dBm.`;
@@ -3828,32 +3866,39 @@ B1 (addition) and A2 (release) act on the same NR leg from opposite directions, 
         // at the boundary.
         function checkA2ThresholdMargin(ctx) {
             if (ctx.allLncel.length === 0) return { status: 'NA', detail: 'No LNCEL found in this SCF.' };
-
+            // threshold2a stops inter-freq AND inter-RAT measurements, so it must sit above every A2 start threshold of the
+            // layers the site actually has (WCDMA only with LNRELW, GERAN only with LNRELG).
             const MIN_MARGIN_DB = 3;
-            const entries = [];
-            ctx.allLncel.forEach(cell => {
-                const label = cell.distName.split('/').pop();
-                const t2aRaw = parseFloat(getParamCaseInsensitive(cell.params, 'threshold2a'));
-                const tIfRaw = parseFloat(getParamCaseInsensitive(cell.params, 'threshold2InterFreq'));
-                if (isNaN(t2aRaw) || isNaN(tIfRaw)) return;
-                const t2aDbm = t2aRaw - 140, tIfDbm = tIfRaw - 140;
-                entries.push({ label, t2aRaw, tIfRaw, t2aDbm, tIfDbm, margin: t2aDbm - tIfDbm });
-            });
-
-            if (entries.length === 0) return { status: 'NA', detail: 'threshold2a / threshold2InterFreq not found in any LNCEL.' };
-
+            const hasWcdma = getMOsByClass('LNRELW').length > 0;
+            const hasGeran = getMOsByClass('LNRELG').length > 0;
             const violations = [];
-            const lines = entries.map(e => {
-                const flagged = e.margin < MIN_MARGIN_DB;
-                if (flagged) violations.push(`${e.label}: margin=${e.margin}dB`);
-                return `${flagged ? '⚠️' : '✅'} <strong>${e.label}</strong>: \nthreshold2a=${e.t2aDbm}dBm(${e.t2aRaw}), threshold2InterFreq=${e.tIfDbm}dBm(${e.tIfRaw}) — margin=${e.margin}dB (min required ${MIN_MARGIN_DB}dB)${flagged ? ' [BELOW MINIMUM]' : ''}`;
+            const tableRows = [];
+            let evaluated = 0;
+            ctx.allLncel.forEach(cell => {
+                const label = hcShort(cell.distName);
+                const t2a = parseFloat(getParamCaseInsensitive(cell.params, 'threshold2a'));
+                if (isNaN(t2a)) return;
+                const starts = [
+                    { key: 'threshold2InterFreq', use: true },
+                    { key: 'threshold2Wcdma', use: hasWcdma },
+                    { key: 'threshold2GERAN', use: hasGeran }
+                ].map(x => ({ ...x, raw: parseFloat(getParamCaseInsensitive(cell.params, x.key)) })).filter(x => x.use && !isNaN(x.raw));
+                if (starts.length === 0) return;
+                evaluated++;
+                const top = starts.reduce((a, b) => (b.raw > a.raw ? b : a));
+                const margin = (t2a - 140) - (top.raw - 140);
+                const flagged = margin < MIN_MARGIN_DB;
+                if (flagged) violations.push(`${label}: ${margin}dB vs ${top.key}`);
+                tableRows.push({ icon: flagged ? '❌' : '✅', mo: label, t2a: `${t2a - 140}dBm(${t2a})`, starts: starts.map(x => `${x.key}=${x.raw - 140}dBm(${x.raw})`).join('<br>'), margin: `${margin}dB vs ${top.key}`, status: flagged ? 'FAIL' : 'OK' });
             });
-
-            const summary = `threshold2a vs threshold2InterFreq margin evaluated on ${entries.length} LNCEL — threshold2a must be at least ${MIN_MARGIN_DB}dB better (higher) than threshold2InterFreq.`;
-            const fullDetail = `${summary}\n\n${lines.join('\n')}`;
-
+            if (evaluated === 0) return { status: 'NA', detail: 'threshold2a / A2 start thresholds not found in any LNCEL.' };
+            const summary = `${evaluated - violations.length} of ${evaluated} LNCEL keep threshold2a at least ${MIN_MARGIN_DB}dB above the highest A2 start threshold (inter-freq${hasWcdma ? ', WCDMA' : ''}${hasGeran ? ', GERAN' : ''}).`;
+            const fullDetail = summary + renderHcDetailTable([
+                { key: 'icon', label: '' }, { key: 'mo', label: 'LNCEL', mono: true }, { key: 't2a', label: 'threshold2a (stop)', mono: true },
+                { key: 'starts', label: 'A2 start thresholds', mono: true }, { key: 'margin', label: 'Margin', mono: true }, { key: 'status', label: 'Status' }
+            ], tableRows);
             if (violations.length === 0) return { status: 'OK', detail: summary, fullDetail };
-            return { status: 'FAIL', detail: `${summary} ${violations.length} LNCEL with margin below ${MIN_MARGIN_DB}dB (or inverted): ${violations.slice(0, 3).join(', ')}${violations.length > 3 ? '…' : ''}`, fullDetail };
+            return { status: 'FAIL', detail: `${violations.length} LNCEL with stop/start margin below ${MIN_MARGIN_DB}dB (measurement flapping): ${violations.slice(0, 3).join(', ')}${violations.length > 3 ? '…' : ''}`, fullDetail };
         }
 
         function checkA2RedirectTriggerTimers(ctx) {
@@ -3934,8 +3979,8 @@ B1 (addition) and A2 (release) act on the same NR leg from opposite directions, 
                 if (raw === undefined || raw === null || raw === '') return { icon: '➖', mo: label, b1TimeToTriggerCSFBUtraMeas: 'not found', status: 'N/A' };
                 const ms = parseInt(String(raw).replace(/[^\d]/g, ''), 10);
                 const flagged = !isNaN(ms) && ms > 1000;
-                if (flagged) { warnCount++; if (examples.length < 3) examples.push(`${label}=${raw}`); }
-                return { icon: flagged ? '⚠️' : '✅', mo: label, b1TimeToTriggerCSFBUtraMeas: raw, status: flagged ? 'WARN' : 'OK' };
+                if (flagged) { warnCount++; if (examples.length < 3) examples.push(`${label}=${hcTtt(raw).text}`); }
+                return { icon: flagged ? '⚠️' : '✅', mo: label, b1TimeToTriggerCSFBUtraMeas: hcTtt(raw).text, status: flagged ? 'WARN' : 'OK' };
             });
 
             const summary = `B1 (CSFB-to-UTRA measurement trigger) evaluated on ${ctx.allLnhow.length} LNHOW.`;
@@ -4152,38 +4197,374 @@ B1 (addition) and A2 (release) act on the same NR leg from opposite directions, 
             return { status, detail: `${summary} On a weak-RF site this can mean the UE is redirected to GSM and then rejected for insufficient level.`, fullDetail };
         }
 
+        // LNHOW B2 thresholds (nokia_database): b2Threshold1Utra = UI+140 (serving RSRP, dBm), b2Threshold2UtraRscp = UI+115
+        // (dBm), b2Threshold2UtraEcn0 = (UI+24)*2 (dB). B2 can only fire once A2 has started WCDMA measurements, so
+        // b2Threshold1Utra above the serving cell's threshold2Wcdma is ineffective (inference).
         function checkB2CsfbFallbackThresholds(ctx) {
             if (ctx.allLnhow.length === 0) return { status: 'NA', detail: 'No LNHOW found in this SCF.' };
-
             let evaluated = 0;
+            const flagged = [];
             const tableRows = [];
             ctx.allLnhow.forEach(o => {
                 const label = o.distName.split('/').slice(-2).join('/');
                 const t1Raw = parseFloat(getParamCaseInsensitive(o.params, 'b2Threshold1Utra'));
-                const rscp = getParamCaseInsensitive(o.params, 'b2Threshold2UtraRscp');
-                const ecn0 = getParamCaseInsensitive(o.params, 'b2Threshold2UtraEcn0');
-                if (isNaN(t1Raw)) { tableRows.push({ icon: '➖', mo: label, b2Threshold1Utra: 'not found', b2Threshold2UtraRscp: 'N/A', b2Threshold2UtraEcn0: 'N/A', status: 'N/A' }); return; }
+                const rscp = parseFloat(getParamCaseInsensitive(o.params, 'b2Threshold2UtraRscp'));
+                const ecn0 = parseFloat(getParamCaseInsensitive(o.params, 'b2Threshold2UtraEcn0'));
+                if (isNaN(t1Raw)) { tableRows.push({ icon: '➖', mo: label, t1: 'not found', t2w: 'N/A', rscp: 'N/A', ecn0: 'N/A', status: 'N/A' }); return; }
                 evaluated++;
-                const t1Dbm = t1Raw - 140;
-                tableRows.push({ icon: '✅', mo: label, b2Threshold1Utra: `${t1Dbm}dBm(${t1Raw})`, b2Threshold2UtraRscp: rscp !== undefined && rscp !== '' ? `${rscp}(raw idx)` : 'N/A', b2Threshold2UtraEcn0: ecn0 !== undefined && ecn0 !== '' ? `${ecn0}(raw idx)` : 'N/A', status: 'OK' });
+                const cell = scfData[hcLncelOf(o.distName)];
+                const t2wRaw = cell ? parseFloat(getParamCaseInsensitive(cell.params, 'threshold2Wcdma')) : NaN;
+                const bad = !isNaN(t2wRaw) && t1Raw > t2wRaw;
+                if (bad) flagged.push(`${label}: B2 ${t1Raw - 140}dBm > A2 WCDMA ${t2wRaw - 140}dBm`);
+                tableRows.push({
+                    icon: bad ? '⚠️' : '✅', mo: label, t1: `${t1Raw - 140}dBm(${t1Raw})`,
+                    t2w: isNaN(t2wRaw) ? 'N/A' : `${t2wRaw - 140}dBm(${t2wRaw})`,
+                    rscp: isNaN(rscp) ? 'N/A' : `${rscp - 115}dBm(${rscp})`,
+                    ecn0: isNaN(ecn0) ? 'N/A' : `${ecn0 / 2 - 24}dB(${ecn0})`,
+                    status: bad ? 'WARN' : 'OK'
+                });
             });
-
             if (evaluated === 0) return { status: 'NA', detail: 'b2Threshold1Utra (B2 CSFB/emergency fallback to UTRA) not found in any LNHOW.' };
-
-            const summary = `B2 (CSFB/emergency fallback to UTRA) thresholds present on ${evaluated} of ${ctx.allLnhow.length} LNHOW. Serving LTE threshold converted to dBm (value-140); UTRA neighbor RSCP/Ec-N0 shown as raw index — conversion formula not yet confirmed, so left unconverted.`;
-            const tableHtml = renderHcDetailTable([
-                { key: 'icon', label: '' }, { key: 'mo', label: 'MO (LNHOW)', mono: true }, { key: 'b2Threshold1Utra', label: 'b2Threshold1Utra (serving)', mono: true },
-                { key: 'b2Threshold2UtraRscp', label: 'b2Threshold2UtraRscp (ngbr)', mono: true }, { key: 'b2Threshold2UtraEcn0', label: 'b2Threshold2UtraEcn0 (ngbr)', mono: true }, { key: 'status', label: 'Status' }
+            const summary = `${evaluated - flagged.length} of ${evaluated} LNHOW have the B2 serving threshold at or below the A2 WCDMA measurement start (threshold2Wcdma). Conversions: b2Threshold1Utra raw−140 dBm, RSCP raw−115 dBm, Ec/N0 raw/2−24 dB.`;
+            const fullDetail = summary + renderHcDetailTable([
+                { key: 'icon', label: '' }, { key: 'mo', label: 'MO (LNHOW)', mono: true }, { key: 't1', label: 'b2Threshold1Utra (serving)', mono: true },
+                { key: 't2w', label: 'threshold2Wcdma (A2 start)', mono: true }, { key: 'rscp', label: 'b2Threshold2UtraRscp (ngbr)', mono: true },
+                { key: 'ecn0', label: 'b2Threshold2UtraEcn0 (ngbr)', mono: true }, { key: 'status', label: 'Status' }
             ], tableRows);
-            const fullDetail = `${summary}${tableHtml}`;
+            if (flagged.length === 0) return { status: 'OK', detail: summary, fullDetail };
+            return { status: 'WARN', detail: `${flagged.length} LNHOW with B2 serving threshold above the WCDMA A2 start — B2 can't fire before measurements begin: ${flagged.slice(0, 2).join('; ')}${flagged.length > 2 ? '…' : ''}`, fullDetail };
+        }
 
-            return { status: 'OK', detail: summary, fullDetail };
+        // ================= New LTE cards (lte-agent review) =================
+        const hcStatusIcon = st => st === 'FAIL' ? '❌' : st === 'WARN' ? '⚠️' : st === 'OK' ? '✅' : '➖';
+
+        // N1: idle mode starts inter-freq measurements at Srxlev <= sNonIntrsearch, i.e. RSRP <= qrxlevmin + qRxLevMinOffset +
+        // sNonIntrsearch (TS 36.304 §5.2.4.2); connected mode starts them at threshold2InterFreq (A2). A large gap means idle
+        // and connected UEs leave the layer at very different RSRP levels (layer imbalance).
+        function checkIdleConnectedCoherence(ctx) {
+            if (ctx.allLncel.length === 0) return { status: 'NA', detail: 'No LNCEL found in this SCF.' };
+            const MAX_GAP = 6;
+            const rows = []; const flagged = [];
+            ctx.allLncel.forEach(cell => {
+                const label = hcShort(cell.distName);
+                const sib = hcSibOf(cell.distName);
+                const q = sib ? parseFloat(getParamCaseInsensitive(sib.params, 'qrxlevmin')) : NaN;
+                const off = sib ? parseFloat(getParamCaseInsensitive(sib.params, 'qRxLevMinOffset')) : NaN;
+                const sn = sib ? parseFloat(getParamCaseInsensitive(sib.params, 'sNonIntrsearch')) : NaN;
+                const t2if = parseFloat(getParamCaseInsensitive(cell.params, 'threshold2InterFreq'));
+                if (isNaN(q) || isNaN(sn) || isNaN(t2if)) { rows.push({ icon: '➖', mo: label, idle: 'N/A', conn: isNaN(t2if) ? 'N/A' : `${t2if - 140}dBm(${t2if})`, gap: 'N/A', status: 'N/A' }); return; }
+                const idle = q + (isNaN(off) ? 0 : off) + sn, conn = t2if - 140, gap = idle - conn;
+                const bad = Math.abs(gap) > MAX_GAP;
+                if (bad) flagged.push(`${label}: Δ=${gap > 0 ? '+' : ''}${gap}dB`);
+                rows.push({ icon: bad ? '⚠️' : '✅', mo: label, idle: `${idle}dBm (qrxlevmin ${q}${isNaN(off) || off === 0 ? '' : ` + offset ${off}`} + sNonIntrsearch ${sn})`, conn: `${conn}dBm(${t2if})`, gap: `${gap > 0 ? '+' : ''}${gap}dB`, status: bad ? 'WARN' : 'OK' });
+            });
+            const evaluated = rows.filter(r => r.status !== 'N/A').length;
+            if (evaluated === 0) return { status: 'NA', detail: 'qrxlevmin/sNonIntrsearch (SIB) or threshold2InterFreq (LNCEL) not found.' };
+            const summary = `${evaluated - flagged.length} of ${evaluated} LNCEL start inter-freq measurements at similar RSRP in idle and connected mode (|Δ| ≤ ${MAX_GAP}dB).`;
+            const fullDetail = summary + renderHcDetailTable([{ key: 'icon', label: '' }, { key: 'mo', label: 'LNCEL', mono: true }, { key: 'idle', label: 'Idle start (SIB)', mono: true }, { key: 'conn', label: 'Connected start (threshold2InterFreq)', mono: true }, { key: 'gap', label: 'Δ idle − conn', mono: true }, { key: 'status', label: 'Status' }], rows);
+            if (flagged.length === 0) return { status: 'OK', detail: summary, fullDetail };
+            return { status: 'WARN', detail: `${flagged.length} LNCEL with idle/connected inter-freq trigger gap > ${MAX_GAP}dB: ${flagged.slice(0, 3).join(', ')}${flagged.length > 3 ? '…' : ''}`, fullDetail };
+        }
+
+        // N2: co-site cells on the same EARFCN must not share a PCI (FAIL) and should not share PCI mod 3 (CRS v-shift
+        // collision with 2/4 Tx ports, FAIL). Pairs that only share PCI mod 30 (PUSCH DMRS group) are a warning.
+        function checkPciModCosite(ctx) {
+            const groups = {};
+            ctx.allLncel.forEach(cell => {
+                const pci = parseInt(getParamCaseInsensitive(cell.params, 'phyCellId'), 10);
+                const earfcn = hcCellEarfcn(cell.distName);
+                if (isNaN(pci) || !earfcn) return;
+                const k = `${hcBtsOf(cell.distName)}|${earfcn}`;
+                (groups[k] = groups[k] || []).push({ label: hcShort(cell.distName), pci });
+            });
+            const keys = Object.keys(groups);
+            if (keys.length === 0) return { status: 'NA', detail: 'phyCellId / earfcnDL not found.' };
+            const rows = []; let fails = 0;
+            keys.forEach(k => {
+                const list = groups[k];
+                for (let i = 0; i < list.length; i++) for (let j = i + 1; j < list.length; j++) {
+                    const a = list[i], b = list[j];
+                    let st = 'OK', note = '';
+                    if (a.pci === b.pci) { st = 'FAIL'; note = 'same PCI'; }
+                    else if (a.pci % 3 === b.pci % 3) { st = 'FAIL'; note = `same PCI mod 3 (${a.pci % 3})${a.pci % 30 === b.pci % 30 ? ' and mod 30' : ''} — CRS collision`; }
+                    else if (a.pci % 30 === b.pci % 30) { st = 'WARN'; note = 'same PCI mod 30 (UL DMRS group)'; }
+                    if (st === 'FAIL') fails++;
+                    rows.push({ icon: hcStatusIcon(st), earfcn: k.split('|')[1], pair: `${a.label} ↔ ${b.label}`, pcis: `${a.pci} / ${b.pci}`, mod3: `${a.pci % 3} / ${b.pci % 3}`, note: note || 'OK', status: st });
+                }
+            });
+            if (rows.length === 0) return { status: 'OK', detail: 'No co-site cell pair shares an EARFCN.', fullDetail: 'No co-site cell pair shares an EARFCN.' };
+            const bad = rows.filter(r => r.status !== 'OK');
+            const summary = `${rows.length - bad.length} of ${rows.length} co-site cell pairs on the same EARFCN have distinct PCI mod 3 / mod 30.`;
+            const fullDetail = summary + renderHcDetailTable([{ key: 'icon', label: '' }, { key: 'earfcn', label: 'EARFCN', mono: true }, { key: 'pair', label: 'Cells', mono: true }, { key: 'pcis', label: 'PCI', mono: true }, { key: 'mod3', label: 'mod 3', mono: true }, { key: 'note', label: 'Assessment' }, { key: 'status', label: 'Status' }], rows.sort((x, y) => (x.status === 'OK') - (y.status === 'OK')));
+            if (bad.length === 0) return { status: 'OK', detail: summary, fullDetail };
+            return { status: fails > 0 ? 'FAIL' : 'WARN', detail: `${bad.length} co-site pair(s) with PCI conflict: ${bad.slice(0, 3).map(r => `${r.pair} (${r.note})`).join('; ')}${bad.length > 3 ? '…' : ''}`, fullDetail };
+        }
+
+        // N3: each cell needs ceil(64 / floor(839/Ncs)) consecutive logical root sequences starting at rootSeqIndex
+        // (TS 36.211 §5.7.2, Ncs from prachCS via Table 5.7.2-2, unrestricted set). Overlapping ranges between co-site
+        // cells on the same EARFCN produce identical preambles (false RACH detections).
+        function checkPrachRootOverlap(ctx) {
+            const NCS = [0, 13, 15, 18, 22, 26, 32, 38, 46, 59, 76, 93, 119, 167, 279, 419];
+            const groups = {};
+            ctx.allLncelFdd.forEach(o => {
+                const lncelDist = getParentDistName(o.distName);
+                const root = parseInt(getParamCaseInsensitive(o.params, 'rootSeqIndex'), 10);
+                const cs = parseInt(getParamCaseInsensitive(o.params, 'prachCS'), 10);
+                const earfcn = hcCellEarfcn(lncelDist);
+                if (isNaN(root) || isNaN(cs) || cs < 0 || cs > 15 || !earfcn) return;
+                const ncs = NCS[cs];
+                const perRoot = ncs === 0 ? 1 : Math.floor(839 / ncs);
+                const n = Math.ceil(64 / perRoot);
+                const k = `${hcBtsOf(lncelDist)}|${earfcn}`;
+                (groups[k] = groups[k] || []).push({ label: hcShort(lncelDist), root, n, cs, set: new Set(Array.from({ length: n }, (_, i) => (root + i) % 838)) });
+            });
+            const keys = Object.keys(groups);
+            if (keys.length === 0) return { status: 'NA', detail: 'rootSeqIndex / prachCS / earfcnDL not found.' };
+            const rows = []; const bad = [];
+            keys.forEach(k => groups[k].forEach(c => {
+                const clash = groups[k].filter(o => o !== c && [...c.set].some(r => o.set.has(r))).map(o => o.label);
+                if (clash.length) bad.push(`${c.label}↔${clash.join('/')}`);
+                rows.push({ icon: clash.length ? '❌' : '✅', mo: c.label, earfcn: k.split('|')[1], root: c.root, cs: `${c.cs} (Ncs=${NCS[c.cs]})`, range: `${c.root}–${(c.root + c.n - 1) % 838} (${c.n} roots)`, clash: clash.join(', ') || '—', status: clash.length ? 'FAIL' : 'OK' });
+            }));
+            const summary = `${rows.length - bad.length} of ${rows.length} LNCEL have a PRACH root-sequence range disjoint from the other co-site cells on the same EARFCN.`;
+            const fullDetail = summary + renderHcDetailTable([{ key: 'icon', label: '' }, { key: 'mo', label: 'LNCEL', mono: true }, { key: 'earfcn', label: 'EARFCN', mono: true }, { key: 'root', label: 'rootSeqIndex', mono: true }, { key: 'cs', label: 'prachCS', mono: true }, { key: 'range', label: 'Root range used', mono: true }, { key: 'clash', label: 'Overlaps with', mono: true }, { key: 'status', label: 'Status' }], rows);
+            if (bad.length === 0) return { status: 'OK', detail: summary, fullDetail };
+            return { status: 'FAIL', detail: `${bad.length} LNCEL with overlapping PRACH root ranges: ${bad.slice(0, 3).join('; ')}${bad.length > 3 ? '…' : ''}`, fullDetail };
+        }
+
+        // N4: an A5 whose serving threshold (threshold3InterFreq) is above the A2 start (threshold2InterFreq) can only fire
+        // once A2 has started the measurement, so the configured A5 serving level is never the real trigger.
+        function checkA5VsA2Activation(ctx) {
+            if (ctx.allLnhoif.length === 0) return { status: 'NA', detail: 'No LNHOIF found in this SCF.' };
+            const rows = []; const bad = [];
+            ctx.allLnhoif.forEach(o => {
+                const cell = scfData[getParentDistName(o.distName)];
+                const t3 = parseFloat(getParamCaseInsensitive(o.params, 'threshold3InterFreq'));
+                const t2 = cell ? parseFloat(getParamCaseInsensitive(cell.params, 'threshold2InterFreq')) : NaN;
+                const label = o.distName.split('/').slice(-2).join('/');
+                const earfcn = getParamCaseInsensitive(o.params, 'eutraCarrierInfo') || 'N/A';
+                if (isNaN(t3) || isNaN(t2)) { rows.push({ icon: '➖', mo: label, earfcn, t3: isNaN(t3) ? 'N/A' : `${t3 - 140}dBm(${t3})`, t2: isNaN(t2) ? 'N/A' : `${t2 - 140}dBm(${t2})`, status: 'N/A' }); return; }
+                const fail = t3 > t2;
+                if (fail) bad.push(`${label}: A5 ${t3 - 140} > A2 ${t2 - 140}dBm`);
+                rows.push({ icon: fail ? '❌' : '✅', mo: label, earfcn, t3: `${t3 - 140}dBm(${t3})`, t2: `${t2 - 140}dBm(${t2})`, status: fail ? 'FAIL' : 'OK' });
+            });
+            const evaluated = rows.filter(r => r.status !== 'N/A').length;
+            if (evaluated === 0) return { status: 'NA', detail: 'threshold3InterFreq / threshold2InterFreq not found.' };
+            const summary = `${evaluated - bad.length} of ${evaluated} LNHOIF have the A5 serving threshold at or below the A2 inter-freq measurement start.`;
+            const fullDetail = summary + renderHcDetailTable([{ key: 'icon', label: '' }, { key: 'mo', label: 'LNHOIF', mono: true }, { key: 'earfcn', label: 'Target EARFCN', mono: true }, { key: 't3', label: 'threshold3InterFreq (A5 serving)', mono: true }, { key: 't2', label: 'threshold2InterFreq (A2 start)', mono: true }, { key: 'status', label: 'Status' }], rows);
+            if (bad.length === 0) return { status: 'OK', detail: summary, fullDetail };
+            return { status: 'FAIL', detail: `${bad.length} LNHOIF with A5 serving threshold above the A2 start: ${bad.slice(0, 3).join('; ')}${bad.length > 3 ? '…' : ''}`, fullDetail };
+        }
+
+        // N5: cells of one LNBTS normally share a TAC; different TACs inside a site cause TAU signalling at sector borders.
+        // LNADJL neighbours on another TAC are listed for information only.
+        function checkTacConsistency(ctx) {
+            const byBts = {};
+            ctx.allLncel.forEach(cell => {
+                const tac = getParamCaseInsensitive(cell.params, 'tac');
+                if (hcBlank(tac)) return;
+                (byBts[hcBtsOf(cell.distName)] = byBts[hcBtsOf(cell.distName)] || []).push({ label: hcShort(cell.distName), tac: String(tac) });
+            });
+            const btsKeys = Object.keys(byBts);
+            if (btsKeys.length === 0) return { status: 'NA', detail: 'LNCEL tac not found.' };
+            const rows = []; let mixed = 0;
+            btsKeys.forEach(b => {
+                const tacs = [...new Set(byBts[b].map(c => c.tac))];
+                if (tacs.length > 1) mixed++;
+                tacs.forEach(t => rows.push({ icon: tacs.length > 1 ? '⚠️' : '✅', bts: hcShort(b), tac: t, cells: byBts[b].filter(c => c.tac === t).map(c => c.label).join(', '), status: tacs.length > 1 ? 'WARN' : 'OK' }));
+            });
+            const siteTacs = new Set(rows.map(r => r.tac));
+            const foreign = getMOsByClass('LNADJL').map(o => getParamCaseInsensitive(o.params, 'tac')).filter(t => !hcBlank(t) && !siteTacs.has(String(t)));
+            const byTac = {};
+            foreign.forEach(t => { byTac[t] = (byTac[t] || 0) + 1; });
+            const summary = `${btsKeys.length - mixed} of ${btsKeys.length} LNBTS use a single TAC on all their cells. ${foreign.length} LNADJL neighbour(s) on another TAC (TAU border, information only).`;
+            const foreignHtml = foreign.length === 0 ? '' : `\n\n<strong>Neighbours (LNADJL) on another TAC</strong>` + renderHcDetailTable([{ key: 'tac', label: 'TAC', mono: true }, { key: 'n', label: 'LNADJL count', mono: true }], Object.keys(byTac).map(t => ({ tac: t, n: byTac[t] })));
+            const fullDetail = summary + renderHcDetailTable([{ key: 'icon', label: '' }, { key: 'bts', label: 'LNBTS', mono: true }, { key: 'tac', label: 'TAC', mono: true }, { key: 'cells', label: 'Cells', mono: true }, { key: 'status', label: 'Status' }], rows) + foreignHtml;
+            if (mixed === 0) return { status: 'OK', detail: summary, fullDetail };
+            return { status: 'WARN', detail: `${mixed} LNBTS with more than one TAC across their cells — TAU signalling at sector borders.`, fullDetail };
+        }
+
+        // N6: the absolute reselection priority of a carrier must be the same everywhere it is announced: as serving layer
+        // (SIB cellReSelPrio of the cells on that EARFCN) and as target (IRFIM eutCelResPrio in the other cells). A mismatch
+        // makes UEs ping-pong between layers in idle (TS 36.304 §5.2.4.1).
+        function checkReselectionPriorityMap(ctx) {
+            const prio = {};
+            const add = (earfcn, p, src) => { if (!earfcn || isNaN(p)) return; (prio[earfcn] = prio[earfcn] || []).push({ p, src }); };
+            const siteEarfcns = new Set();
+            ctx.allLncel.forEach(cell => {
+                const earfcn = hcCellEarfcn(cell.distName);
+                if (earfcn) siteEarfcns.add(earfcn);
+                const sib = hcSibOf(cell.distName);
+                if (sib) add(earfcn, parseFloat(getParamCaseInsensitive(sib.params, 'cellReSelPrio')), `${hcShort(cell.distName)} (SIB serving)`);
+            });
+            const unknownTargets = new Set();
+            getMOsByClass('IRFIM').filter(o => !ctx.lockedSet.has(hcLncelOf(o.distName)) && !ctx.nbIotSet.has(hcLncelOf(o.distName))).forEach(o => {
+                const earfcn = String(getParamCaseInsensitive(o.params, 'dlCarFrqEut') ?? '');
+                add(earfcn, parseFloat(getParamCaseInsensitive(o.params, 'eutCelResPrio')), `${hcShort(hcLncelOf(o.distName))}/${hcShort(o.distName)} (IRFIM)`);
+                if (earfcn && !siteEarfcns.has(earfcn)) unknownTargets.add(earfcn);
+            });
+            const earfcns = Object.keys(prio).sort((a, b) => a - b);
+            if (earfcns.length === 0) return { status: 'NA', detail: 'cellReSelPrio (SIB) / eutCelResPrio (IRFIM) not found.' };
+            const rows = []; let mismatches = 0;
+            earfcns.forEach(e => {
+                const vals = [...new Set(prio[e].map(x => x.p))];
+                const bad = vals.length > 1;
+                if (bad) mismatches++;
+                rows.push({ icon: bad ? '❌' : '✅', earfcn: e, site: siteEarfcns.has(e) ? 'served' : 'not served here', prio: vals.join(' / '), sources: prio[e].map(x => `${x.src}=${x.p}`).join('<br>'), status: bad ? 'FAIL' : 'OK' });
+            });
+            const summary = `${earfcns.length - mismatches} of ${earfcns.length} carriers announced with one consistent reselection priority (SIB serving vs IRFIM). ${unknownTargets.size} IRFIM carrier(s) not served on this site (normal for external layers).`;
+            const fullDetail = summary + renderHcDetailTable([{ key: 'icon', label: '' }, { key: 'earfcn', label: 'EARFCN', mono: true }, { key: 'site', label: 'On site' }, { key: 'prio', label: 'Priority', mono: true }, { key: 'sources', label: 'Where announced', mono: true }, { key: 'status', label: 'Status' }], rows);
+            if (mismatches === 0) return { status: 'OK', detail: summary, fullDetail };
+            return { status: 'FAIL', detail: `${mismatches} carrier(s) announced with different reselection priorities — idle ping-pong risk: ${rows.filter(r => r.status === 'FAIL').slice(0, 3).map(r => `${r.earfcn} (${r.prio})`).join(', ')}`, fullDetail };
+        }
+
+        // N7: CIOs (LNREL cellIndOffNeigh) bias the A3/A5 comparison per neighbour. |CIO| > 6dB distorts HO borders heavily,
+        // and a co-site pair with A→B ≠ B→A moves the border differently in each direction.
+        function checkCioAsymmetry(ctx) {
+            if (ctx.allLnrel.length === 0) return { status: 'NA', detail: 'No LNREL found in this SCF.' };
+            const MAX_ABS = 6;
+            const rows = []; const flagged = [];
+            const byPair = {};
+            ctx.allLnrel.forEach(o => {
+                const cio = hcDbEnum(getParamCaseInsensitive(o.params, 'cellIndOffNeigh'));
+                if (isNaN(cio)) return;
+                const src = hcShort(hcLncelOf(o.distName));
+                const enb = getParamCaseInsensitive(o.params, 'ecgiAdjEnbId') ?? getParamCaseInsensitive(o.params, 'adjEnbId');
+                const lcr = getParamCaseInsensitive(o.params, 'ecgiLcrId') ?? getParamCaseInsensitive(o.params, 'adjLcrId');
+                const ownEnb = (o.distName.match(/LNBTS-(\d+)/) || [])[1];
+                const tgt = String(enb) === String(ownEnb) && !hcBlank(lcr) ? `LNCEL-${lcr}` : `${enb}-${lcr}`;
+                byPair[`${src}>${tgt}`] = cio;
+                if (Math.abs(cio) > MAX_ABS) { flagged.push(`${src}→${tgt}=${cio}dB`); rows.push({ icon: '⚠️', pair: `${src} → ${tgt}`, cio: `${cio}dB`, rev: '—', note: `|CIO| > ${MAX_ABS}dB`, status: 'WARN' }); }
+            });
+            Object.keys(byPair).forEach(k => {
+                const [a, b] = k.split('>');
+                const r = byPair[`${b}>${a}`];
+                if (r === undefined || a > b) return;
+                if (r !== byPair[k]) { flagged.push(`${a}↔${b}`); rows.push({ icon: '⚠️', pair: `${a} ↔ ${b}`, cio: `${byPair[k]}dB`, rev: `${r}dB`, note: 'asymmetric co-site pair', status: 'WARN' }); }
+            });
+            const total = Object.keys(byPair).length;
+            if (total === 0) return { status: 'NA', detail: 'cellIndOffNeigh not found on LNREL.' };
+            const summary = `${total} LNREL CIOs evaluated; ${flagged.length} finding(s): |CIO| > ${MAX_ABS}dB or asymmetric co-site pairs.`;
+            const fullDetail = summary + (rows.length ? renderHcDetailTable([{ key: 'icon', label: '' }, { key: 'pair', label: 'Relation', mono: true }, { key: 'cio', label: 'CIO', mono: true }, { key: 'rev', label: 'Reverse CIO', mono: true }, { key: 'note', label: 'Assessment' }, { key: 'status', label: 'Status' }], rows) : '\n\n✅ All CIOs within ±6dB and symmetric.');
+            if (flagged.length === 0) return { status: 'OK', detail: summary, fullDetail };
+            return { status: 'WARN', detail: `${flagged.length} CIO finding(s): ${flagged.slice(0, 3).join(', ')}${flagged.length > 3 ? '…' : ''}`, fullDetail };
+        }
+
+        // N8: intra-freq A5 (coverage HO): serving < threshold3 and neighbour > threshold3a. threshold3a below threshold3
+        // allows HO to a neighbour weaker than the serving cell; a gap > 6dB makes coverage HO very late (inference).
+        function checkIntraFreqA5(ctx) {
+            const rows = []; const flagged = [];
+            ctx.allLncel.forEach(cell => {
+                const label = hcShort(cell.distName);
+                const t3 = parseFloat(getParamCaseInsensitive(cell.params, 'threshold3'));
+                const t3a = parseFloat(getParamCaseInsensitive(cell.params, 'threshold3a'));
+                const hys = parseFloat(getParamCaseInsensitive(cell.params, 'hysThreshold3'));
+                if (isNaN(t3) || isNaN(t3a)) return;
+                const gap = t3a - t3;
+                const bad = gap < 0 || gap > 6;
+                if (bad) flagged.push(`${label}: Δ=${gap}dB`);
+                rows.push({ icon: bad ? '⚠️' : '✅', mo: label, t3: `${t3 - 140}dBm(${t3})`, t3a: `${t3a - 140}dBm(${t3a})`, hys: isNaN(hys) ? 'N/A' : `${hys / 2}dB(${hys})`, gap: `${gap > 0 ? '+' : ''}${gap}dB${gap < 0 ? ' — HO to weaker neighbour' : gap > 6 ? ' — late coverage HO' : ''}`, status: bad ? 'WARN' : 'OK' });
+            });
+            if (rows.length === 0) return { status: 'NA', detail: 'threshold3 / threshold3a not found in any LNCEL.' };
+            const summary = `${rows.length - flagged.length} of ${rows.length} LNCEL have threshold3a 0–6dB above threshold3 (intra-freq A5 coverage HO).`;
+            const fullDetail = summary + renderHcDetailTable([{ key: 'icon', label: '' }, { key: 'mo', label: 'LNCEL', mono: true }, { key: 't3', label: 'threshold3 (serving)', mono: true }, { key: 't3a', label: 'threshold3a (neighbour)', mono: true }, { key: 'hys', label: 'hysThreshold3', mono: true }, { key: 'gap', label: 'Δ 3a − 3', mono: true }, { key: 'status', label: 'Status' }], rows);
+            if (flagged.length === 0) return { status: 'OK', detail: summary, fullDetail };
+            return { status: 'WARN', detail: `${flagged.length} LNCEL with intra-freq A5 thresholds out of 0–6dB: ${flagged.slice(0, 3).join(', ')}${flagged.length > 3 ? '…' : ''}`, fullDetail };
+        }
+
+        // N9: overview of cells out of service (administrativeState locked) or barred in SIB. Locked cells are skipped by the
+        // other cards (shown there with 🔒 / N/A).
+        function checkLockedBarredCells(ctx) {
+            const all = getMOsByClass('LNCEL').filter(c => !ctx.nbIotSet.has(c.distName));
+            if (all.length === 0) return { status: 'NA', detail: 'No LNCEL found in this SCF.' };
+            const rows = [];
+            all.forEach(cell => {
+                const adm = getParamCaseInsensitive(cell.params, 'administrativeState');
+                const sib = hcSibOf(cell.distName);
+                const barred = sib ? getParamCaseInsensitive(sib.params, 'cellBarred') : undefined;
+                const isLocked = /^locked$/i.test(String(adm ?? ''));
+                const isBarred = /^barred$/i.test(String(barred ?? ''));
+                if (isLocked || isBarred) rows.push({ icon: isLocked ? '🔒' : '⛔', mo: hcShort(cell.distName), name: getParamCaseInsensitive(cell.params, 'cellName') || '', adm: adm ?? 'N/A', barred: barred ?? 'N/A', status: 'WARN' });
+            });
+            const summary = `${all.length - rows.length} of ${all.length} LNCEL unlocked and not barred.`;
+            if (rows.length === 0) return { status: 'OK', detail: summary, fullDetail: summary };
+            const fullDetail = summary + renderHcDetailTable([{ key: 'icon', label: '' }, { key: 'mo', label: 'LNCEL', mono: true }, { key: 'name', label: 'cellName' }, { key: 'adm', label: 'administrativeState', mono: true }, { key: 'barred', label: 'SIB cellBarred', mono: true }, { key: 'status', label: 'Status' }], rows);
+            return { status: 'WARN', detail: `${rows.length} LNCEL locked or barred: ${rows.slice(0, 4).map(r => r.mo).join(', ')}${rows.length > 4 ? '…' : ''}`, fullDetail };
+        }
+
+        // RF good-practice guidance shown above the detail table when a card is WARN/FAIL (typical values, not vendor mandates).
+        const HC_GUIDANCE = {
+            a1_serving_threshold: { why: `threshold2a is where the UE stops inter-freq/inter-RAT measurements (serving good again). A cell far from the site norm stops measuring too early (stays on a weak layer) or too late (wastes measurement gaps, lower throughput).`, ideal: `threshold2a ≈ −100dBm (40) on all cells of the same layer, threshold1 (s-Measure) at the default −50dBm (90).` },
+            a2_redirect_timers: { why: `Missing A2 time-to-trigger timers leave the eNB defaults in place, so measurement activation/redirect can react too fast (ping-pong) or too slow (drops).`, ideal: `a2TimeToTriggerActInterFreqMeas = 320ms, a2TimeToTriggerRedirect = 640ms, and WCDMA/GERAN activation timers (320–640ms) only when LNRELW/LNRELG exist.` },
+            a2_threshold_margin: { why: `If the stop threshold (threshold2a) is not clearly above the start thresholds, RSRP fluctuating around them switches measurement gaps on/off repeatedly (flapping, throughput loss).`, ideal: `threshold2a = −100dBm (40); threshold2InterFreq = −110dBm (30); threshold2Wcdma = −115dBm (25); threshold2GERAN = −118dBm (22) → ≥ 10dB margin to every start threshold.` },
+            a3_offset: { why: `The effective A3 margin (a3Offset + hysA3Offset) below ~1dB causes intra-freq ping-pong; above ~6dB the UE is held too long on a degrading cell (late HO, drops).`, ideal: `a3Offset = 3dB (6) + hysA3Offset = 1dB (2) → effective 4dB, with a3TimeToTrigger 320ms.` },
+            a4_load_balancing: { why: `A loadBalancingProfile without actIntraFreqLoadBal (or the reverse) means load balancing is either configured but never used, or enabled without a profile.`, ideal: `actIntraFreqLoadBal = true AND a valid loadBalancingProfile on every cell that should balance; both off on the others.` },
+            a5_ttt: { why: `A slow A5 time-to-trigger delays the coverage (emergency) HO when serving RSRP collapses — the UE drops before the HO is triggered.`, ideal: `a5TimeToTrigger ≤ 640ms; 320–480ms (ms320/ms480) is typical for coverage HO.` },
+            a5_interfreq_balance: { why: `A large gap between the A5 serving and neighbour thresholds either holds the UE on a bad layer or moves it to a target barely better than the source.`, ideal: `threshold3InterFreq = −112dBm (28) and threshold3aInterFreq = −108dBm (32) → target ~4dB better than the serving trigger (2–6dB window).` },
+            interfreq_coverage: { why: `A cell without LNHOIF has no inter-frequency HO profile: UEs at the cell edge can only drop or be redirected.`, ideal: `One LNHOIF per target EARFCN on every LNCEL of the site (e.g. L1800 cell with LNHOIF for L700 and L2600).` },
+            meas_report_config: { why: `Report interval/amount/quantity outside the usual values generates excessive signalling or too few reports to decide the HO.`, ideal: `reportInterval 240–480ms, reportAmount infinity (or r8), triggerQuantity RSRP, reportQuantity both (RSRP+RSRQ).` },
+            transmitted_ss_blocks: { why: `The number of transmitted SSBs must match the beams set in basicBeamSet, otherwise the UE expects beams that are not sent (or misses real ones) — initial access and beam management fail.`, ideal: `numberOfTransmittedSsBlocks equal to the number of '1' bits in basicBeamSet (e.g. 8 beams ↔ 11111111).` },
+            nbiot_capacity_alignment: { why: `NB-IoT capacity parameters off the recommended values reduce the number of devices served or the coverage-enhancement margin.`, ideal: `Use the vendor-recommended NB-IoT capacity set (same values on every NB-IoT carrier of the site).` },
+            expected_cell_size: { why: `expectedCellSize drives PRACH/timing-advance dimensioning: oversized values waste PRACH capacity on high bands; undersized values reject distant UEs on low bands.`, ideal: `High band (≥1800MHz): ≤ 10km (urban 2–5km); low band (700/850MHz): 10–30km depending on site distance.` },
+            earfcn_bw_alignment: { why: `The EARFCN must leave room for the whole channel bandwidth inside the band; otherwise the carrier overlaps the band edge or a neighbour carrier.`, ideal: `Centre EARFCN at least BW/2 from the band edges (e.g. 20MHz carrier ≥ 10MHz from the edge) and carriers not overlapping each other.` },
+            b1_csfb_timer: { why: `A slow B1 time-to-trigger delays CSFB call setup (higher call setup time).`, ideal: `b1TimeToTriggerCSFBUtraMeas ≤ 640ms; 256–320ms is typical for CSFB.` },
+            b2_csfb_thresholds: { why: `B2 serving threshold above the WCDMA A2 start can never fire as configured, because the UE isn't measuring 3G yet; the real trigger becomes threshold2Wcdma.`, ideal: `threshold2Wcdma = −115dBm (25), b2Threshold1Utra = −120dBm (20), b2Threshold2UtraRscp = −105dBm (10), b2Threshold2UtraEcn0 = −14dB (20).` },
+            srvcc_orphan: { why: `With SRVCC enabled, a cell without any 3G neighbour that allows SRVCC drops the VoLTE call when LTE coverage ends.`, ideal: `Every LNCEL has ≥ 1 LNRELW with srvccAllowed = true towards the co-located/overlapping 3G cells.` },
+            endc_nsa_leg: { why: `The B1 (NR add) threshold must be 3–8dB above the A2 (NR release) threshold: smaller margin → EN-DC add/release ping-pong; bigger margin → late NR add.`, ideal: `b1ThresholdNrRsrp = −110dBm (46) and a2ThresholdReleaseSsbRsrp = −116dBm (40) → Δ = +6dB.` },
+            lte_nr_tac_alignment: { why: `In EN-DC the LTE anchor TAC must match the NR configuredEpsTac, otherwise paging/TAU and NR cell identity checks fail.`, ideal: `LNCEL tac = NRCELL configuredEpsTac (e.g. both 5501) on every co-located anchor.` },
+            inactivity_timer_alignment: { why: `Different LTE and NSA inactivity timers release one leg earlier than the other, causing extra RRC transitions and EN-DC re-setup.`, ideal: `LNCEL inactivityTimer = NRBTS nsaInactivityTimer (e.g. both 10s).` },
+            redirect_3g: { why: `Redirect enabled without REDRT targets (or REDRT present with redirect off) means the UE has no 3G fallback at LTE coverage loss.`, ideal: `LNBTS actRedirect enabled + REDRT with redirRat = utraFDD and the 3G UARFCNs of the area on every LNCEL.` },
+            redirect_gsm: { why: `Same as 3G: without a coherent GSM REDRT the UE can't be redirected to 2G at the LTE edge / CSFB.`, ideal: `actRedirect enabled + REDRT redirRat = geran with redirGeranArfcnStructL listing the BCCH ARFCNs of the overlapping GSM cells.` },
+            csfb_geran_target_identity: { why: `Incomplete LNADJG identity, ARFCNs missing from REDRT or duplicated ARFCN+BSIC make CSFB/redirect to GSM land on the wrong or an unknown cell.`, ideal: `Each LNADJG with CI/LAC/RAC/ARFCN/band/BSIC filled, its ARFCN present in redirGeranArfcnStructL of the related LNCEL, and a unique ARFCN+BSIC pair per LNBTS.` },
+            csfb_geran_admission: { why: `If the B2-GERAN RSSI trigger is below the GSM cell admission floor (qRxLevMinGer), the UE is sent to a GSM cell it can't camp on.`, ideal: `b2Threshold2RssiGERAN ≈ −100dBm (10) ≥ qRxLevMinGer ≈ −105dBm, i.e. the trigger at least 3–5dB above the admission floor.` },
+            redirect_nr_to_lte: { why: `NR→LTE redirect enabled without NRREDRT (or the reverse) leaves NR UEs without a defined LTE fallback at NR coverage loss.`, ideal: `NRBTS actRedirect enabled + NRREDRT pointing to the anchor LTE EARFCN(s).` },
+            anr_interfreq: { why: `Without UE-based inter-freq ANR, missing inter-freq neighbours are never learned automatically.`, ideal: `actUeBasedAnrInterFreqLte = true on every LNBTS (with neighbour cleanup policy active).` },
+            twin_beam_sectors: { why: `Twin-beam sectors need consistent configuration on both beams; inconsistencies split the sector unevenly.`, ideal: `Both beams with the same EARFCN/BW/power settings and mirrored azimuth/tilt planning.` },
+            blocked_handover_relations: { why: `Relations with handover blocked prevent HO to that neighbour; unless intentional (border/blacklist) this causes drops.`, ideal: `handoverAllowed = allowed on all LNREL except documented blacklist relations.` },
+            ca_events: { why: `CAPR with A3/A6 disabled cannot add or swap the SCell when the radio changes, reducing CA usage.`, ideal: `A3 and A6 events enabled in every CAPR (e.g. a6Offset 2–3dB).` },
+            ca_coverage: { why: `Cells without CAPR are excluded from carrier aggregation, losing peak/average throughput.`, ideal: `One CAPR on every LNCEL that has co-located carriers to aggregate.` },
+            pcell_swap: { why: `Without PCell swap the UE keeps a weak PCell even when the SCell is better, degrading CA performance.`, ideal: `PCell swap allowed (true) on all CAREL of CA-capable cells.` },
+            volte_quality: { why: `A missing/inconsistent VoLTE quality profile disables the quality-triggered mobility for voice.`, ideal: `VOLTEQUALPR configured and referenced, with thresholds aligned to the coverage plan.` },
+            volte_srvcc: { why: `Without any SRVCC destination VoLTE calls drop at the edge of LTE coverage.`, ideal: `SRVCC to WCDMA and/or GSM enabled where 2G/3G coverage exists.` },
+            volte_interfreq: { why: `With VoLTE inter-freq mobility disabled, voice UEs can't move to another LTE layer on quality degradation.`, ideal: `actVoLTEQualInterFreqMobility = true on multi-layer sites.` },
+            volte_rrc_reest: { why: `VoLTE RLF timers shorter than the SIB defaults make voice UEs declare radio link failure earlier than data UEs.`, ideal: `SIB t310 = 1000ms / n310 = n10 and t310Qci1 = 2000ms / n310Qci1 = n20 (voice at least as tolerant as data).` },
+            bler_targets: { why: `Non-standard BLER targets trade throughput for robustness in the wrong direction (too aggressive → retransmissions, too conservative → low MCS).`, ideal: `Data ≈ 10% initial BLER target; VoLTE (QCI1) ≈ 1–2%.` },
+            prach_random_access: { why: `Non-standard Cat-M PRACH settings reduce access success for low-cost devices in coverage enhancement.`, ideal: `Vendor-recommended Cat-M PRACH set, with repetition levels matching the CE levels in use.` },
+            rlc_pdcp_profile: { why: `Invalid RLC/PDCP profile references make bearer setup fail for the affected QCI.`, ideal: `Every QCI referenced on the cell points to an existing RLC/PDCP profile.` },
+            harq_initial_mcs: { why: `Aggressive initial MCS or HARQ settings for delay-sensitive QCIs increase retransmissions and voice quality issues.`, ideal: `Conservative initial MCS for QCI1 (robust start), HARQ max transmissions per vendor default (e.g. 5 DL / 7 UL).` },
+            dl_rs_boost: { why: `An RS boost is only power-neutral when a matching pB exists; any other value leaves the RS symbols over/under the PA budget. Boost at 0dB with allowPbIndexZero=false wastes ~1dB of PDSCH power.`, ideal: `dlRsBoost = 0dB with allowPbIndexZero = true (pB0), or dlRsBoost = 3dB (pB1) when RS coverage must be extended; dlpcMimoComp aligned with the MIMO mode.` },
+            dl_cell_pwr_red: { why: `A power reduction shrinks the cell; it should only exist when planned (interference control, small cells).`, ideal: `dlCellPwrRed = 0dB (0) unless a planned reduction is documented.` },
+            qrxlevmin_access: { why: `A qrxlevmin above −110dBm cuts camping coverage; cells of the same EARFCN with very different values create uneven idle borders.`, ideal: `qrxlevmin = −124 to −130dBm, the same value on all cells of the same EARFCN; qRxLevMinOffset = 0dB.` },
+            nr_csirs_ssb_alignment: { why: `CSI-RS should not be weaker than the SSB by design; otherwise CSI reports underestimate the channel.`, ideal: `csirsPower ≥ ssPbchBlockPower + 3dB.` },
+            nr_tilt_offset: { why: `An NR tilt offset different from the plan changes the NR footprint vs. the LTE anchor.`, ideal: `NR tilt offset per the RF design (typically 0 when the NR antenna follows the anchor tilt).` },
+            power_saving_4g: { why: `Power-saving features switch carriers/MIMO off at low traffic; verify the schedule and thresholds are intended.`, ideal: `Power saving only on capacity layers, never on the coverage layer, with a night window (e.g. 01:00–06:00).` },
+            power_saving_nr: { why: `NR power saving switches NR resources off at low traffic; check it doesn't hit busy hours.`, ideal: `NR power saving restricted to low-traffic windows, coverage layer always on.` },
+            idle_connected_coherence: { why: `Idle UEs start inter-freq measurements at qrxlevmin + sNonIntrsearch; connected UEs at threshold2InterFreq. A big gap means idle and connected UEs leave the layer at very different RSRP (layer imbalance).`, ideal: `qrxlevmin −124dBm + sNonIntrsearch 10dB = −114dBm vs threshold2InterFreq −112dBm (28) → Δ ≈ −2dB (within ±6dB).` },
+            a5_vs_a2_activation: { why: `The A5 serving threshold above the A2 start can't trigger as configured, because measurements only start at A2; the HO happens later than planned.`, ideal: `threshold3InterFreq = −112dBm (28) ≤ threshold2InterFreq = −110dBm (30).` },
+            intrafreq_a5: { why: `threshold3a below threshold3 allows a coverage HO to a neighbour weaker than the serving cell; a gap > 6dB delays the coverage HO.`, ideal: `threshold3 = −116dBm (24), threshold3a = −112dBm (28) → Δ = +4dB; hysThreshold3 = 0–1dB.` },
+            cio_asymmetry: { why: `Large CIOs shift HO borders strongly; asymmetric co-site pairs move the border differently in each direction (ping-pong or one-way traffic).`, ideal: `cellIndOffNeigh = 0dB by default, ±1–3dB only for tuned relations, and the same value in A→B and B→A.` },
+            reselection_priority_map: { why: `A carrier announced with different priorities (SIB serving vs IRFIM target) makes idle UEs bounce between layers.`, ideal: `One priority per EARFCN everywhere, e.g. L700 = 3, L1800 = 5, L2600 = 6 in every SIB cellReSelPrio and IRFIM eutCelResPrio.` },
+            tac_consistency: { why: `Different TACs inside the same site cause tracking-area updates at sector borders (signalling, paging misses).`, ideal: `Single TAC per site (all LNCEL of the LNBTS with the same tac); TAC borders placed between sites in low-traffic areas.` },
+            pci_mod_cosite: { why: `Same PCI mod 3 on co-site cells of one EARFCN makes their CRS collide (SINR/CQI loss); same mod 30 collides UL DMRS.`, ideal: `Co-site sectors with PCIs 3k, 3k+1, 3k+2 (e.g. 30/31/32) and different mod 30 values.` },
+            prach_root_overlap: { why: `Overlapping root-sequence ranges make co-site cells share preambles: false RACH detections and access failures.`, ideal: `rootSeqIndex spaced by at least the roots each cell uses (prachCS 12 → Ncs 119 → 10 roots: e.g. 0 / 10 / 20 on the three sectors).` },
+            locked_barred_cells: { why: `Locked or barred cells carry no traffic; check they are intentionally out of service.`, ideal: `All planned cells unlocked and SIB cellBarred = notBarred; locked cells only during maintenance/swap.` }
+        };
+
+        // Inserts the guidance block right after the card's summary sentence (before its table / line list).
+        function addHcGuidance(id, result) {
+            const g = HC_GUIDANCE[id];
+            if (!g || (result.status !== 'WARN' && result.status !== 'FAIL')) return result;
+            const block = `\n<div class="hc-guidance"><div><strong>Why it matters:</strong> ${g.why}</div><div><strong>Ideal setup (RF good practice):</strong> ${g.ideal}</div></div>`;
+            const full = result.fullDetail || result.detail || '';
+            const cut = full.search(/\n|<div|<table|<strong>/);
+            const fullDetail = cut > 0 ? full.slice(0, cut) + block + full.slice(cut) : full + block;
+            return { ...result, fullDetail };
         }
 
         const HEALTH_CHECKS = [
-            { id: 'a1_serving_threshold', category: 'Mobility (LTE Events)', icon: 'antenna', title: 'A1 Serving Good-Signal Threshold', run: checkA1ServingGoodSignalThreshold },
+            { id: 'a1_serving_threshold', category: 'Mobility (LTE Events)', icon: 'antenna', title: 'A1 Stop Inter-Freq/RAT Meas (threshold2a)', run: checkA1ServingGoodSignalThreshold },
             { id: 'a2_redirect_timers', category: 'Mobility (LTE Events)', icon: 'antenna', title: 'A2 Redirect & Trigger Timers', run: checkA2RedirectTriggerTimers },
-            { id: 'a2_threshold_margin', category: 'Mobility (LTE Events)', icon: 'antenna', title: 'A2 threshold2a vs threshold2InterFreq Margin', run: checkA2ThresholdMargin },
+            { id: 'a2_threshold_margin', category: 'Mobility (LTE Events)', icon: 'antenna', title: 'A2 Stop/Start Margin (threshold2a vs inter-freq/RAT)', run: checkA2ThresholdMargin },
             { id: 'a3_offset', category: 'Mobility (LTE Events)', icon: 'antenna', title: 'A3 Offset (Intra-Freq HO)', run: checkA3OffsetIntraFreq },
             { id: 'a4_load_balancing', category: 'Mobility (LTE Events)', icon: 'antenna', title: 'A4 Intra-Freq Load Balancing', run: checkA4LoadBalancingConsistency },
             { id: 'a5_ttt', category: 'Mobility (LTE Events)', icon: 'antenna', title: 'A5 Emergency HO Reaction', run: checkA5TimeToTrigger },
@@ -4225,7 +4606,16 @@ B1 (addition) and A2 (release) act on the same NR leg from opposite directions, 
             { id: 'nr_csirs_ssb_alignment', category: 'Power & Coverage', icon: 'bolt', title: 'NR CSI-RS/SSB Power Alignment', run: checkNrCsirsSsbPowerAlignment },
             { id: 'nr_tilt_offset', category: 'Power & Coverage', icon: 'bolt', title: 'NR Tilt Offset', run: checkNrTiltOffset },
             { id: 'power_saving_4g', category: 'Power & Coverage', icon: 'bolt', title: 'Power Saving (4G)', run: checkPowerSaving4G },
-            { id: 'power_saving_nr', category: 'Power & Coverage', icon: 'bolt', title: 'Power Saving (5G)', run: checkPowerSavingNR }
+            { id: 'power_saving_nr', category: 'Power & Coverage', icon: 'bolt', title: 'Power Saving (5G)', run: checkPowerSavingNR },
+            { id: 'idle_connected_coherence', category: 'Mobility (LTE Events)', icon: 'antenna', title: 'Idle ↔ Connected Inter-Freq Trigger', run: checkIdleConnectedCoherence },
+            { id: 'a5_vs_a2_activation', category: 'Mobility (LTE Events)', icon: 'antenna', title: 'A5 Inter-Freq vs A2 Activation', run: checkA5VsA2Activation },
+            { id: 'intrafreq_a5', category: 'Mobility (LTE Events)', icon: 'antenna', title: 'Intra-Freq A5 (threshold3/3a)', run: checkIntraFreqA5 },
+            { id: 'cio_asymmetry', category: 'Mobility (LTE Events)', icon: 'antenna', title: 'CIO Range & Asymmetry (LNREL)', run: checkCioAsymmetry },
+            { id: 'reselection_priority_map', category: 'Mobility (LTE Events)', icon: 'antenna', title: 'Reselection Priority Map (SIB/IRFIM)', run: checkReselectionPriorityMap },
+            { id: 'tac_consistency', category: 'Mobility (LTE Events)', icon: 'antenna', title: 'TAC Consistency per Site', run: checkTacConsistency },
+            { id: 'pci_mod_cosite', category: 'Radio Configuration', icon: 'radio', title: 'PCI Mod-3 / Mod-30 (co-site)', run: checkPciModCosite },
+            { id: 'prach_root_overlap', category: 'Radio Configuration', icon: 'radio', title: 'PRACH Root Sequence Overlap', run: checkPrachRootOverlap },
+            { id: 'locked_barred_cells', category: 'Radio Configuration', icon: 'radio', title: 'Locked / Barred Cells', run: checkLockedBarredCells }
         ];
 
 
@@ -4250,29 +4640,41 @@ B1 (addition) and A2 (release) act on the same NR leg from opposite directions, 
             const isChildOfNbIotCell = (distName) => nbIotLncelSet.has(getParentDistName(distName));
 
             const rawLncel = getMOsByClass('LNCEL');
-            const allLncel = rawLncel.filter(c => !nbIotLncelSet.has(c.distName));
-            const nbIotExcludedCount = rawLncel.length - allLncel.length;
+            const nonNbIotLncel = rawLncel.filter(c => !nbIotLncelSet.has(c.distName));
+            const nbIotExcludedCount = rawLncel.length - nonNbIotLncel.length;
+            // Locked cells are out of service: skip them in every check (reported with 🔒 / N/A below).
+            const lockedLncel = nonNbIotLncel.filter(c => /^locked$/i.test(String(getParamCaseInsensitive(c.params, 'administrativeState') ?? '')));
+            const lockedSet = new Set(lockedLncel.map(c => c.distName));
+            const allLncel = nonNbIotLncel.filter(c => !lockedSet.has(c.distName));
+            const isChildOfLocked = (distName) => lockedSet.has(hcLncelOf(distName));
 
             const ctx = {
                 allLncel,
-                allLncelFdd: getMOsByClass('LNCEL_FDD').filter(o => !isChildOfNbIotCell(o.distName)),
-                allSib: getMOsByClass('SIB').filter(o => !isChildOfNbIotCell(o.distName)),
-                allLnhoif: getMOsByClass('LNHOIF').filter(o => !isChildOfNbIotCell(o.distName)),
-                allLnhow: getMOsByClass('LNHOW').filter(o => !isChildOfNbIotCell(o.distName)),
-                allCapr: getMOsByClass('CAPR').filter(o => !isChildOfNbIotCell(o.distName)),
-                allCarel: getMOsByClass('CAREL').filter(o => !isChildOfNbIotCell(o.distName)),
+                allLncelFdd: getMOsByClass('LNCEL_FDD').filter(o => !isChildOfNbIotCell(o.distName) && !isChildOfLocked(o.distName)),
+                allSib: getMOsByClass('SIB').filter(o => !isChildOfNbIotCell(o.distName) && !isChildOfLocked(o.distName)),
+                allLnhoif: getMOsByClass('LNHOIF').filter(o => !isChildOfNbIotCell(o.distName) && !isChildOfLocked(o.distName)),
+                allLnhow: getMOsByClass('LNHOW').filter(o => !isChildOfNbIotCell(o.distName) && !isChildOfLocked(o.distName)),
+                allCapr: getMOsByClass('CAPR').filter(o => !isChildOfNbIotCell(o.distName) && !isChildOfLocked(o.distName)),
+                allCarel: getMOsByClass('CAREL').filter(o => !isChildOfNbIotCell(o.distName) && !isChildOfLocked(o.distName)),
                 allVolteQualPr: getMOsByClass('VOLTEQUALPR'),
-                allLnrelw: getMOsByClass('LNRELW').filter(o => !isChildOfNbIotCell(o.distName)),
-                allLnrel: getMOsByClass('LNREL').filter(o => !isChildOfNbIotCell(o.distName)),
+                allLnrelw: getMOsByClass('LNRELW').filter(o => !isChildOfNbIotCell(o.distName) && !isChildOfLocked(o.distName)),
+                allLnrel: getMOsByClass('LNREL').filter(o => !isChildOfNbIotCell(o.distName) && !isChildOfLocked(o.distName)),
                 allLnbts: getMOsByClass('LNBTS'),
                 allLnbtsFdd: getMOsByClass('LNBTS_FDD'),
                 allEndcDmeasconf: getMOsByClass('ENDCDMEASCONF'),
                 allNrcell: getMOsByClass('NRCELL'),
                 allPsgrp: getMOsByClass('PSGRP'),
-                allNrbts: getMOsByClass('NRBTS')
+                allNrbts: getMOsByClass('NRBTS'),
+                nbIotSet: nbIotLncelSet,
+                lockedSet
             };
 
-            const results = HEALTH_CHECKS.map(chk => ({ ...chk, result: chk.run(ctx) }));
+            const results = HEALTH_CHECKS.map(chk => ({ ...chk, result: addHcGuidance(chk.id, chk.run(ctx)) }));
+            if (lockedLncel.length > 0) {
+                const lockedNote = `\n\n<strong>🔒 Locked cells skipped (N/A)</strong>` + renderHcDetailTable([{ key: 'icon', label: '' }, { key: 'mo', label: 'LNCEL', mono: true }, { key: 'name', label: 'cellName' }, { key: 'status', label: 'Status' }],
+                    lockedLncel.map(c => ({ icon: '🔒', mo: hcShort(c.distName), name: getParamCaseInsensitive(c.params, 'cellName') || '', status: 'N/A' })));
+                results.forEach(r => { if (r.id !== 'locked_barred_cells') r.result = { ...r.result, fullDetail: (r.result.fullDetail || r.result.detail) + lockedNote }; });
+            }
 
             // Keep full results accessible for the detail modal (cards themselves show a truncated preview).
             healthCheckResultsMap = {};
@@ -4283,6 +4685,9 @@ B1 (addition) and A2 (release) act on the same NR leg from opposite directions, 
 
             const nbIotChip = nbIotExcludedCount > 0
                 ? `<div class="health-summary-chip" style="margin-top:10px;" title="NB-IoT cells use a different parameter template and are skipped by every check above."><span class="led-dot" style="background:#64748b;"></span> ${nbIotExcludedCount} NB-IoT LNCEL excluded from scan</div>`
+                : '';
+            const lockedChip = lockedLncel.length > 0
+                ? `<div class="health-summary-chip" style="margin-top:10px;" title="Locked cells are out of service and are skipped by every check (N/A).">🔒 ${lockedLncel.length} locked LNCEL skipped (N/A): ${lockedLncel.slice(0, 6).map(c => hcShort(c.distName)).join(', ')}${lockedLncel.length > 6 ? '…' : ''}</div>`
                 : '';
 
             stripEl.innerHTML = `
@@ -4305,6 +4710,7 @@ B1 (addition) and A2 (release) act on the same NR leg from opposite directions, 
                     </div>
                 </div>
                 ${nbIotChip}
+                ${lockedChip}
             `;
 
             const statusLabels = { OK: 'OK', WARN: 'To Review', FAIL: 'Critical', NA: 'Not Found' };
@@ -4362,6 +4768,38 @@ B1 (addition) and A2 (release) act on the same NR leg from opposite directions, 
         // (untruncated) result used to fill in the detail modal when a card is clicked.
         let healthCheckResultsMap = {};
 
+        // Rule: every Health Check table that lists LNCEL also shows the cell's EARFCN. Applied to the rendered modal so it
+        // covers both renderHcDetailTable and hand-built tables: inserts an "EARFCN" column right after the first column
+        // whose cells reference an LNCEL, unless the table already has an EARFCN column.
+        function hcEarfcnForText(text) {
+            const m = String(text).match(/LNCEL-(\d+)/);
+            if (!m) return '';
+            const vals = [...new Set(Object.keys(lncelFddParams).filter(dn => /\/LNCEL-\d+$/.test(dn) && dn.endsWith('/LNCEL-' + m[1])).map(dn => hcCellEarfcn(dn)).filter(Boolean))];
+            return vals.length ? vals.join(' / ') : 'N/A';
+        }
+        function hcAddEarfcnColumns(container) {
+            container.querySelectorAll('table').forEach(table => {
+                const headRow = table.querySelector('thead tr') || table.querySelector('tr');
+                if (!headRow || [...headRow.children].some(th => /earfcn/i.test(th.textContent))) return;
+                const bodyRows = [...table.querySelectorAll('tbody tr')].filter(tr => tr !== headRow && tr.children.length === headRow.children.length);
+                if (bodyRows.length === 0) return;
+                let col = -1;
+                for (let c = 0; c < headRow.children.length && col < 0; c++) {
+                    if (bodyRows.some(tr => /LNCEL-\d+/.test(tr.children[c].textContent))) col = c;
+                }
+                if (col < 0) return;
+                const th = document.createElement(headRow.children[col].tagName);
+                th.textContent = 'EARFCN';
+                headRow.children[col].after(th);
+                bodyRows.forEach(tr => {
+                    const td = document.createElement('td');
+                    td.style.fontFamily = "'JetBrains Mono', monospace";
+                    td.textContent = hcEarfcnForText(tr.children[col].textContent) || '—';
+                    tr.children[col].after(td);
+                });
+            });
+        }
+
         function openHealthDetailModal(checkId) {
             const r = healthCheckResultsMap[checkId];
             if (!r) return;
@@ -4380,7 +4818,7 @@ B1 (addition) and A2 (release) act on the same NR leg from opposite directions, 
             if (badgeEl) { badgeEl.innerText = statusLabels[r.result.status]; badgeEl.className = `health-card-badge ${statusClass}`; }
             if (ledEl) ledEl.className = `health-led ${statusClass}`;
             // Body is white-space:pre-wrap, so template indentation between tags would render as blank lines.
-            if (textEl) textEl.innerHTML = String(r.result.fullDetail || r.result.detail).replace(/>\s+</g, '><').replace(/(<\/strong>)\s*\n\s*(<div)/g, '$1$2').trim();
+            if (textEl) { textEl.innerHTML = String(r.result.fullDetail || r.result.detail).replace(/>\s+</g, '><').replace(/(<\/strong>)\s*\n\s*(<div)/g, '$1$2').trim(); hcAddEarfcnColumns(textEl); }
 
             const modal = document.getElementById('healthDetailModalOverlay');
             if (modal) modal.style.display = 'flex';
@@ -4855,14 +5293,19 @@ B1 (addition) and A2 (release) act on the same NR leg from opposite directions, 
             return anyNum ? parseFloat(anyNum[1]) : 10;
         }
 
-        function parsePbToDb(allowPbIndexZero) {
-            if (allowPbIndexZero === undefined || allowPbIndexZero === null) return 0;
-            const idxStr = String(allowPbIndexZero).trim();
-            if (idxStr === '0') return 10 * Math.log10(1.25);  
-            if (idxStr === '1') return 0;                      
-            if (idxStr === '2') return 10 * Math.log10(0.75);  
-            if (idxStr === '3') return 10 * Math.log10(0.50);  
-            return 0;
+        // pB is not configured in the SCF: the eNB derives it from dlRsBoost (TS 36.213 Table 5.2-1, 2/4 Tx ports:
+        // pB0=5/4, pB1=1, pB2=3/4, pB3=1/2). allowPbIndexZero (true/false) only matters at 0dB: 'false' forces pB1.
+        // Coherent boosts: 0dB->pB0, 3dB->pB1, 4.77dB->pB2, 6dB->pB3 (power balance inferred from 36.213); others -> null.
+        function getEffectivePbIndex(boostDb, allowPbIndexZero) {
+            if (isNaN(boostDb)) return null;
+            if (Math.abs(boostDb) < 0.01) return String(allowPbIndexZero ?? '').toLowerCase() === 'false' ? 1 : 0;
+            const m = [{ b: 3, pb: 1 }, { b: 4.77, pb: 2 }, { b: 6, pb: 3 }].find(x => Math.abs(x.b - boostDb) <= 0.3);
+            return m ? m.pb : null;
+        }
+        // PDSCH Type B (no RS) EPRE relative to Type A, in dB (10·log10 ρB/ρA). 0 when pB can't be derived.
+        function parsePbToDb(allowPbIndexZero, dlRsBoostRaw) {
+            const idx = getEffectivePbIndex(hcDbEnum(dlRsBoostRaw ?? 0), allowPbIndexZero);
+            return idx === null ? 0 : 10 * Math.log10([1.25, 1, 0.75, 0.5][idx]);
         }
 
         function formatParamValue(val, paramName = '') {
@@ -5143,19 +5586,19 @@ B1 (addition) and A2 (release) act on the same NR leg from opposite directions, 
 
             powerData4G.forEach(cell => {
                 const fddData = lncelFddParams[cell.distName] || {};
-                const dlRsBoostVal = parseFloat(fddData.dlRsBoost || '0') || 0;
-                const dlpcMimoCompVal = parseFloat(fddData.dlpcMimoComp || '0') || 0;
+                const dlRsBoostVal = hcDbEnum(fddData.dlRsBoost ?? 0) || 0;
+                const dlpcMimoCompVal = (parseFloat(fddData.dlpcMimoComp || '0') || 0) / 100; // stored as dB×100
                 const bwVal = fddData.dlChBw || cell.dlChBw || '10 MHz';
                 const subcarriers = bwToSubcarriers(bwVal);
                 const bwLoss = 10 * Math.log10(subcarriers);
-                const pbDbLoss = parsePbToDb(cell.allowPbIndexZero);
+                const pbDb = parsePbToDb(cell.allowPbIndexZero, fddData.dlRsBoost);
 
                 let reTypeASymbolDbm = 'N/A', reTypeBRsDbm = 'N/A', reTypeBNoRsDbm = 'N/A';
                 if (cell.pMaxDbm !== 'N/A' && !isNaN(cell.pMaxDbm)) {
                     const pMaxDbm = cell.pMaxDbm; const pwrRed = cell.dlCellPwrRed || 0; const mimoComp = dlpcMimoCompVal;
                     reTypeASymbolDbm = (pMaxDbm - pwrRed - mimoComp - bwLoss).toFixed(2);
                     reTypeBRsDbm = (pMaxDbm - pwrRed + dlRsBoostVal - bwLoss).toFixed(2);
-                    reTypeBNoRsDbm = (pMaxDbm - pwrRed - mimoComp - pbDbLoss - bwLoss).toFixed(2);
+                    reTypeBNoRsDbm = (pMaxDbm - pwrRed - mimoComp + pbDb - bwLoss).toFixed(2);
                 }
 
                 boostDataLTE.push({
@@ -8464,17 +8907,17 @@ ${cmDataBlocks}</raml>
                 const subcarriers = bwToSubcarriers(bwStr);
                 const bwLoss = 10 * Math.log10(subcarriers);
                 const pwrRed = cell.dlCellPwrRed || 0;
-                const mimoComp = parseFloat(fddData.dlpcMimoComp || '0') || 0;
+                const mimoComp = (parseFloat(fddData.dlpcMimoComp || '0') || 0) / 100; // stored as dB×100
 
                 let symbolDbm = 'N/A', symbolBRsDbm = 'N/A', symbolBNoRsDbm = 'N/A';
                 if (cell.pMaxDbm !== 'N/A' && !isNaN(cell.pMaxDbm)) {
                     symbolDbm = (cell.pMaxDbm - pwrRed - mimoComp - bwLoss).toFixed(2);
                     // RE Type B (RS / no_RS): same formulas as Boost Analytics (LTE only — dlRsBoost and Pb are LTE parameters).
                     if (is4G) {
-                        const dlRsBoostVal = parseFloat(fddData.dlRsBoost || '0') || 0;
-                        const pbDbLoss = parsePbToDb(cell.allowPbIndexZero);
+                        const dlRsBoostVal = hcDbEnum(fddData.dlRsBoost ?? 0) || 0;
+                        const pbDb = parsePbToDb(cell.allowPbIndexZero, fddData.dlRsBoost);
                         symbolBRsDbm = (cell.pMaxDbm - pwrRed + dlRsBoostVal - bwLoss).toFixed(2);
-                        symbolBNoRsDbm = (cell.pMaxDbm - pwrRed - mimoComp - pbDbLoss - bwLoss).toFixed(2);
+                        symbolBNoRsDbm = (cell.pMaxDbm - pwrRed - mimoComp + pbDb - bwLoss).toFixed(2);
                     }
                 }
                 const symLine = (label, v) => `<span style="white-space:nowrap;"><small style="color:var(--text-muted);">${label}</small> <code>${v !== 'N/A' ? v + ' dBm/RE' : 'N/A'}</code></span>`;
