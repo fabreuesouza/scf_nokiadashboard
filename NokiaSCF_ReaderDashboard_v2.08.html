@@ -980,7 +980,7 @@
     <!-- LINE 1: MAIN BRANDING & FILE ACTIONS HEADER -->
     <header>
         <div class="logo-area">
-            <h1>SCF Nokia Analytics <span class="logo-badge">Pro Suite</span> <span class="logo-badge" style="background:rgba(255,255,255,0.1); font-weight:600;">v2.13</span></h1>
+            <h1>SCF Nokia Analytics <span class="logo-badge">Pro Suite</span> <span class="logo-badge" style="background:rgba(255,255,255,0.1); font-weight:600;">v2.14</span></h1>
         </div>
         <div class="upload-area">
             <span class="summary-badge" id="site-summary">No SCF file loaded</span>
@@ -4768,6 +4768,38 @@ B1 (addition) and A2 (release) act on the same NR leg from opposite directions, 
         // (untruncated) result used to fill in the detail modal when a card is clicked.
         let healthCheckResultsMap = {};
 
+        // Rule: every Health Check table that lists LNCEL also shows the cell's EARFCN. Applied to the rendered modal so it
+        // covers both renderHcDetailTable and hand-built tables: inserts an "EARFCN" column right after the first column
+        // whose cells reference an LNCEL, unless the table already has an EARFCN column.
+        function hcEarfcnForText(text) {
+            const m = String(text).match(/LNCEL-(\d+)/);
+            if (!m) return '';
+            const vals = [...new Set(Object.keys(lncelFddParams).filter(dn => /\/LNCEL-\d+$/.test(dn) && dn.endsWith('/LNCEL-' + m[1])).map(dn => hcCellEarfcn(dn)).filter(Boolean))];
+            return vals.length ? vals.join(' / ') : 'N/A';
+        }
+        function hcAddEarfcnColumns(container) {
+            container.querySelectorAll('table').forEach(table => {
+                const headRow = table.querySelector('thead tr') || table.querySelector('tr');
+                if (!headRow || [...headRow.children].some(th => /earfcn/i.test(th.textContent))) return;
+                const bodyRows = [...table.querySelectorAll('tbody tr')].filter(tr => tr !== headRow && tr.children.length === headRow.children.length);
+                if (bodyRows.length === 0) return;
+                let col = -1;
+                for (let c = 0; c < headRow.children.length && col < 0; c++) {
+                    if (bodyRows.some(tr => /LNCEL-\d+/.test(tr.children[c].textContent))) col = c;
+                }
+                if (col < 0) return;
+                const th = document.createElement(headRow.children[col].tagName);
+                th.textContent = 'EARFCN';
+                headRow.children[col].after(th);
+                bodyRows.forEach(tr => {
+                    const td = document.createElement('td');
+                    td.style.fontFamily = "'JetBrains Mono', monospace";
+                    td.textContent = hcEarfcnForText(tr.children[col].textContent) || '—';
+                    tr.children[col].after(td);
+                });
+            });
+        }
+
         function openHealthDetailModal(checkId) {
             const r = healthCheckResultsMap[checkId];
             if (!r) return;
@@ -4786,7 +4818,7 @@ B1 (addition) and A2 (release) act on the same NR leg from opposite directions, 
             if (badgeEl) { badgeEl.innerText = statusLabels[r.result.status]; badgeEl.className = `health-card-badge ${statusClass}`; }
             if (ledEl) ledEl.className = `health-led ${statusClass}`;
             // Body is white-space:pre-wrap, so template indentation between tags would render as blank lines.
-            if (textEl) textEl.innerHTML = String(r.result.fullDetail || r.result.detail).replace(/>\s+</g, '><').replace(/(<\/strong>)\s*\n\s*(<div)/g, '$1$2').trim();
+            if (textEl) { textEl.innerHTML = String(r.result.fullDetail || r.result.detail).replace(/>\s+</g, '><').replace(/(<\/strong>)\s*\n\s*(<div)/g, '$1$2').trim(); hcAddEarfcnColumns(textEl); }
 
             const modal = document.getElementById('healthDetailModalOverlay');
             if (modal) modal.style.display = 'flex';
