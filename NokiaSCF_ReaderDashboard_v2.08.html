@@ -4,7 +4,229 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Nokia SCF Analytics & Hardware Platform</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400..900&family=JetBrains+Mono:wght@400;500;600;700&family=Montserrat:wght@700;800;900&display=swap" rel="stylesheet">
+    <!-- Blue Design ("Radar") tokens, inlined from fabreuesouza/design-system-css blue-design.css @ 5e3a24b
+         (claude/blue-design). Inlined because the artifact viewer blocks external stylesheets. -->
+    <style id="blue-design-tokens">
+/* ============================================================== TOKENS */
+:root {
+  --bg: #0b0f14;
+  --bg-2: #0f1520;
+  --surface: #151c29;
+  --surface-2: #1b2435;
+  --border: rgba(255, 255, 255, 0.07);
+  --border-2: rgba(255, 255, 255, 0.14);
+  --text: #e8edf5;
+  --muted: #8494aa;
+  --faint: #3d4d60;
+  --accent: #1687ff;
+  --accent-soft: rgba(22, 135, 255, 0.14);
+  --accent-glow: rgba(22, 135, 255, 0.38);
+  --cyan: #26d7e8;
+  --cyan-soft: rgba(38, 215, 232, 0.14);
+  --amber: #f5b400;
+  --on-accent: #ffffff;
+  --kpi: #4aa8ff;
+  --kpi-soft: rgba(22, 135, 255, 0.16);
+  --counter: #26d7e8;
+  --counter-soft: rgba(38, 215, 232, 0.13);
+  --feature: #a78bfa;
+  --feature-soft: rgba(167, 139, 250, 0.15);
+  --param: #f5b400;
+  --param-soft: rgba(245, 180, 0, 0.14);
+  --num: #2db86a;
+  --num-soft: rgba(45, 184, 106, 0.15);
+  --den: #f0952a;
+  --den-soft: rgba(224, 140, 0, 0.16);
+  --warn: #f5b400;
+  --warn-soft: rgba(245, 180, 0, 0.14);
+  --bad: #f26b6b;
+  --bad-soft: rgba(224, 80, 80, 0.16);
+  --ok: #2db86a;
+  --ok-soft: rgba(45, 184, 106, 0.15);
+  --edge: #3d4d60;
+  --star: #f5b400;
+  --glow-1: rgba(22, 135, 255, 0.09);
+  --glow-2: rgba(38, 215, 232, 0.05);
+  --header-ink: #07101d;
+  --boot-bg: #0b0f14;
+  --shadow: 0 4px 24px rgba(0, 0, 0, 0.45);
+  --shadow-lg: 0 10px 48px rgba(0, 0, 0, 0.6);
+  --shadow-primary: 0 8px 22px rgba(0, 91, 172, 0.22);
+  --glow-cyan: 0 0 14px rgba(38, 215, 232, 0.45);
+  --filete: linear-gradient(90deg, #1687ff, #26d7e8 62%, #f5b400);
+
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-10: 40px;
+  --radius-xs: 4px;
+  --radius-chip: 7px;
+  --radius-sm: 9px;
+  --radius-icon: 10px;
+  --radius: 14px;
+  --radius-pill: 999px;
+
+  --font-display: Montserrat, Inter, system-ui, sans-serif;
+  --font-sans: Inter, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  --rapido: 160ms;
+  --curva: cubic-bezier(0.2, 0.8, 0.2, 1);
+  --mola: cubic-bezier(0.34, 1.28, 0.64, 1);
+  color-scheme: dark;
+}
+@media (prefers-color-scheme: light) {
+  :root:not([data-theme="dark"]) {
+    --bg: #eef3f9;
+    --bg-2: #e6ecf5;
+    --surface: #ffffff;
+    --surface-2: #f4f7fc;
+    --border: rgba(0, 91, 172, 0.1);
+    --border-2: rgba(0, 91, 172, 0.2);
+    --text: #0d1a2e;
+    --muted: #55698a;
+    --faint: #b0bfcf;
+    --accent: #005bac;
+    --accent-soft: rgba(0, 91, 172, 0.1);
+    --accent-glow: rgba(0, 91, 172, 0.28);
+    --cyan: #00707f;
+    --cyan-soft: rgba(0, 112, 127, 0.1);
+    --amber: #8a6400;
+    --on-accent: #ffffff;
+    --kpi: #005bac;
+    --kpi-soft: rgba(0, 91, 172, 0.1);
+    --counter: #00707f;
+    --counter-soft: rgba(0, 112, 127, 0.1);
+    --feature: #7c3aed;
+    --feature-soft: rgba(124, 58, 237, 0.1);
+    --param: #8a6400;
+    --param-soft: rgba(163, 118, 0, 0.12);
+    --num: #1a7a43;
+    --num-soft: rgba(31, 138, 76, 0.1);
+    --den: #9a5800;
+    --den-soft: rgba(176, 101, 0, 0.12);
+    --warn: #8a6400;
+    --warn-soft: rgba(163, 118, 0, 0.12);
+    --bad: #b83030;
+    --bad-soft: rgba(200, 55, 55, 0.1);
+    --ok: #1a7a43;
+    --ok-soft: rgba(31, 138, 76, 0.1);
+    --edge: #b0bfcf;
+    --star: #b07d00;
+    --glow-1: rgba(0, 91, 172, 0.06);
+    --glow-2: rgba(0, 112, 127, 0.04);
+    --header-ink: #07101d;
+    --boot-bg: #0b0f14;
+    --shadow: 0 4px 24px rgba(0, 91, 172, 0.08);
+    --shadow-lg: 0 10px 48px rgba(0, 91, 172, 0.16);
+    --shadow-primary: 0 8px 22px rgba(0, 91, 172, 0.22);
+    --glow-cyan: 0 0 14px rgba(38, 215, 232, 0.45);
+    --filete: linear-gradient(90deg, #005bac, #00707f 62%, #a37600);
+    color-scheme: light;
+  }
+}
+:root[data-theme="light"] {
+  --bg: #eef3f9;
+  --bg-2: #e6ecf5;
+  --surface: #ffffff;
+  --surface-2: #f4f7fc;
+  --border: rgba(0, 91, 172, 0.1);
+  --border-2: rgba(0, 91, 172, 0.2);
+  --text: #0d1a2e;
+  --muted: #55698a;
+  --faint: #b0bfcf;
+  --accent: #005bac;
+  --accent-soft: rgba(0, 91, 172, 0.1);
+  --accent-glow: rgba(0, 91, 172, 0.28);
+  --cyan: #00707f;
+  --cyan-soft: rgba(0, 112, 127, 0.1);
+  --amber: #8a6400;
+  --on-accent: #ffffff;
+  --kpi: #005bac;
+  --kpi-soft: rgba(0, 91, 172, 0.1);
+  --counter: #00707f;
+  --counter-soft: rgba(0, 112, 127, 0.1);
+  --feature: #7c3aed;
+  --feature-soft: rgba(124, 58, 237, 0.1);
+  --param: #8a6400;
+  --param-soft: rgba(163, 118, 0, 0.12);
+  --num: #1a7a43;
+  --num-soft: rgba(31, 138, 76, 0.1);
+  --den: #9a5800;
+  --den-soft: rgba(176, 101, 0, 0.12);
+  --warn: #8a6400;
+  --warn-soft: rgba(163, 118, 0, 0.12);
+  --bad: #b83030;
+  --bad-soft: rgba(200, 55, 55, 0.1);
+  --ok: #1a7a43;
+  --ok-soft: rgba(31, 138, 76, 0.1);
+  --edge: #b0bfcf;
+  --star: #b07d00;
+  --glow-1: rgba(0, 91, 172, 0.06);
+  --glow-2: rgba(0, 112, 127, 0.04);
+  --header-ink: #07101d;
+  --boot-bg: #0b0f14;
+  --shadow: 0 4px 24px rgba(0, 91, 172, 0.08);
+  --shadow-lg: 0 10px 48px rgba(0, 91, 172, 0.16);
+  --shadow-primary: 0 8px 22px rgba(0, 91, 172, 0.22);
+  --glow-cyan: 0 0 14px rgba(38, 215, 232, 0.45);
+  --filete: linear-gradient(90deg, #005bac, #00707f 62%, #a37600);
+  color-scheme: light;
+}
+:root[data-theme="dark"] {
+  --bg: #0b0f14;
+  --bg-2: #0f1520;
+  --surface: #151c29;
+  --surface-2: #1b2435;
+  --border: rgba(255, 255, 255, 0.07);
+  --border-2: rgba(255, 255, 255, 0.14);
+  --text: #e8edf5;
+  --muted: #8494aa;
+  --faint: #3d4d60;
+  --accent: #1687ff;
+  --accent-soft: rgba(22, 135, 255, 0.14);
+  --accent-glow: rgba(22, 135, 255, 0.38);
+  --cyan: #26d7e8;
+  --cyan-soft: rgba(38, 215, 232, 0.14);
+  --amber: #f5b400;
+  --on-accent: #ffffff;
+  --kpi: #4aa8ff;
+  --kpi-soft: rgba(22, 135, 255, 0.16);
+  --counter: #26d7e8;
+  --counter-soft: rgba(38, 215, 232, 0.13);
+  --feature: #a78bfa;
+  --feature-soft: rgba(167, 139, 250, 0.15);
+  --param: #f5b400;
+  --param-soft: rgba(245, 180, 0, 0.14);
+  --num: #2db86a;
+  --num-soft: rgba(45, 184, 106, 0.15);
+  --den: #f0952a;
+  --den-soft: rgba(224, 140, 0, 0.16);
+  --warn: #f5b400;
+  --warn-soft: rgba(245, 180, 0, 0.14);
+  --bad: #f26b6b;
+  --bad-soft: rgba(224, 80, 80, 0.16);
+  --ok: #2db86a;
+  --ok-soft: rgba(45, 184, 106, 0.15);
+  --edge: #3d4d60;
+  --star: #f5b400;
+  --glow-1: rgba(22, 135, 255, 0.09);
+  --glow-2: rgba(38, 215, 232, 0.05);
+  --header-ink: #07101d;
+  --boot-bg: #0b0f14;
+  --shadow: 0 4px 24px rgba(0, 0, 0, 0.45);
+  --shadow-lg: 0 10px 48px rgba(0, 0, 0, 0.6);
+  --shadow-primary: 0 8px 22px rgba(0, 91, 172, 0.22);
+  --glow-cyan: 0 0 14px rgba(38, 215, 232, 0.45);
+  --filete: linear-gradient(90deg, #1687ff, #26d7e8 62%, #f5b400);
+  color-scheme: dark;
+}
+    </style>
     <style>
         :root {
             --bg-body: #f8fafc;
@@ -172,6 +394,84 @@
             }
         }
 
+        /* Blue Design mapping: the tool's own tokens now point at blue-design.css tokens, which already
+           switch between dark (default) and light (prefers-color-scheme / data-theme). Must stay after
+           the blocks above so it wins over them. */
+        :root {
+            --bg-body: var(--bg);
+            --bg-card: var(--surface);
+            --bg-subtle: var(--surface-2);
+            --border-color: var(--border);
+            --border-color-strong: var(--border-2);
+            --text-primary: var(--text);
+            --text-secondary: var(--muted);
+            --text-muted: var(--muted);
+
+            --brand-blue: var(--accent);
+            --brand-blue-hover: var(--cyan);
+            --brand-blue-bg: var(--accent-soft);
+            --header-grad: radial-gradient(circle at 8% -60%, rgba(22, 135, 255, 0.45), transparent 42%), radial-gradient(circle at 92% 160%, rgba(38, 215, 232, 0.18), transparent 40%), linear-gradient(105deg, #07101d 0%, #0b1a30 52%, #081321 100%);
+            --subnav-grad: linear-gradient(105deg, #0a1628 0%, #0d1f38 52%, #0a1728 100%);
+            --table-header-bg: #0b1a30;
+            --category-header-bg: #13284a;
+
+            --tech-2g-main: var(--num);
+            --tech-2g-bg: var(--num-soft);
+            --tech-2g-border: color-mix(in srgb, var(--num) 35%, transparent);
+            --tech-3g-main: var(--den);
+            --tech-3g-bg: var(--den-soft);
+            --tech-3g-border: color-mix(in srgb, var(--den) 35%, transparent);
+            --tech-4g-main: var(--kpi);
+            --tech-4g-bg: var(--kpi-soft);
+            --tech-4g-border: color-mix(in srgb, var(--kpi) 35%, transparent);
+            --tech-4g-text: var(--kpi);
+            --tech-5g-main: var(--feature);
+            --tech-5g-bg: var(--feature-soft);
+            --tech-5g-border: color-mix(in srgb, var(--feature) 35%, transparent);
+            --tech-5g-text: var(--feature);
+
+            --badge-true-bg: var(--ok-soft);
+            --badge-true-text: var(--ok);
+            --badge-true-border: color-mix(in srgb, var(--ok) 35%, transparent);
+            --badge-false-bg: var(--bad-soft);
+            --badge-false-text: var(--bad);
+            --badge-false-border: color-mix(in srgb, var(--bad) 35%, transparent);
+            --diff-bg: var(--warn-soft);
+            --diff-border: color-mix(in srgb, var(--warn) 35%, transparent);
+            --diff-text: var(--warn);
+
+            --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.12);
+            --shadow-sm: var(--shadow);
+            --shadow-md: var(--shadow-lg);
+
+            --prio-high-bg: var(--accent-soft);
+            --prio-high-border: color-mix(in srgb, var(--accent) 45%, transparent);
+            --prio-high-text: var(--kpi);
+            --prio-mid-bg: var(--ok-soft);
+            --prio-mid-border: color-mix(in srgb, var(--ok) 45%, transparent);
+            --prio-mid-text: var(--ok);
+            --prio-low-bg: var(--warn-soft);
+            --prio-low-border: color-mix(in srgb, var(--warn) 45%, transparent);
+            --prio-low-text: var(--warn);
+            --prio-alert-bg: var(--bad-soft);
+            --prio-alert-border: color-mix(in srgb, var(--bad) 45%, transparent);
+            --prio-alert-text: var(--bad);
+
+            --hw-smod-bg: var(--accent-soft);
+            --hw-smod-border: var(--accent);
+            --hw-smod-text: var(--kpi);
+            --hw-bbmod-bg: var(--feature-soft);
+            --hw-bbmod-border: var(--feature);
+            --hw-bbmod-text: var(--feature);
+            --hw-rmod-bg: var(--den-soft);
+            --hw-rmod-border: var(--den);
+            --hw-rmod-text: var(--den);
+
+            --status-ok-main: var(--ok);
+            --status-fail-main: var(--bad);
+            --text-color: var(--warn);
+        }
+
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; }
         body { background-color: var(--bg-body); color: var(--text-primary); display: flex; flex-direction: column; height: 100vh; overflow: hidden; font-size: 13px; line-height: 1.4; -webkit-font-smoothing: antialiased; }
         
@@ -183,8 +483,8 @@
         header #site-summary { color: rgba(255,255,255,0.85); }
         header .btn-sec { background-color: rgba(255,255,255,0.14); color: #ffffff; border-color: rgba(255,255,255,0.35); }
         header .btn-sec:hover { background-color: rgba(255,255,255,0.24); border-color: rgba(255,255,255,0.55); color: #ffffff; }
-        header .btn-upload { background: #082426; color: #ffffff; }
-        header .btn-upload:hover { background: #0f3d40; color: #ffffff; }
+        header .btn-upload { background: #1687ff; color: #ffffff; box-shadow: var(--shadow-primary); }
+        header .btn-upload:hover { background: #0f74e0; color: #ffffff; }
         input[type="file"] { display: none; }
         .btn-upload { background: linear-gradient(135deg, var(--brand-blue) 0%, var(--brand-blue-hover) 100%); color: #ffffff; padding: 6px 16px; border: none; border-radius: 9999px; cursor: pointer; font-weight: 600; font-size: 0.775rem; transition: all 0.15s ease; box-shadow: var(--shadow-xs); display: inline-flex; align-items: center; gap: 6px; }
         .btn-upload:hover { filter: brightness(1.08); transform: translateY(-1px); }
@@ -196,7 +496,10 @@
         .main-nav-tabs { display: flex; align-items: center; gap: 2px; background: transparent; padding: 0; border-radius: 0; border: none; flex-wrap: wrap; row-gap: 0; }
         .main-nav-btn { padding: 11px 14px; border: none; background: transparent; font-size: 0.775rem; font-weight: 600; color: rgba(255,255,255,0.72); cursor: pointer; border-radius: 0; border-bottom: 2px solid transparent; transition: all 0.15s ease; display: flex; align-items: center; gap: 6px; white-space: nowrap; }
         .main-nav-btn:hover { color: #ffffff; background: rgba(255,255,255,0.08); }
-        .main-nav-btn.active { background: rgba(255,255,255,0.1); color: #ffffff; font-weight: 700; box-shadow: none; border-bottom: 2px solid #ffffff; }
+        .main-nav-btn.active { background: rgba(255,255,255,0.1); color: #ffffff; font-weight: 700; box-shadow: none; border-bottom: 2px solid transparent; border-image: var(--filete) 1; }
+        header { position: relative; }
+        header::after { content: ''; position: absolute; left: 0; right: 0; bottom: 0; height: 2px; background: var(--filete); box-shadow: var(--glow-cyan); }
+        .logo-area h1 { font-family: var(--font-display); font-weight: 800; }
 
         .main-nav-btn-group { position: relative; }
         .nav-dropdown-menu { display: none; position: absolute; top: 100%; left: 0; background: var(--bg-card); border: 1px solid var(--border-color-strong); border-radius: 8px; box-shadow: var(--shadow-md); min-width: 190px; z-index: 100; padding: 6px; margin-top: 2px; }
@@ -207,7 +510,7 @@
 
         .container { display: flex; flex: 1; overflow: hidden; position: relative; padding: 8px; gap: 8px; min-height: 0; }
         .analytics-view { display: flex; flex: 1; width: 100%; height: 100%; overflow: hidden; gap: 8px; }
-        .stats-sidebar { width: max-content; min-width: 211px; max-width: 356px; background-color: var(--bg-card); border: 1px solid var(--border-color); border-radius: 8px; display: none; flex-direction: column; padding: 12px; gap: 8px; overflow-y: auto; flex-shrink: 0; box-shadow: var(--shadow-xs); }
+        .stats-sidebar { width: 280px; min-width: 211px; max-width: 45vw; background-color: var(--bg-card); border: 1px solid var(--border-color); border-radius: 8px; display: none; flex-direction: column; padding: 12px; gap: 8px; overflow-y: auto; flex-shrink: 0; box-shadow: var(--shadow-xs); }
         
         .kpi-card { background: var(--bg-subtle); border: 1px solid var(--border-color); border-radius: 6px; padding: 10px 12px; display: flex; flex-direction: column; gap: 6px; border-left: 3px solid transparent; }
         .card-2g { border-left-color: var(--tech-2g-main); background-color: var(--tech-2g-bg); }
@@ -222,7 +525,7 @@
         .badge-5g { background-color: var(--bg-card); border: 1px solid var(--tech-5g-border); color: var(--tech-5g-main); }
         .kpi-counter { font-size: 0.85rem; font-weight: 700; font-family: 'JetBrains Mono', monospace; color: var(--text-primary); white-space: nowrap; }
         .cell-chips-container { display: flex; flex-direction: column; gap: 4px; padding-top: 6px; border-top: 1px dashed var(--border-color-strong); }
-        .cell-chip { font-size: 0.7rem; padding: 4px 8px; border-radius: 4px; background: var(--bg-card); border: 1px solid var(--border-color); color: var(--text-secondary); font-family: 'JetBrains Mono', monospace; cursor: pointer; transition: all 0.15s ease; user-select: none; white-space: nowrap; display: block; }
+        .cell-chip { overflow: hidden; text-overflow: ellipsis; font-size: 0.7rem; padding: 4px 8px; border-radius: 4px; background: var(--bg-card); border: 1px solid var(--border-color); color: var(--text-secondary); font-family: 'JetBrains Mono', monospace; cursor: pointer; transition: all 0.15s ease; user-select: none; white-space: nowrap; display: block; }
         .cell-chip:hover { border-color: var(--brand-blue); color: var(--brand-blue); transform: translateX(2px); box-shadow: var(--shadow-xs); }
         .cell-chip strong { color: var(--text-primary); font-weight: 700; }
         
@@ -320,7 +623,7 @@
         .list-title { font-size: 0.725rem; font-weight: 700; color: var(--brand-blue); text-transform: uppercase; letter-spacing: 0.05em; }
         .list-item { background-color: var(--bg-subtle); padding: 8px; border-radius: 6px; border: 1px solid var(--border-color); }
 
-        .boost-view, .cio-view, .power-footprint-view, .layer-priority-view, .hardware-view, .neighbor-view, .neighbor-mapping-view, .health-view { display: none; flex: 1; flex-direction: column; padding: 0; overflow: hidden; gap: 8px; }
+        .boost-view, .cio-view, .power-footprint-view, .layer-priority-view, .hardware-view, .neighbor-view, .neighbor-mapping-view, .neighbor-gsm-view, .health-view { display: none; flex: 1; flex-direction: column; padding: 0; overflow: hidden; gap: 8px; }
         .boost-fixed-header, .footprint-fixed-header { display: flex; flex-direction: column; gap: 8px; flex-shrink: 0; }
         .power-tech-tabs { display: flex; align-items: center; gap: 6px; border-bottom: 1px solid var(--border-color); padding-bottom: 6px; }
         .power-tech-btn { padding: 4px 12px; border-radius: 9999px; border: 1px solid var(--border-color-strong); background: var(--bg-card); font-size: 0.75rem; font-weight: 600; color: var(--text-secondary); cursor: pointer; transition: all 0.15s ease; display: flex; align-items: center; gap: 6px; }
@@ -340,6 +643,34 @@
         .psd-legend-bar { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; background: var(--bg-subtle); padding: 6px 12px; border-radius: 6px; border: 1px solid var(--border-color); font-size: 0.7rem; font-weight: 600; }
         .psd-legend-item { display: flex; align-items: center; gap: 6px; }
         .psd-badge { padding: 2px 7px; border-radius: 4px; font-weight: 700; font-family: 'JetBrains Mono', monospace; font-size: 0.725rem; display: inline-block; white-space: nowrap; }
+        #footprintTable td { font-size: calc(0.775rem - 2px); }
+        /* Responsive Power & Footprint table: fit the card width (no horizontal scroll) — compact padding, wrapping headers and long ids. */
+        #powerFootprintView .footprint-table-scroll { overflow-x: hidden; }
+        #footprintTable { width: 100%; table-layout: auto; }
+        #footprintTable th { font-size: calc(0.675rem - 2px); padding: 6px 5px; letter-spacing: 0.02em; white-space: normal; line-height: 1.25; vertical-align: bottom; }
+        #footprintTable td { padding: 5px 5px; }
+        #footprintTable th.checkbox-cell, #footprintTable td.checkbox-cell { width: 22px; padding-left: 6px; padding-right: 2px; }
+        #footprintTable td:nth-child(2) { min-width: 150px; }
+        #footprintTable td:nth-child(2) small { word-break: break-all; }
+        #footprintTable td:nth-child(n+3) { white-space: normal; }
+        #footprintTable td .psd-badge { white-space: nowrap; padding: 1px 4px; }
+        #footprintTable .rf-tag-4g { font-size: calc(0.595rem - 2px); padding: 1px 4px; margin-top: 2px; }
+        #footprintTable .rf-tag-5g { font-size: calc(0.7rem - 2px); padding: 1px 4px; margin-top: 2px; }
+        #powerFootprintView .footprint-sidebar-filters { width: 225px; }
+        /* Sidebar filters use the table's font sizes: section titles = column headers, chips = table values. */
+        #powerFootprintView .footprint-sidebar-filters .filter-section-title { font-size: calc(0.675rem - 2px); }
+        #powerFootprintView .footprint-sidebar-filters .filter-section-title span.btn-reset { font-size: calc(0.725rem - 2px); }
+        #powerFootprintView .footprint-sidebar-filters .earfcn-chip, #powerFootprintView .footprint-sidebar-filters .earfcn-chip * { font-size: calc(0.725rem - 2px); }
+        #powerFootprintView .footprint-sidebar-filters .earfcn-chip { padding: 3px 7px; }
+        #powerFootprintView .footprint-sidebar-filters .sidebar-chip-group > span { font-size: calc(0.725rem - 2px) !important; }
+        #powerFootprintView .footprint-summary-grid { grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 6px; }
+        #powerFootprintView .power-summary-card { padding: 5px 9px; gap: 0; }
+        #powerFootprintView .power-card-title { font-size: 0.6rem; }
+        #powerFootprintView .power-card-value { font-size: 0.95rem; }
+        #powerFootprintView .power-card-sub { font-size: 0.6rem; }
+        #footprintTable td .psd-badge { font-size: calc(0.725rem - 2px); }
+        /* Value columns from Bandwidth onward (td 1 = checkbox, 2 = cell): one uniform size (the smallest, i.e. the PSD badge) and no bold. */
+        #footprintTable td:nth-child(n+3), #footprintTable td:nth-child(n+3) * { font-size: calc(0.725rem - 2px) !important; font-weight: 400 !important; }
         .psd-badge-blue { background-color: var(--prio-high-bg); color: var(--prio-high-text); border: 1px solid var(--prio-high-border); }
         .psd-badge-green { background-color: var(--badge-true-bg); color: var(--badge-true-text); border: 1px solid var(--badge-true-border); }
         .psd-badge-yellow { background-color: var(--prio-low-bg); color: var(--prio-low-text); border: 1px solid var(--prio-low-border); }
@@ -609,6 +940,12 @@
         .badge-intrasite { background: var(--badge-true-bg); color: var(--badge-true-text); border: 1px solid var(--badge-true-border); }
         .badge-intersite { background: var(--prio-high-bg); color: var(--prio-high-text); border: 1px solid var(--prio-high-border); }
 
+        #nbrGsmTable td.nbr-gsm-group { background: var(--category-header-bg); color: #ffffff; font-weight: 700; font-family: 'JetBrains Mono', monospace; padding: 6px 10px; }
+        #nbrGsmTable td.nbr-gsm-group small { color: rgba(255,255,255,0.75); font-weight: 500; margin-left: 8px; }
+        #nbrGsmTable td { font-family: 'JetBrains Mono', monospace; }
+        .nbr-gsm-bad { color: var(--bad); font-weight: 700; }
+        .nbr-gsm-warn { color: var(--warn); font-weight: 700; }
+        .nbr-gsm-note { font-size: 0.72rem; color: var(--text-muted); padding: 8px 10px; border: 1px dashed var(--border-color-strong); border-radius: 6px; margin-top: 8px; line-height: 1.45; }
         .nbr-summary-container { display: flex; flex-direction: column; flex: 1; overflow: hidden; background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 8px; padding: 10px; box-shadow: var(--shadow-xs); }
         .nbr-summary-scroll { flex: 1; overflow-x: auto; overflow-y: auto; margin-top: 4px; border: 1px solid var(--border-color); border-radius: 6px; }
         .nbr-summary-table { width: 100%; border-collapse: collapse; font-size: 0.725rem; white-space: nowrap; }
@@ -641,7 +978,7 @@
     <!-- LINE 1: MAIN BRANDING & FILE ACTIONS HEADER -->
     <header>
         <div class="logo-area">
-            <h1>SCF Nokia Analytics <span class="logo-badge">Pro Suite</span> <span class="logo-badge" style="background:rgba(255,255,255,0.1); font-weight:600;">v2.08</span></h1>
+            <h1>SCF Nokia Analytics <span class="logo-badge">Pro Suite</span> <span class="logo-badge" style="background:rgba(255,255,255,0.1); font-weight:600;">v2.10</span></h1>
         </div>
         <div class="upload-area">
             <span class="summary-badge" id="site-summary">No SCF file loaded</span>
@@ -673,6 +1010,7 @@
                 <button class="main-nav-btn" id="btnNavNeighbor" onclick="toggleNavDropdown(event, 'neighborDropdownMenu')"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block; vertical-align:-3px; margin-right:2px;"><path d="M9 15l6-6"></path><path d="M8 13l-2 2a3 3 0 0 0 4 4l2-2"></path><path d="M16 11l2-2a3 3 0 0 0-4-4l-2 2"></path></svg>Neighbor Analytics<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block; vertical-align:-1px; margin-left:3px;"><polyline points="6,9 12,15 18,9"></polyline></svg></button>
                 <div class="nav-dropdown-menu" id="neighborDropdownMenu">
                     <button class="nav-dropdown-item" id="btnNavNeighborAudit" onclick="switchMainTab('neighbor'); closeAllNavDropdowns();">Audit</button>
+                    <button class="nav-dropdown-item" id="btnNavNeighborGsm" onclick="switchMainTab('neighborGsm'); closeAllNavDropdowns();">Audit GSM</button>
                     <button class="nav-dropdown-item" id="btnNavNeighborMapping" onclick="switchMainTab('neighborMapping'); closeAllNavDropdowns();">Mapping</button>
                 </div>
             </div>
@@ -711,10 +1049,22 @@
                         <span class="mo-pill" onclick="event.stopPropagation(); quickFilterMoClass('LNREL')">LNREL: <strong id="moCntLnrel">0</strong></span>
                         <span class="mo-pill" onclick="event.stopPropagation(); quickFilterMoClass('LNADJ')">LNADJ: <strong id="moCntLnadj">0</strong></span>
                         <span class="mo-pill" onclick="event.stopPropagation(); quickFilterMoClass('LNADJGNB')">LNADJGNB: <strong id="moCntLnadjgnb">0</strong></span>
+                        <span class="mo-pill" onclick="event.stopPropagation(); quickFilterMoClass('LNADJL')">LNADJL: <strong id="moCntLnadjl">0</strong></span>
                         <span class="mo-pill" onclick="event.stopPropagation(); quickFilterMoClass('LNADJW')">LNADJW: <strong id="moCntLnadjw">0</strong></span>
+                        <span class="mo-pill" onclick="event.stopPropagation(); quickFilterMoClass('LNADJG')">LNADJG: <strong id="moCntLnadjg">0</strong></span>
+                        <span class="mo-pill" onclick="event.stopPropagation(); quickFilterMoClass('LNRELG')">LNRELG: <strong id="moCntLnrelg">0</strong></span>
+                        <span class="mo-pill" onclick="event.stopPropagation(); quickFilterMoClass('LNADJN')">LNADJN: <strong id="moCntLnadjn">0</strong></span>
+                        <span class="mo-pill" onclick="event.stopPropagation(); quickFilterMoClass('LNADJNL')">LNADJNL: <strong id="moCntLnadjnl">0</strong></span>
+                        <span class="mo-pill" onclick="event.stopPropagation(); quickFilterMoClass('GFIM')">GFIM: <strong id="moCntGfim">0</strong></span>
+                        <span class="mo-pill" onclick="event.stopPropagation(); quickFilterMoClass('GNFL')">GNFL: <strong id="moCntGnfl">0</strong></span>
                         <span class="mo-pill" onclick="event.stopPropagation(); quickFilterMoClass('IRFIM')">IRFIM: <strong id="moCntIrfim">0</strong></span>
                         <span class="mo-pill" onclick="event.stopPropagation(); quickFilterMoClass('LNHOIF')">LNHOIF: <strong id="moCntLnhoif">0</strong></span>
                         <span class="mo-pill" onclick="event.stopPropagation(); quickFilterMoClass('LNHOW')">LNHOW: <strong id="moCntLnhow">0</strong></span>
+                        <span class="mo-pill" onclick="event.stopPropagation(); quickFilterMoClass('LNHOG')">LNHOG: <strong id="moCntLnhog">0</strong></span>
+                        <span class="mo-pill" onclick="event.stopPropagation(); quickFilterMoClass('LNHON')">LNHON: <strong id="moCntLnhon">0</strong></span>
+                        <span class="mo-pill" onclick="event.stopPropagation(); quickFilterMoClass('NRMEASDPR')">NRMEASDPR: <strong id="moCntNrmeasdpr">0</strong></span>
+                        <span class="mo-pill" onclick="event.stopPropagation(); quickFilterMoClass('NRMEASPR')">NRMEASPR: <strong id="moCntNrmeaspr">0</strong></span>
+                        <span class="mo-pill" onclick="event.stopPropagation(); quickFilterMoClass('PSGRP')">PSGRP: <strong id="moCntPsgrp">0</strong></span>
                         <span class="mo-pill" onclick="event.stopPropagation(); quickFilterMoClass('ENDCDMEASCONF')">ENDCDMEAS: <strong id="moCntEndcd">0</strong></span>
                         <span class="mo-pill" onclick="event.stopPropagation(); quickFilterMoClass('RMOD')">RMOD: <strong id="moCntRmod">0</strong></span>
                         <span class="mo-pill" onclick="event.stopPropagation(); quickFilterMoClass('SMOD')">SMOD: <strong id="moCntSmod">0</strong></span>
@@ -834,6 +1184,24 @@
                     </div>
                     <div>
                         <div class="filter-section-title">
+                            <span>Sector</span>
+                            <span class="btn-reset" onclick="resetPowerSectors()">Reset</span>
+                        </div>
+                        <div class="sidebar-chip-group" id="powerSectorFilters">
+                            <span style="font-size:0.75rem; color:var(--text-muted);">None</span>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="filter-section-title">
+                            <span>RMOD</span>
+                            <span class="btn-reset" onclick="resetPowerRmods()">Reset</span>
+                        </div>
+                        <div class="sidebar-chip-group" id="powerRmodFilters">
+                            <span style="font-size:0.75rem; color:var(--text-muted);">None</span>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="filter-section-title">
                             <span>Cells (Sector)</span>
                             <span class="btn-reset" onclick="resetPowerCells()">Reset</span>
                         </div>
@@ -856,17 +1224,21 @@
                                 <tr>
                                     <th class="checkbox-cell"><input type="checkbox" id="selectAllPower" onchange="toggleSelectAllPower(this.checked)"></th>
                                     <th>Cell / Object (distName)</th>
+                                    <th title="Radio module carrying the cell — LTE: LNCEL.lcrId → LCELL → CHANNEL.antlDN (ANTL); NR: NRCELL.lcrId → LCELNR → CHANNEL.resourceDN (PHYANT, TxR count)">RMOD</th>
+                                    <th title="Electrical tilt from RETU.angle (0.1° units), linked to the cell's RMOD antenna lines via RETU.antlDNList">RET Tilt</th>
                                     <th>Bandwidth</th>
                                     <th>PMax</th>
                                     <th>PwrRed (dB)</th>
+                                    <th>DL RS Boost</th>
+                                    <th title="SIB-0 qrxLevMin of the LNCEL (minimum required RX level in the cell)">qrxLevMin <span style="white-space:nowrap;">(SIB-0)</span></th>
                                     <th>Power (W)</th>
                                     <th>Spectral Density</th>
                                     <th>Symbol Level</th>
-                                    <th>Footprint Assessment</th>
+                                    <th title="Free-Space Path Loss at d = 0.5 km: FSPL(dB) = 32.44 + 20·log10(d_km) + 20·log10(f_MHz)">FSPL</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                <tr><td colspan="9" style="text-align:center; color:var(--text-muted); font-style:italic;">No SCF file loaded.</td></tr>
+                                <tr><td colspan="13" style="text-align:center; color:var(--text-muted); font-style:italic;">No SCF file loaded.</td></tr>
                             </tbody>
                         </table>
                     </div>
@@ -1155,6 +1527,61 @@
                     </div>
                     <div class="nbr-map-tree-scroll" id="nbrMapTreeScroll">
                         <div style="padding:16px; font-size:0.75rem; color:var(--text-muted); font-style:italic; text-align:center;">Select a source cell above to build its neighbor hierarchy.</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- MODULE 6c: NEIGHBOR AUDIT GSM (LTE <-> GSM) -->
+        <div class="neighbor-gsm-view" id="neighborGsmView">
+            <div class="footprint-fixed-header">
+                <div class="footprint-summary-grid">
+                    <div class="power-summary-card">
+                        <span class="power-card-title">GSM Targets (LNADJG)</span>
+                        <span class="power-card-value" id="nbrGsmTotalAdj">0</span>
+                        <span class="power-card-sub">GERAN neighbor cells defined on the eNB</span>
+                    </div>
+                    <div class="power-summary-card">
+                        <span class="power-card-title">LTE → GSM Relations (LNRELG)</span>
+                        <span class="power-card-value" id="nbrGsmTotalRel">0</span>
+                        <span class="power-card-sub" id="nbrGsmCellsSub">0 of 0 LNCEL with GSM neighbors</span>
+                    </div>
+                    <div class="power-summary-card" style="border-left: 3px solid var(--bad);">
+                        <span class="power-card-title">Issues</span>
+                        <span class="power-card-value" id="nbrGsmTotalIssues" style="color:var(--bad);">0</span>
+                        <span class="power-card-sub">Orphan LNRELG · ARFCN not in REDRT · ARFCN+BSIC duplicated</span>
+                    </div>
+                    <div class="power-summary-card" style="border-left: 3px solid var(--warn);">
+                        <span class="power-card-title">Unused LNADJG</span>
+                        <span class="power-card-value" id="nbrGsmTotalUnused" style="color:var(--warn);">0</span>
+                        <span class="power-card-sub">No LNRELG points to them</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="footprint-main-content" style="margin-top:4px;">
+                <div class="nbr-summary-container">
+                    <div class="panel-ctrl-row" style="margin-bottom: 6px;">
+                        <div>
+                            <h2><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block; vertical-align:-4px; margin-right:4px;"><path d="M9 15l6-6"></path><path d="M8 13l-2 2a3 3 0 0 0 4 4l2-2"></path><path d="M16 11l2-2a3 3 0 0 0-4-4l-2 2"></path></svg>Neighbor Audit GSM (LTE ↔ GSM)</h2>
+                            <span class="summary-badge">Per LNCEL: LNRELG relations resolved to their LNADJG target (same LNBTS + CI/LAC)</span>
+                        </div>
+                        <div style="display:flex; gap: 8px; align-items: center;">
+                            <select class="class-filter-select" id="nbrGsmCellSelect" style="display:inline-block; margin-bottom:0; width:auto;" onchange="renderNeighborGsmAudit()">
+                                <option value="">All LNCEL</option>
+                            </select>
+                            <input type="text" class="search-box" id="nbrGsmSearch" placeholder="Filter CI, LAC, ARFCN, BSIC..." oninput="renderNeighborGsmAudit()" style="margin-bottom:0; width: 200px;">
+                            <label class="nbr-map-conflict-toggle"><input type="checkbox" id="nbrGsmOnlyIssues" onchange="renderNeighborGsmAudit()"> Only issues</label>
+                        </div>
+                    </div>
+                    <div class="nbr-summary-scroll">
+                        <table class="nbr-summary-table" id="nbrGsmTable">
+                            <tbody>
+                                <tr><td style="text-align:center; color:var(--text-muted); font-style:italic;">No SCF file loaded.</td></tr>
+                            </tbody>
+                        </table>
+                        <div id="nbrGsmUnused"></div>
+                        <div class="nbr-gsm-note"><strong>GSM → LTE:</strong> the GSM-side neighbors (LTE targets defined on the BSC/BTS) are not part of an eNB SCF, so this direction can't be read from this file. It needs the BSC configuration (GSM dump) of the co-located GSM cells.</div>
                     </div>
                 </div>
             </div>
@@ -1504,6 +1931,8 @@
         let activePowerEarfcns = new Set();
         let activeBoostCells = new Set();
         let activePowerCells = new Set();
+        let activePowerRmods = new Set();
+        let activePowerSectors = new Set();
         let parameterSets = JSON.parse(localStorage.getItem('nokia_scf_param_sets_v3')) || {};
         let pendingItemToAdd = null;
 
@@ -4223,7 +4652,8 @@ B1 (addition) and A2 (release) act on the same NR leg from opposite directions, 
             document.getElementById('btnNavLms')?.classList.toggle('active', tabName === 'priority' || tabName === 'connectedPriority');
             document.getElementById('btnNavIdlePriority')?.classList.toggle('active', tabName === 'priority');
             document.getElementById('btnNavConnectedPriority')?.classList.toggle('active', tabName === 'connectedPriority');
-            document.getElementById('btnNavNeighbor')?.classList.toggle('active', tabName === 'neighbor' || tabName === 'neighborMapping');
+            document.getElementById('btnNavNeighbor')?.classList.toggle('active', tabName === 'neighbor' || tabName === 'neighborMapping' || tabName === 'neighborGsm');
+            document.getElementById('btnNavNeighborGsm')?.classList.toggle('active', tabName === 'neighborGsm');
             document.getElementById('btnNavNeighborAudit')?.classList.toggle('active', tabName === 'neighbor');
             document.getElementById('btnNavNeighborMapping')?.classList.toggle('active', tabName === 'neighborMapping');
             document.getElementById('btnNavHardware')?.classList.toggle('active', tabName === 'hardware');
@@ -4239,6 +4669,7 @@ B1 (addition) and A2 (release) act on the same NR leg from opposite directions, 
             const cpV = document.getElementById('connectedPriorityView'); if (cpV) cpV.style.display = (tabName === 'connectedPriority') ? 'flex' : 'none';
             const nV = document.getElementById('neighborView'); if (nV) nV.style.display = (tabName === 'neighbor') ? 'flex' : 'none';
             const nmV = document.getElementById('neighborMappingView'); if (nmV) nmV.style.display = (tabName === 'neighborMapping') ? 'flex' : 'none';
+            const ngV = document.getElementById('neighborGsmView'); if (ngV) ngV.style.display = (tabName === 'neighborGsm') ? 'flex' : 'none';
             const hV = document.getElementById('hardwareView'); if (hV) hV.style.display = (tabName === 'hardware') ? 'flex' : 'none';
             const hlV = document.getElementById('healthView'); if (hlV) hlV.style.display = (tabName === 'health') ? 'flex' : 'none';
             const nrV = document.getElementById('nranchorView'); if (nrV) nrV.style.display = (tabName === 'nranchor') ? 'flex' : 'none';
@@ -4253,6 +4684,7 @@ B1 (addition) and A2 (release) act on the same NR leg from opposite directions, 
                 if (tabName === 'connectedPriority') renderConnectedPriorityDashboard();
                 if (tabName === 'neighbor') renderNeighborMapping();
                 if (tabName === 'neighborMapping') renderNeighborMappingDashboard();
+                if (tabName === 'neighborGsm') renderNeighborGsmAudit();
                 if (tabName === 'health') renderFeatureHealthDashboard();
                 if (tabName === 'nranchor') renderNrAnchoringDashboard();
                 if (tabName === 'hardware') {
@@ -4276,6 +4708,7 @@ B1 (addition) and A2 (release) act on the same NR leg from opposite directions, 
             else if (tabName === 'connectedPriority') moduleName = "Connected Priority";
             else if (tabName === 'neighbor') moduleName = "Neighbor Analytics - Audit";
             else if (tabName === 'neighborMapping') moduleName = "Neighbor Analytics - Mapping";
+            else if (tabName === 'neighborGsm') moduleName = "Neighbor Analytics - Audit GSM";
             else if (tabName === 'hardware') moduleName = "Hardware Mapping";
             else if (tabName === 'health') moduleName = "Site Health Check";
             else if (tabName === 'nranchor') moduleName = "NR Anchoring";
@@ -4295,6 +4728,7 @@ B1 (addition) and A2 (release) act on the same NR leg from opposite directions, 
                     if (tabName === 'connectedPriority') renderConnectedPriorityDashboard();
                     if (tabName === 'neighbor') renderNeighborMapping();
                     if (tabName === 'neighborMapping') renderNeighborMappingDashboard();
+                    if (tabName === 'neighborGsm') renderNeighborGsmAudit();
                     if (tabName === 'health') renderFeatureHealthDashboard();
                     if (tabName === 'nranchor') renderNrAnchoringDashboard();
                     if (tabName === 'hardware') {
@@ -4350,6 +4784,8 @@ B1 (addition) and A2 (release) act on the same NR leg from opposite directions, 
             const b4 = document.getElementById('btnPowerTech4G'); if (b4) b4.className = `power-tech-btn ${tech === '4G' ? 'active-4g' : ''}`;
             const b5 = document.getElementById('btnPowerTech5G'); if (b5) b5.className = `power-tech-btn ${tech === '5G' ? 'active-5g' : ''}`;
             buildPowerEarfcnFilter();
+            buildPowerSectorFilter();
+            buildPowerRmodFilter();
             buildPowerCellFilter();
             renderPowerFootprintDashboard();
         }
@@ -4463,13 +4899,14 @@ B1 (addition) and A2 (release) act on the same NR leg from opposite directions, 
             return null;
         }
 
-        function renderLncelRfTag(distName) {
+        function renderLncelRfTag(distName, opts = {}) {
             const lncelDistName = getParentLncelDistName(distName);
             if (lncelDistName && lncelFddParams[lncelDistName]) {
                 const rfData = lncelFddParams[lncelDistName];
                 const earfcnRaw = rfData.earfcnDL || 'N/A';
                 const earfcnInfo = earfcnRaw !== 'N/A' ? earfcnToFreqAndBand(earfcnRaw).text : '';
                 const adminStateVal = getLncelAdminState(lncelDistName);
+                if (opts.compact) return `<div class="rf-tag-4g">EARFCN: <strong>${earfcnRaw}${earfcnInfo}</strong> | State: <strong>${adminStateVal}</strong></div>`;
                 return `<div class="rf-tag-4g">EARFCN: <strong>${earfcnRaw}${earfcnInfo}</strong> | BW: <strong>${rfData.dlChBw || 'N/A'}</strong> | RS Boost: <strong>${rfData.dlRsBoost || 'N/A'} dB</strong> | State: <strong>${adminStateVal}</strong></div>`;
             }
             const nrcellDistName = getParentNrcellDistName(distName);
@@ -4546,7 +4983,7 @@ B1 (addition) and A2 (release) act on the same NR leg from opposite directions, 
             let moCounts = {
                 GNBTS: 0, GNBCF: 0, GNCEL: 0,
                 WNBTS: 0, WNCEL: 0, WNCELG: 0, WNPMRNL: 0,
-                LNBTS: 0, LNCEL: 0, CAREL: 0, LNREL: 0, LNADJ: 0, LNADJGNB: 0, LNADJW: 0, IRFIM: 0, LNHOIF: 0, LNHOW: 0, ENDCDMEASCONF: 0, RMOD: 0, SMOD: 0, ALD: 0, RETU: 0, LNRELGNBCELL: 0,
+                LNBTS: 0, LNCEL: 0, CAREL: 0, LNREL: 0, LNADJ: 0, LNADJGNB: 0, LNADJW: 0, LNADJL: 0, LNADJG: 0, LNRELG: 0, LNHOG: 0, LNADJN: 0, LNADJNL: 0, GFIM: 0, GNFL: 0, LNHON: 0, NRMEASDPR: 0, NRMEASPR: 0, PSGRP: 0, IRFIM: 0, LNHOIF: 0, LNHOW: 0, ENDCDMEASCONF: 0, RMOD: 0, SMOD: 0, ALD: 0, RETU: 0, LNRELGNBCELL: 0,
                 NRBTS: 0, NRCELL: 0, NRADJNRCELL: 0, NRADJGNB: 0, NRREL: 0, XNLINK: 0
             };
 
@@ -4745,6 +5182,18 @@ B1 (addition) and A2 (release) act on the same NR leg from opposite directions, 
             setTxt('moCntIrfim', moCounts.IRFIM);
             setTxt('moCntLnhoif', moCounts.LNHOIF);
             setTxt('moCntLnhow', moCounts.LNHOW);
+            setTxt('moCntLnadjl', moCounts.LNADJL);
+            setTxt('moCntLnadjg', moCounts.LNADJG);
+            setTxt('moCntLnrelg', moCounts.LNRELG);
+            setTxt('moCntLnhog', moCounts.LNHOG);
+            setTxt('moCntLnadjn', moCounts.LNADJN);
+            setTxt('moCntLnadjnl', moCounts.LNADJNL);
+            setTxt('moCntGfim', moCounts.GFIM);
+            setTxt('moCntGnfl', moCounts.GNFL);
+            setTxt('moCntLnhon', moCounts.LNHON);
+            setTxt('moCntNrmeasdpr', moCounts.NRMEASDPR);
+            setTxt('moCntNrmeaspr', moCounts.NRMEASPR);
+            setTxt('moCntPsgrp', moCounts.PSGRP);
             setTxt('moCntEndcd', moCounts.ENDCDMEASCONF);
             setTxt('moCntRmod', moCounts.RMOD);
             setTxt('moCntSmod', moCounts.SMOD);
@@ -4801,6 +5250,8 @@ B1 (addition) and A2 (release) act on the same NR leg from opposite directions, 
             buildBoostEarfcnFilter(); 
             buildBoostCellFilter();
             buildPowerEarfcnFilter();
+            buildPowerSectorFilter();
+            buildPowerRmodFilter();
             buildPowerCellFilter();
             selectedLnrelDistNames.clear();
             buildNeighborCellFilter();
@@ -4817,6 +5268,7 @@ B1 (addition) and A2 (release) act on the same NR leg from opposite directions, 
             renderNrAnchoringDashboard();
             
             const sp = document.getElementById('statsPanel'); if (sp) sp.style.display = 'flex';
+            fitStatsPanelWidth();
             const sb = document.getElementById('sidebar'); if (sb) sb.style.display = 'flex';
             const tc = document.getElementById('treeControls'); if (tc) tc.style.display = 'flex';
             const mp = document.getElementById('mainPanel'); if (mp) mp.style.display = 'block';
@@ -5931,6 +6383,174 @@ B1 (addition) and A2 (release) act on the same NR leg from opposite directions, 
             if (prevVal && seen.has(prevVal)) select.value = prevVal;
         }
 
+        // ============================================================
+        // NEIGHBOR AUDIT GSM: LTE -> GSM (LNRELG per LNCEL, resolved to LNADJG)
+        // ============================================================
+        // LNRELG <-> LNADJG link: same LNBTS + LNRELG ci/lac = LNADJG gTargetCi/gTargetLac
+        // (same rule as the CSFB GERAN Target Cell Identity health check).
+        // Sizes the stats panel to its longest cell chip (LNCEL/WNCEL/NRCELL "id: name"), between 211px and 45% of the viewport;
+        // chips still too long after the cap are cut with an ellipsis and keep the full text in their tooltip.
+        function fitStatsPanelWidth() {
+            const sp = document.getElementById('statsPanel');
+            if (!sp || sp.style.display === 'none') return;
+            const chips = sp.querySelectorAll('.cell-chip');
+            let widest = 0;
+            chips.forEach(c => { widest = Math.max(widest, c.scrollWidth); if (!c.title) c.title = c.textContent; });
+            const card = sp.querySelector('.kpi-card');
+            const cardPad = card ? (card.offsetWidth - card.clientWidth) + parseFloat(getComputedStyle(card).paddingLeft) + parseFloat(getComputedStyle(card).paddingRight) : 30;
+            const panelPad = (sp.offsetWidth - sp.clientWidth) + parseFloat(getComputedStyle(sp).paddingLeft) + parseFloat(getComputedStyle(sp).paddingRight);
+            const target = Math.ceil(widest + cardPad + panelPad + 4);
+            sp.style.width = `${Math.min(Math.max(211, target), Math.floor(window.innerWidth * 0.45))}px`;
+        }
+        window.addEventListener('resize', () => fitStatsPanelWidth());
+
+        function renderNeighborGsmAudit() {
+            const table = document.getElementById('nbrGsmTable');
+            const unusedEl = document.getElementById('nbrGsmUnused');
+            const select = document.getElementById('nbrGsmCellSelect');
+            if (!table || !select) return;
+            const setTxt = (id, v) => { const el = document.getElementById(id); if (el) el.innerText = v; };
+            const tbody = table.querySelector('tbody') || table.appendChild(document.createElement('tbody'));
+            const thead = table.querySelector('thead');
+
+            if (Object.keys(scfData).length === 0) {
+                if (thead) thead.remove();
+                tbody.innerHTML = `<tr><td style="text-align:center; color:var(--text-muted); font-style:italic;">No SCF file loaded.</td></tr>`;
+                if (unusedEl) unusedEl.innerHTML = '';
+                ['nbrGsmTotalAdj', 'nbrGsmTotalRel', 'nbrGsmTotalIssues', 'nbrGsmTotalUnused'].forEach(id => setTxt(id, '0'));
+                return;
+            }
+
+            const isBlank = v => v === undefined || v === null || v === '';
+            const btsOf = dn => { const m = dn.match(/^(.*?LNBTS-[^/]+)/); return m ? m[1] : dn; };
+            const lncelOf = dn => { const m = dn.match(/^(.*?LNCEL-[^/]+)/); return m ? m[1] : getParentDistName(dn); };
+            const shortOf = dn => dn.split('/').pop();
+            const p = (o, k) => getParamCaseInsensitive(o.params, k);
+            const val = v => isBlank(v) ? '<span style="color:var(--text-muted);">N/A</span>' : v;
+            const bad = t => `<span class="nbr-gsm-bad">${t}</span>`;
+
+            const nbIot = getNbIotLncelSet();
+            const allLncel = getMOsByClass('LNCEL').filter(c => !nbIot.has(c.distName)).sort((a, b) => naturalCompare(a.distName, b.distName));
+            const allLnadjg = getMOsByClass('LNADJG');
+            const allLnrelg = getMOsByClass('LNRELG');
+
+            const adjByKey = new Map();
+            allLnadjg.forEach(o => {
+                const key = `${btsOf(o.distName)}|${p(o, 'gTargetCi')}|${p(o, 'gTargetLac')}`;
+                if (!adjByKey.has(key)) adjByKey.set(key, o);
+            });
+
+            // ARFCN+BSIC duplicated among the LNADJG of one LNBTS.
+            const pairCount = new Map();
+            allLnadjg.forEach(o => {
+                const k = `${btsOf(o.distName)}|${p(o, 'arfcnValueGeran')}|${p(o, 'networkColourCode')}/${p(o, 'basestationColourCode')}`;
+                pairCount.set(k, (pairCount.get(k) || 0) + 1);
+            });
+
+            // ARFCNs in redirGeranArfcnStructL of each LNCEL's GSM REDRT.
+            const redrtArfcns = new Map();
+            getMOsByClass('REDRT').filter(r => String(p(r, 'redirRat') || '').toLowerCase() === 'geran').forEach(r => {
+                const cell = lncelOf(r.distName);
+                if (!redrtArfcns.has(cell)) redrtArfcns.set(cell, new Set());
+                ((r.lists && r.lists.redirGeranArfcnStructL) || []).forEach(item => {
+                    const v = getParamCaseInsensitive(item, 'redirGeranArfcnValue');
+                    if (!isBlank(v)) redrtArfcns.get(cell).add(String(v));
+                });
+            });
+
+            const relsByCell = new Map();
+            const usedAdj = new Set();
+            let issueCount = 0;
+            allLnrelg.forEach(rel => {
+                const cell = lncelOf(rel.distName);
+                const adj = adjByKey.get(`${btsOf(rel.distName)}|${p(rel, 'ci')}|${p(rel, 'lac')}`) || null;
+                if (adj) usedAdj.add(adj.distName);
+                const issues = [];
+                let arfcnMissing = false, dupPair = false;
+                if (!adj) issues.push('Orphan: no LNADJG with this CI/LAC');
+                else {
+                    const arfcn = p(adj, 'arfcnValueGeran');
+                    const redrt = redrtArfcns.get(cell);
+                    if (!isBlank(arfcn) && redrt && !redrt.has(String(arfcn))) { arfcnMissing = true; issues.push('ARFCN not in this LNCEL\'s REDRT redirGeranArfcnStructL'); }
+                    if (!redrt) issues.push('No GSM REDRT on this LNCEL');
+                    const k = `${btsOf(adj.distName)}|${arfcn}|${p(adj, 'networkColourCode')}/${p(adj, 'basestationColourCode')}`;
+                    if ((pairCount.get(k) || 0) > 1) { dupPair = true; issues.push('ARFCN+BSIC shared with another LNADJG'); }
+                }
+                if (issues.length > 0) issueCount++;
+                if (!relsByCell.has(cell)) relsByCell.set(cell, []);
+                relsByCell.get(cell).push({ rel, adj, issues, arfcnMissing, dupPair });
+            });
+
+            const cellsWithGsm = allLncel.filter(c => relsByCell.has(c.distName)).length;
+            const unused = allLnadjg.filter(o => !usedAdj.has(o.distName));
+            setTxt('nbrGsmTotalAdj', String(allLnadjg.length));
+            setTxt('nbrGsmTotalRel', String(allLnrelg.length));
+            setTxt('nbrGsmCellsSub', `${cellsWithGsm} of ${allLncel.length} LNCEL with GSM neighbors`);
+            setTxt('nbrGsmTotalIssues', String(issueCount));
+            setTxt('nbrGsmTotalUnused', String(unused.length));
+
+            const prevSel = select.value;
+            select.innerHTML = `<option value="">All LNCEL</option>` + allLncel.map(c => `<option value="${c.distName}">${shortOf(c.distName)}${p(c, 'cellName') ? ' — ' + p(c, 'cellName') : ''} (${(relsByCell.get(c.distName) || []).length})</option>`).join('');
+            if (allLncel.some(c => c.distName === prevSel)) select.value = prevSel;
+
+            const term = (document.getElementById('nbrGsmSearch').value || '').toLowerCase().trim();
+            const onlyIssues = document.getElementById('nbrGsmOnlyIssues').checked;
+            const cols = ['', 'LNRELG', 'LNADJG', 'Target CI', 'LAC', 'RAC', 'ARFCN', 'Band', 'BSIC (NCC/BCC)', 'eNACC', 'SRVCC', 'Redir w/ SI', 'RIM', 'DTM', 'Issues'];
+            // Column header sits under each LNCEL title row (repeated per LNCEL) instead of a single top header.
+            if (thead) thead.remove();
+            const headRow = `<tr>${cols.map(c => `<th>${c}</th>`).join('')}</tr>`;
+
+            const rowsHtml = [];
+            allLncel.filter(c => !select.value || c.distName === select.value).forEach(cell => {
+                let rels = (relsByCell.get(cell.distName) || []).slice().sort((a, b) => naturalCompare(a.rel.distName, b.rel.distName));
+                if (onlyIssues) rels = rels.filter(r => r.issues.length > 0);
+                if (term) rels = rels.filter(r => {
+                    const a = r.adj;
+                    const hay = [shortOf(r.rel.distName), p(r.rel, 'ci'), p(r.rel, 'lac'), a && shortOf(a.distName), a && p(a, 'arfcnValueGeran'), a && `${p(a, 'networkColourCode')}/${p(a, 'basestationColourCode')}`].join(' ').toLowerCase();
+                    return hay.includes(term);
+                });
+                const total = (relsByCell.get(cell.distName) || []).length;
+                if ((onlyIssues || term) && rels.length === 0) return;
+                const tac = p(cell, 'tac') ?? p(cell, 'trackingAreaCode');
+                rowsHtml.push(`<tr><td class="nbr-gsm-group" colspan="${cols.length}">${shortOf(cell.distName)}${p(cell, 'cellName') ? ' — ' + p(cell, 'cellName') : ''}<small>TAC: ${isBlank(tac) ? 'N/A' : tac}</small><small>${total} LNRELG</small></td></tr>`);
+                if (total === 0) {
+                    rowsHtml.push(`<tr><td colspan="${cols.length}" style="color:var(--text-muted); font-style:italic;">No GSM neighbor (LNRELG) on this LNCEL.</td></tr>`);
+                    return;
+                }
+                rowsHtml.push(headRow);
+                rels.forEach(r => {
+                    const a = r.adj;
+                    const bsic = a && !isBlank(p(a, 'networkColourCode')) && !isBlank(p(a, 'basestationColourCode')) ? `${p(a, 'networkColourCode')}/${p(a, 'basestationColourCode')}` : '';
+                    rowsHtml.push(`<tr>
+                        <td>${r.issues.length > 0 ? '❌' : '✅'}</td>
+                        <td>${shortOf(r.rel.distName)}</td>
+                        <td>${a ? shortOf(a.distName) : bad('none')}</td>
+                        <td>${val(p(r.rel, 'ci'))}</td>
+                        <td>${val(p(r.rel, 'lac'))}</td>
+                        <td>${a ? val(p(a, 'gTargetRac')) : val('')}</td>
+                        <td>${a ? (r.arfcnMissing ? bad(p(a, 'arfcnValueGeran')) : val(p(a, 'arfcnValueGeran'))) : val('')}</td>
+                        <td>${a ? val(p(a, 'bandIndicatorGeran')) : val('')}</td>
+                        <td>${r.dupPair ? bad(bsic) : val(bsic)}</td>
+                        <td>${val(p(r.rel, 'eNACCAllowed'))}</td>
+                        <td>${val(p(r.rel, 'srvccAllowed'))}</td>
+                        <td>${val(p(r.rel, 'redirWithSysInfoAllowed'))}</td>
+                        <td>${a ? val(p(a, 'rimStatus')) : val('')}</td>
+                        <td>${a ? val(p(a, 'dtm')) : val('')}</td>
+                        <td style="white-space:normal; min-width:180px;">${r.issues.length > 0 ? r.issues.map(bad).join('<br>') : '<span style="color:var(--ok);">OK</span>'}</td>
+                    </tr>`);
+                });
+            });
+            tbody.innerHTML = rowsHtml.length > 0 ? rowsHtml.join('') : `<tr><td colspan="${cols.length}" style="text-align:center; color:var(--text-muted); font-style:italic;">${allLncel.length === 0 ? 'No LNCEL found in this SCF.' : 'No relation matches the current filter.'}</td></tr>`;
+
+            if (unusedEl) {
+                unusedEl.innerHTML = unused.length === 0 ? '' : `
+                    <div style="padding:8px 10px 4px; font-weight:700; font-size:0.75rem; color:var(--warn);">Unused LNADJG (no LNRELG on any LNCEL points to them)</div>
+                    <table class="nbr-summary-table"><thead><tr><th>LNADJG</th><th>Target CI</th><th>LAC</th><th>RAC</th><th>ARFCN</th><th>Band</th><th>BSIC (NCC/BCC)</th></tr></thead><tbody>
+                    ${unused.sort((a, b) => naturalCompare(a.distName, b.distName)).map(a => `<tr><td>${a.distName.split('/').slice(-2).join('/')}</td><td>${val(p(a, 'gTargetCi'))}</td><td>${val(p(a, 'gTargetLac'))}</td><td>${val(p(a, 'gTargetRac'))}</td><td>${val(p(a, 'arfcnValueGeran'))}</td><td>${val(p(a, 'bandIndicatorGeran'))}</td><td>${val(isBlank(p(a, 'networkColourCode')) ? '' : `${p(a, 'networkColourCode')}/${p(a, 'basestationColourCode')}`)}</td></tr>`).join('')}
+                    </tbody></table>`;
+            }
+        }
+
         function renderNeighborMappingDashboard() {
             if (allNeighborRelationsFlat.length === 0 && Object.keys(scfData).length > 0) renderNeighborMapping();
             populateNeighborMappingSourceSelect();
@@ -6771,6 +7391,127 @@ ${cmDataBlocks}</raml>
             });
         }
 
+        // Power & Footprint dataset without NB-IoT cells (LNCEL with an NBIOT_FDD child) — shared by table and sidebar filters.
+        function getPowerVisibleDataset(is4G) {
+            if (!is4G) return powerData5G;
+            const nbIotLncelSet = getNbIotLncelSet();
+            return powerData4G.filter(cell => !nbIotLncelSet.has(getParentLncelDistName(cell.distName) || cell.distName));
+        }
+
+        // RMOD resources carrying this cell (see buildLcellRmodMap), or null.
+        // LTE: LNCEL.lcrId → LCELL-<lcrId>; NR: NRCELL.lcrId → LCELNR-<lcrId>.
+        function getCellRmods(cell, lcellRmodMap, is4G = true) {
+            const cellDn = (is4G ? getParentLncelDistName(cell.distName) : getParentNrcellDistName(cell.distName)) || cell.distName;
+            const cellMo = scfData[cellDn];
+            const lcrId = String((cellMo && getParamCaseInsensitive(cellMo.params, 'lcrId')) ?? cellDn.split('-').pop());
+            return lcellRmodMap[`${is4G ? 'LCELL' : 'LCELNR'}-${lcrId}`] || null;
+        }
+
+        // "RMOD-3 (ANTL-1/2)" for LTE antenna lines; "RMOD-21 (PHYANT-1, 8T4R)" for NR massive-MIMO physical antennas.
+        function formatCellRmods(byRmod) {
+            return Object.keys(byRmod).sort(naturalCompare).map(r => {
+                const e = byRmod[r];
+                const sortNum = (set) => [...set].sort((a, b) => a - b);
+                if (e.antl.size) return `<span style="white-space:nowrap;">${r}</span> <span style="white-space:nowrap;">(ANTL-${sortNum(e.antl).join('/')})</span>`;
+                return `<span style="white-space:nowrap;">${r}</span> <span style="white-space:nowrap;">(PHYANT-${sortNum(e.phyant).join('/')},</span> <span style="white-space:nowrap;">${e.tx}T${e.rx}R)</span>`;
+            }).join('<br>');
+        }
+
+        // Sector from the cell's RMOD antenna lines (3-sector, 6-port radios): ANTL-1/2 -> 1, ANTL-3/4 -> 2, ANTL-5/6 -> 3.
+        // Returns the sector only when all of the cell's ANTLs fall in the same pair; otherwise null (ambiguous / NR PHYANT).
+        function getCellSector(byRmod) {
+            if (!byRmod) return null;
+            const sectors = new Set();
+            Object.values(byRmod).forEach(e => [...e.antl].forEach(n => sectors.add(Math.ceil(parseInt(n, 10) / 2))));
+            return sectors.size === 1 ? [...sectors][0] : null;
+        }
+
+        function resetPowerSectors() {
+            activePowerSectors.clear();
+            document.querySelectorAll('#powerSectorFilters .earfcn-chip').forEach(chip => chip.classList.remove('active'));
+            renderPowerFootprintDashboard();
+        }
+
+        function togglePowerSector(sec) {
+            if (activePowerSectors.has(sec)) activePowerSectors.delete(sec);
+            else activePowerSectors.add(sec);
+            document.querySelectorAll('#powerSectorFilters .earfcn-chip').forEach(chip => {
+                chip.classList.toggle('active', activePowerSectors.has(chip.dataset.val));
+            });
+            renderPowerFootprintDashboard();
+        }
+
+        function buildPowerSectorFilter() {
+            const container = document.getElementById('powerSectorFilters');
+            if (!container) return;
+            const is4G = window.activePowerTechTab === '4G';
+            container.innerHTML = '';
+            activePowerSectors.clear();
+            const lcellRmodMap = buildLcellRmodMap();
+            const secCells = {};
+            getPowerVisibleDataset(is4G).forEach(cell => {
+                const sec = getCellSector(getCellRmods(cell, lcellRmodMap, is4G));
+                if (sec !== null) secCells[sec] = (secCells[sec] || 0) + 1;
+            });
+            const secs = Object.keys(secCells).sort((a, b) => a - b);
+            if (secs.length === 0) {
+                container.innerHTML = `<span style="font-size:0.75rem; color:var(--text-muted);">${is4G ? 'None' : 'N/A (no ANTL pairs)'}</span>`;
+                return;
+            }
+            secs.forEach(sec => {
+                const chip = document.createElement('div');
+                chip.className = 'earfcn-chip'; chip.dataset.val = sec;
+                chip.title = `${secCells[sec]} cell(s) on ANTL-${sec * 2 - 1}/${sec * 2}`;
+                chip.innerHTML = `<span>Sector ${sec} <small style="opacity:0.7;">(ANTL-${sec * 2 - 1}/${sec * 2})</small></span>`;
+                chip.onclick = () => togglePowerSector(sec);
+                container.appendChild(chip);
+            });
+        }
+
+        function resetPowerRmods() {
+            activePowerRmods.clear();
+            document.querySelectorAll('#powerRmodFilters .earfcn-chip').forEach(chip => chip.classList.remove('active'));
+            renderPowerFootprintDashboard();
+        }
+
+        function togglePowerRmod(rmod) {
+            if (activePowerRmods.has(rmod)) activePowerRmods.delete(rmod);
+            else activePowerRmods.add(rmod);
+            document.querySelectorAll('#powerRmodFilters .earfcn-chip').forEach(chip => {
+                chip.classList.toggle('active', activePowerRmods.has(chip.dataset.val));
+            });
+            renderPowerFootprintDashboard();
+        }
+
+        function buildPowerRmodFilter() {
+            const container = document.getElementById('powerRmodFilters');
+            if (!container) return;
+            const is4G = window.activePowerTechTab === '4G';
+            container.innerHTML = '';
+            activePowerRmods.clear();
+            const lcellRmodMap = buildLcellRmodMap();
+            const rmodCells = {};
+            getPowerVisibleDataset(is4G).forEach(cell => {
+                Object.keys(getCellRmods(cell, lcellRmodMap, is4G) || {}).forEach(r => { rmodCells[r] = (rmodCells[r] || 0) + 1; });
+            });
+            const rmods = Object.keys(rmodCells).sort(naturalCompare);
+            if (rmods.length === 0) {
+                container.innerHTML = '<span style="font-size:0.75rem; color:var(--text-muted);">None</span>';
+                return;
+            }
+            const rmodMos = {};
+            getMOsByClass('RMOD').forEach(o => { rmodMos[o.distName.split('/').pop()] = o; });
+            rmods.forEach(r => {
+                const prod = rmodMos[r] ? (getParamCaseInsensitive(rmodMos[r].params, 'prodCodePlanned') || '') : '';
+                const chip = document.createElement('div');
+                chip.className = 'earfcn-chip'; chip.dataset.val = r;
+                chip.title = `${rmodCells[r]} ${is4G ? 'LTE' : 'NR'} cell(s)`;
+                chip.innerHTML = `<span>${r}${prod ? ` <small style="opacity:0.7;">(${prod})</small>` : ''}</span>`;
+                chip.onclick = () => togglePowerRmod(r);
+                container.appendChild(chip);
+            });
+        }
+
         function togglePowerEarfcn(freq) {
             if (activePowerEarfcns.has(freq)) activePowerEarfcns.delete(freq);
             else activePowerEarfcns.add(freq);
@@ -6787,7 +7528,7 @@ ${cmDataBlocks}</raml>
             const is4G = window.activePowerTechTab === '4G';
             container.innerHTML = '';
             activePowerEarfcns.clear();
-            const activeDataset = is4G ? powerData4G : powerData5G;
+            const activeDataset = getPowerVisibleDataset(is4G);
             const freqs = activeDataset.map(cell => getCellFreq(cell, window.activePowerTechTab)).filter(f => f !== 'N/A');
             const uniqueFreqs = [...new Set(freqs)].sort((a,b) => parseInt(a) - parseInt(b));
             if (uniqueFreqs.length === 0) {
@@ -6818,7 +7559,7 @@ ${cmDataBlocks}</raml>
             const is4G = window.activePowerTechTab === '4G';
             container.innerHTML = '';
             activePowerCells.clear();
-            const activeDataset = is4G ? powerData4G : powerData5G;
+            const activeDataset = getPowerVisibleDataset(is4G);
             const uniqueCells = [...new Set(activeDataset.map(cell => cell.id))].sort(naturalCompare);
             if (uniqueCells.length === 0) {
                 container.innerHTML = '<span style="font-size:0.75rem; color:var(--text-muted);">None</span>';
@@ -7597,6 +8338,69 @@ ${cmDataBlocks}</raml>
             }
         }
 
+        // Cell → radio mapping from MNL/.../CELLMAPPING:
+        //  - LTE: LNCEL.lcrId = LCELL id; LCELL/CHANNELGROUP/CHANNEL.antlDN → .../RMOD-3/ANTL-1
+        //  - NR:  NRCELL.lcrId = LCELNR id; LCELNR/CHANNELGROUP/CHANNEL.resourceDN → .../RMOD-21/PHYANT-1 (massive MIMO)
+        // Returns { 'LCELL-1': { 'RMOD-3': { antl:Set, phyant:Set, tx:n, rx:n } }, 'LCELNR-171': {...} }.
+        function buildLcellRmodMap() {
+            const map = {};
+            getMOsByClass('CHANNEL').forEach(ch => {
+                const lcell = ch.distName.match(/\/(LCELL|LCELNR)-(\d+)\//);
+                if (!lcell) return;
+                const ref = String(getParamCaseInsensitive(ch.params, 'antlDN') || getParamCaseInsensitive(ch.params, 'resourceDN') || '');
+                const m = ref.match(/(RMOD-\d+)\/(ANTL|PHYANT)-(\d+)/);
+                if (!m) return;
+                const byRmod = map[`${lcell[1]}-${lcell[2]}`] || (map[`${lcell[1]}-${lcell[2]}`] = {});
+                const e = byRmod[m[1]] || (byRmod[m[1]] = { antl: new Set(), phyant: new Set(), tx: 0, rx: 0 });
+                e[m[2] === 'ANTL' ? 'antl' : 'phyant'].add(m[3]);
+                const dir = String(getParamCaseInsensitive(ch.params, 'direction') || '').toUpperCase();
+                if (dir === 'TX') e.tx++; else if (dir === 'RX') e.rx++;
+            });
+            return map;
+        }
+
+        // RET mapping: each ALD/RETU lists the antenna lines it tilts in RETU.antlDNList (e.g. .../RMOD-1/ANTL-1).
+        // Returns { 'RMOD-1/ANTL-1': [ { dn, label: 'ALD-1/RETU-1', angle, minAngle, maxAngle, antModel, sectorID } ] }.
+        function buildAntlRetuMap() {
+            const map = {};
+            getMOsByClass('RETU').forEach(retu => {
+                const label = (retu.distName.match(/ALD-\d+\/RETU-\d+$/) || [retu.distName.split('/').pop()])[0];
+                const info = {
+                    dn: retu.distName, label,
+                    angle: getParamCaseInsensitive(retu.params, 'angle'),
+                    minAngle: getParamCaseInsensitive(retu.params, 'minAngle'),
+                    maxAngle: getParamCaseInsensitive(retu.params, 'maxAngle'),
+                    antModel: getParamCaseInsensitive(retu.params, 'antModel') || '',
+                    sectorID: getParamCaseInsensitive(retu.params, 'sectorID') || ''
+                };
+                const antls = (retu.lists && retu.lists['antlDNList']) ? retu.lists['antlDNList'] : [];
+                antls.forEach(a => {
+                    const m = String(a).match(/(RMOD-\d+)\/(ANTL|PHYANT)-(\d+)/);
+                    if (!m) return;
+                    const key = `${m[1]}/${m[2]}-${m[3]}`;
+                    (map[key] || (map[key] = [])).push(info);
+                });
+            });
+            return map;
+        }
+
+        // RETUs serving a cell's RMOD antenna lines (deduplicated), as HTML: "11.0°" + gray "ALD-1/RETU-1".
+        function formatCellRet(byRmod, antlRetuMap) {
+            if (!byRmod) return 'N/A';
+            const found = new Map();
+            Object.keys(byRmod).forEach(r => {
+                const e = byRmod[r];
+                [...e.antl].forEach(n => (antlRetuMap[`${r}/ANTL-${n}`] || []).forEach(i => found.set(i.dn, i)));
+                [...e.phyant].forEach(n => (antlRetuMap[`${r}/PHYANT-${n}`] || []).forEach(i => found.set(i.dn, i)));
+            });
+            if (found.size === 0) return 'N/A';
+            const deg = (v) => { const n = parseFloat(v); return isNaN(n) ? (v ?? 'N/A') : `${(n / 10).toFixed(1)}°`; };
+            return [...found.values()].sort((a, b) => naturalCompare(a.label, b.label)).map(i => {
+                const tip = `${i.label} | angle=${i.angle} (0.1°) | range ${deg(i.minAngle)}–${deg(i.maxAngle)}${i.antModel ? ' | ' + i.antModel : ''}${i.sectorID ? ' | sectorID ' + i.sectorID : ''}`;
+                return `<span title="${tip}">${deg(i.angle)}</span><br><small style="color:var(--text-muted); font-family:'JetBrains Mono', monospace; white-space:nowrap;">${i.label}</small>`;
+            }).join('<br>');
+        }
+
         function renderPowerFootprintDashboard() {
             const tbody = document.querySelector('#footprintTable tbody');
             if (!tbody) return;
@@ -7612,7 +8416,16 @@ ${cmDataBlocks}</raml>
             const ptsw = document.getElementById('powerTotalSiteWatt'); if (ptsw) ptsw.innerText = `${layerTotalWatts.toFixed(2)} W`;
             const ptsd = document.getElementById('powerTotalSiteDbm'); if (ptsd) ptsd.innerText = `(${wattToDbm(layerTotalWatts).toFixed(1)} dBm / ${(layerTotalWatts/1000).toFixed(3)} kW)`;
 
-            let filteredDataset = activeDataset;
+            // Hide NB-IoT cells (LNCEL with an NBIOT_FDD child) from the table, same as other LTE modules.
+            let filteredDataset = getPowerVisibleDataset(is4G);
+            const lcellRmodMap = buildLcellRmodMap();
+            const antlRetuMap = buildAntlRetuMap();
+            if (activePowerRmods.size > 0) {
+                filteredDataset = filteredDataset.filter(cell => Object.keys(getCellRmods(cell, lcellRmodMap, is4G) || {}).some(r => activePowerRmods.has(r)));
+            }
+            if (activePowerSectors.size > 0) {
+                filteredDataset = filteredDataset.filter(cell => activePowerSectors.has(String(getCellSector(getCellRmods(cell, lcellRmodMap, is4G)))));
+            }
             if (activePowerEarfcns.size > 0) {
                 filteredDataset = filteredDataset.filter(cell => activePowerEarfcns.has(getCellFreq(cell, window.activePowerTechTab)));
             }
@@ -7627,7 +8440,7 @@ ${cmDataBlocks}</raml>
                 : 'Power Spectral Density (PSD) & Footprint Audit (NRCELL)';
 
             if (filteredDataset.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="9" style="text-align:center; color:var(--text-muted); font-style:italic;">No ${is4G ? '4G (LNCEL)' : '5G (NRCELL)'} cells found matching current filter.</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="13" style="text-align:center; color:var(--text-muted); font-style:italic;">No ${is4G ? '4G (LNCEL)' : '5G (NRCELL)'} cells found matching current filter.</td></tr>`;
                 const ftc = document.getElementById('fpTotalCells'); if (ftc) ftc.innerText = `0 Cells`;
                 const fbc = document.getElementById('fpBalancedCount'); if (fbc) fbc.innerText = `0 Cells`;
                 const flc = document.getElementById('fpLowCount'); if (flc) flc.innerText = `0 Cells`;
@@ -7653,45 +8466,87 @@ ${cmDataBlocks}</raml>
                 const pwrRed = cell.dlCellPwrRed || 0;
                 const mimoComp = parseFloat(fddData.dlpcMimoComp || '0') || 0;
 
-                let symbolDbm = 'N/A';
+                let symbolDbm = 'N/A', symbolBRsDbm = 'N/A', symbolBNoRsDbm = 'N/A';
                 if (cell.pMaxDbm !== 'N/A' && !isNaN(cell.pMaxDbm)) {
                     symbolDbm = (cell.pMaxDbm - pwrRed - mimoComp - bwLoss).toFixed(2);
+                    // RE Type B (RS / no_RS): same formulas as Boost Analytics (LTE only — dlRsBoost and Pb are LTE parameters).
+                    if (is4G) {
+                        const dlRsBoostVal = parseFloat(fddData.dlRsBoost || '0') || 0;
+                        const pbDbLoss = parsePbToDb(cell.allowPbIndexZero);
+                        symbolBRsDbm = (cell.pMaxDbm - pwrRed + dlRsBoostVal - bwLoss).toFixed(2);
+                        symbolBNoRsDbm = (cell.pMaxDbm - pwrRed - mimoComp - pbDbLoss - bwLoss).toFixed(2);
+                    }
                 }
+                const symLine = (label, v) => `<span style="white-space:nowrap;"><small style="color:var(--text-muted);">${label}</small> <code>${v !== 'N/A' ? v + ' dBm/RE' : 'N/A'}</code></span>`;
+                const symbolHtml = is4G
+                    ? [symLine('A', symbolDbm), symLine('B RS', symbolBRsDbm), symLine('B no_RS', symbolBNoRsDbm)].join('<br>')
+                    : symLine('A', symbolDbm);
 
                 const psdWattsPerMhz = bwMhz > 0 ? (cell.pMaxWatt / bwMhz) : 0;
                 let badgeClass = 'psd-badge-green';
-                let assessmentText = '🟢 Optimal PSD Alignment Target';
 
                 if (psdWattsPerMhz < 2.0) {
                     badgeClass = 'psd-badge-blue';
-                    assessmentText = '🔵 Low Density / Cell Shrinkage Risk';
                     lowCount++;
                 } else if (psdWattsPerMhz >= 2.0 && psdWattsPerMhz <= 4.0) {
                     badgeClass = 'psd-badge-green';
-                    assessmentText = '🟢 Optimal PSD Alignment Target';
                     balancedCount++;
                 } else if (psdWattsPerMhz > 4.0 && psdWattsPerMhz <= 6.0) {
                     badgeClass = 'psd-badge-yellow';
-                    assessmentText = '🟡 High Power / Potential Interference';
                     highCount++;
                 } else {
                     badgeClass = 'psd-badge-red';
-                    assessmentText = '🔴 Critical Dominance / Footprint Inversion';
                     highCount++;
                 }
 
-                const rfTagHtml = renderLncelRfTag(cell.distName);
+                // Free-Space Path Loss at a fixed 0.5 km reference distance, using the cell's DL carrier
+                // frequency: FSPL(dB) = 32.44 + 20·log10(d_km) + 20·log10(f_MHz).
+                const fsplDistKm = 0.5;
+                const freqRaw = getCellFreq(cell, window.activePowerTechTab);
+                let fsplFreqMhz = 0;
+                if (freqRaw !== 'N/A') {
+                    if (is4G) {
+                        const bi = earfcnToBandInfo(freqRaw);
+                        fsplFreqMhz = bi ? bi.freqMHz : earfcnToFreqAndBand(freqRaw).freqMhz;
+                    } else {
+                        fsplFreqMhz = nrArfcnToFreqMHz(freqRaw) || 0;
+                    }
+                }
+                const fsplHtml = fsplFreqMhz > 0
+                    ? `<code>${(32.44 + 20 * Math.log10(fsplDistKm) + 20 * Math.log10(fsplFreqMhz)).toFixed(2)} dB</code><br><small style="color:var(--text-muted); font-family:'JetBrains Mono', monospace; white-space:nowrap;">f = ${fsplFreqMhz} MHz</small><br><small style="color:var(--text-muted); font-family:'JetBrains Mono', monospace; white-space:nowrap;">d = ${fsplDistKm} km</small>`
+                    : 'N/A';
+
+                // RMOD + antenna lines (LTE) / physical antenna + TX/RX channel count (NR).
+                const byRmod = getCellRmods(cell, lcellRmodMap, is4G);
+                const rmodHtml = byRmod ? formatCellRmods(byRmod) : 'N/A';
+
+                // SIB-0 qrxLevMin (LTE only): read from the LNCEL's SIB-0 child MO.
+                let qrxLevMinHtml = '<span style="color:var(--text-muted);">—</span>';
+                if (is4G) {
+                    const lncelDn = getParentLncelDistName(cell.distName) || cell.distName;
+                    const sib0 = scfData[`${lncelDn}/SIB-0`];
+                    const qrx = sib0 ? getParamCaseInsensitive(sib0.params, 'qrxLevMin') : undefined;
+                    qrxLevMinHtml = (qrx !== undefined && qrx !== null && qrx !== '')
+                        ? `<strong>${qrx}${/^-?\d+(\.\d+)?$/.test(String(qrx).trim()) ? ' dBm' : ''}</strong>`
+                        : 'N/A';
+                }
+
+                const rfTagHtml = renderLncelRfTag(cell.distName, { compact: true });
                 const tr = document.createElement('tr');
                 tr.innerHTML = `
                     <td class="checkbox-cell"><input type="checkbox" class="power-cell-checkbox" data-watt="${cell.pMaxWatt || 0}" onchange="recalculateSelectedPower()"></td>
                     <td><strong>${cell.id}</strong>: ${cell.name}<br><small style="color:var(--text-muted); font-family:'JetBrains Mono', monospace;">${cell.distName}</small>${rfTagHtml ? '<br>' + rfTagHtml : ''}</td>
+                    <td>${rmodHtml}</td>
+                    <td>${formatCellRet(byRmod, antlRetuMap)}</td>
                     <td><strong>${bwMhz} MHz</strong></td>
                     <td><strong>${cell.pMaxDbm !== 'N/A' ? cell.pMaxDbm.toFixed(1) : 'N/A'}</strong></td>
                     <td>${(cell.dlCellPwrRed !== undefined && cell.dlCellPwrRed !== null) ? cell.dlCellPwrRed + ' dB' : 'N/A'}</td>
+                    <td>${is4G ? ((fddData.dlRsBoost !== undefined && fddData.dlRsBoost !== '') ? fddData.dlRsBoost : 'N/A') : '<span style="color:var(--text-muted);">—</span>'}</td>
+                    <td>${qrxLevMinHtml}</td>
                     <td><strong style="color:${is4G ? 'var(--brand-blue)' : 'var(--tech-5g-text)'}; font-size:1.05em;">${cell.pMaxWatt > 0 ? cell.pMaxWatt.toFixed(2) + ' W' : 'N/A'}</strong></td>
                     <td><span class="psd-badge ${badgeClass}">${psdWattsPerMhz.toFixed(2)} W/MHz</span></td>
-                    <td><code>${symbolDbm !== 'N/A' ? symbolDbm + ' dBm/RE' : 'N/A'}</code></td>
-                    <td><span style="font-weight:600; font-size:0.85em;">${assessmentText}</span></td>
+                    <td>${symbolHtml}</td>
+                    <td>${fsplHtml}</td>
                 `;
                 tbody.appendChild(tr);
             });

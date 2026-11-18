@@ -5,7 +5,7 @@ Leia isto antes de qualquer tarefa. Este arquivo é carregado automaticamente em
 ## O projeto
 
 - Ferramenta web **de arquivo único**: `NokiaSCF_ReaderDashboard_v2.08.html` (~8.8k linhas, HTML + CSS + JS inline, sem build, sem dependências além de Google Fonts).
-- Lê arquivos SCF (XML de configuração de sites Nokia LTE/NR) no navegador e gera módulos de análise. Versão exibida no header: **v2.08**.
+- Lê arquivos SCF (XML de configuração de sites Nokia LTE/NR) no navegador e gera módulos de análise. Versão exibida no header: **v2.10** (o nome do arquivo continua `_v2.08.html`).
 - O dono trabalha com engenharia/otimização de redes Nokia. Comunicação em **português**; código, comentários e commits em **inglês**.
 
 ## Fluxo de trabalho combinado (fazer sempre, sem perguntar)
@@ -17,8 +17,15 @@ Leia isto antes de qualquer tarefa. Este arquivo é carregado automaticamente em
 5. Responder em português, curto, dizendo o que mudou e que não foi testado com SCF real (quando for o caso).
 
 - O aviso do artifact sobre "download link" é conhecido e pode ser ignorado (botões de exportar não funcionam dentro do viewer).
+- **A cada update publicado, incrementar a versão no header** (`<span class="logo-badge" ...>vX.YY</span>` no `<h1>`): +0.01 por update (v2.09 → v2.10 → …) e atualizar a versão citada neste arquivo. O nome do arquivo não muda.
 - Não criar PR sem pedido explícito.
 - Se o nome do arquivo mudar de versão, atualizar este CLAUDE.md e o README.md.
+
+## Design system (Blue Design)
+
+- Visual vem do `blue-design.css` do repo `fabreuesouza/design-system-css`, branch `claude/blue-design` (ainda não está na `main`), com os tokens (`:root` dos temas) **embutidos** no `<style id="blue-design-tokens">` do `<head>`, copiados do commit `5e3a24b`. O viewer do artifact bloqueia CSS externo, então não usar `<link>` para o jsDelivr; ao atualizar o design system, recopiar o bloco TOKENS do `blue-design.css`.
+- Logo após os blocos de tokens próprios da ferramenta existe um bloco `:root` de mapeamento (`--bg-body: var(--bg)`, `--brand-blue: var(--accent)`, tech 2G/3G/4G/5G → `--num/--den/--kpi/--feature`, etc.). Para mudar cores, mexer nesse mapeamento, não nos hex antigos.
+- Tema escuro é o padrão; claro segue `prefers-color-scheme: light` ou `<html data-theme="light">`. Header sempre escuro, com o filete azul→ciano→âmbar.
 
 ## Base de parâmetros Nokia (`fabreuesouza/nokia_database`)
 
@@ -75,7 +82,15 @@ Use `grep -n` pelo nome da função em vez de confiar nos números.
   - Colunas: ícone, MO, Related LNCEL/LNRELG, CI, LAC, RAC, ARFCN, Band, BSIC, Status. (Colunas `targetCellDn`/`targetName` foram testadas e removidas — sem dado no SCF.)
   - ARFCN do LNADJG deve estar no `redirGeranArfcnStructL` dos REDRT GSM de cada LNCEL relacionado; ausente → vermelho + FAIL.
   - Par ARFCN + BSIC duplicado na mesma LNBTS → FAIL (tabela própria).
+- **Cell → RMOD** (`buildLcellRmodMap`, `getCellRmods`): LTE `LNCEL.lcrId` → `MNL/.../CELLMAPPING/LCELL-<lcrId>/CHANNELGROUP/CHANNEL.antlDN` → `RMOD-x/ANTL-y` (exibe `RMOD-3 (ANTL-1/2)`); NR `NRCELL.lcrId` → `LCELNR-<lcrId>/.../CHANNEL.resourceDN` → `RMOD-x/PHYANT-y` (exibe `RMOD-21 (PHYANT-1, 8T4R)`, contando canais TX/RX).
+- **Cell → RET** (`buildAntlRetuMap`, `formatCellRet`): `ALD-x/RETU-y.antlDNList` lista as ANTL do RMOD; cruzando com as ANTL da célula obtém-se o tilt. `angle` em 0.1° (110 → 11.0°). NR (PHYANT) normalmente sem RETU → N/A.
+- **Power & Footprint**: células NB-IoT (LNCEL com filho NBIOT_FDD) ocultas da tabela e dos filtros (`getPowerVisibleDataset`); filtros laterais por Sector (ANTL-1/2→1, 3/4→2, 5/6→3; só LTE) e RMOD; colunas: Cell, RMOD, RET Tilt, Bandwidth, PMax, PwrRed, DL RS Boost, qrxLevMin (SIB-0), Power (W), Spectral Density, Symbol Level (LTE: 3 linhas — RE Type A, B RS, B no_RS, mesmas fórmulas do Boost Analytics; NR: só A), FSPL (f e d = 0.5 km em cinza na célula).
+- **Neighbor Analytics → Audit GSM** (`renderNeighborGsmAudit`, view `neighborGsmView`, tab `neighborGsm`): por LNCEL, lista as LNRELG resolvidas para a LNADJG (mesma regra LNBTS + CI/LAC). Colunas: LNRELG, LNADJG, CI, LAC, RAC, ARFCN, Band, BSIC, eNACC, SRVCC, Redir w/ SI, RIM, DTM, Issues. Issues: LNRELG órfã, ARFCN fora do REDRT GSM do LNCEL, ARFCN+BSIC duplicado. Cabeçalho de colunas repetido sob cada linha de LNCEL (que mostra também o TAC). Tabela extra de LNADJG não usadas. Ordem do menu: Audit, Audit GSM, Mapping. GSM → LTE não existe no SCF (precisa do dump da BSC).
 - **Modal do Health Check**: 1080px de largura; fonte do detalhe `calc(0.76rem - 1px)`, tabela `calc(0.7rem - 1px)`.
+
+## Agentes
+
+- `lte-agent` (`.claude/agents/lte-agent.md`): especialista LTE Nokia; analisa e recomenda melhorias em toda a parte LTE do viewer, usando o `nokia_database` e 3GPP como fonte. Só edita código se pedido.
 
 ## Pendências / ideias
 
