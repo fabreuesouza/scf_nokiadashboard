@@ -978,7 +978,7 @@
     <!-- LINE 1: MAIN BRANDING & FILE ACTIONS HEADER -->
     <header>
         <div class="logo-area">
-            <h1>SCF Nokia Analytics <span class="logo-badge">Pro Suite</span> <span class="logo-badge" style="background:rgba(255,255,255,0.1); font-weight:600;">v2.09</span></h1>
+            <h1>SCF Nokia Analytics <span class="logo-badge">Pro Suite</span> <span class="logo-badge" style="background:rgba(255,255,255,0.1); font-weight:600;">v2.10</span></h1>
         </div>
         <div class="upload-area">
             <span class="summary-badge" id="site-summary">No SCF file loaded</span>
@@ -8466,10 +8466,21 @@ ${cmDataBlocks}</raml>
                 const pwrRed = cell.dlCellPwrRed || 0;
                 const mimoComp = parseFloat(fddData.dlpcMimoComp || '0') || 0;
 
-                let symbolDbm = 'N/A';
+                let symbolDbm = 'N/A', symbolBRsDbm = 'N/A', symbolBNoRsDbm = 'N/A';
                 if (cell.pMaxDbm !== 'N/A' && !isNaN(cell.pMaxDbm)) {
                     symbolDbm = (cell.pMaxDbm - pwrRed - mimoComp - bwLoss).toFixed(2);
+                    // RE Type B (RS / no_RS): same formulas as Boost Analytics (LTE only — dlRsBoost and Pb are LTE parameters).
+                    if (is4G) {
+                        const dlRsBoostVal = parseFloat(fddData.dlRsBoost || '0') || 0;
+                        const pbDbLoss = parsePbToDb(cell.allowPbIndexZero);
+                        symbolBRsDbm = (cell.pMaxDbm - pwrRed + dlRsBoostVal - bwLoss).toFixed(2);
+                        symbolBNoRsDbm = (cell.pMaxDbm - pwrRed - mimoComp - pbDbLoss - bwLoss).toFixed(2);
+                    }
                 }
+                const symLine = (label, v) => `<span style="white-space:nowrap;"><small style="color:var(--text-muted);">${label}</small> <code>${v !== 'N/A' ? v + ' dBm/RE' : 'N/A'}</code></span>`;
+                const symbolHtml = is4G
+                    ? [symLine('A', symbolDbm), symLine('B RS', symbolBRsDbm), symLine('B no_RS', symbolBNoRsDbm)].join('<br>')
+                    : symLine('A', symbolDbm);
 
                 const psdWattsPerMhz = bwMhz > 0 ? (cell.pMaxWatt / bwMhz) : 0;
                 let badgeClass = 'psd-badge-green';
@@ -8534,7 +8545,7 @@ ${cmDataBlocks}</raml>
                     <td>${qrxLevMinHtml}</td>
                     <td><strong style="color:${is4G ? 'var(--brand-blue)' : 'var(--tech-5g-text)'}; font-size:1.05em;">${cell.pMaxWatt > 0 ? cell.pMaxWatt.toFixed(2) + ' W' : 'N/A'}</strong></td>
                     <td><span class="psd-badge ${badgeClass}">${psdWattsPerMhz.toFixed(2)} W/MHz</span></td>
-                    <td><code>${symbolDbm !== 'N/A' ? symbolDbm + ' dBm/RE' : 'N/A'}</code></td>
+                    <td>${symbolHtml}</td>
                     <td>${fsplHtml}</td>
                 `;
                 tbody.appendChild(tr);
