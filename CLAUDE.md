@@ -5,7 +5,7 @@ Leia isto antes de qualquer tarefa. Este arquivo é carregado automaticamente em
 ## O projeto
 
 - Ferramenta web **de arquivo único**: `NokiaSCF_ReaderDashboard_v2.08.html` (~8.8k linhas, HTML + CSS + JS inline, sem build, sem dependências além de Google Fonts).
-- Lê arquivos SCF (XML de configuração de sites Nokia LTE/NR) no navegador e gera módulos de análise. Versão exibida no header: **v2.15** (o nome do arquivo continua `_v2.08.html`).
+- Lê arquivos SCF (XML de configuração de sites Nokia LTE/NR) no navegador e gera módulos de análise. Versão exibida no header: **v2.16** (o nome do arquivo continua `_v2.08.html`).
 - O dono trabalha com engenharia/otimização de redes Nokia. Comunicação em **português**; código, comentários e commits em **inglês**.
 
 ## Fluxo de trabalho combinado (fazer sempre, sem perguntar)
@@ -100,7 +100,7 @@ Use `grep -n` pelo nome da função em vez de confiar nos números.
   - B2 UTRA: WARN se b2Threshold1Utra > threshold2Wcdma do LNCEL.
   - qrxlevmin: mostra piso efetivo (qrxlevmin + qRxLevMinOffset); WARN se > −110 dBm ou > 6 dB da mediana da mesma EARFCN.
   - VoLTE t310/n310: WARN se t310Qci1/n310Qci1 < t310/n310 do SIB.
-  - Novos cards: Idle↔Connected Inter-Freq Trigger (|Δ| > 6 dB WARN), A5 Inter-Freq vs A2 Activation (FAIL se threshold3InterFreq > threshold2InterFreq), Intra-Freq A5 (threshold3a − threshold3 fora de 0–6 dB WARN), CIO Range & Asymmetry (|CIO| > 6 dB ou par co-site assimétrico WARN), Reselection Priority Map (mesma EARFCN com prioridades diferentes SIB/IRFIM → FAIL), TAC Consistency per Site, PCI Mod-3/Mod-30 co-site (mesmo PCI ou mod 3 → FAIL, mod 30 → WARN), PRACH Root Sequence Overlap (faixas sobrepostas → FAIL, Ncs pela Tab. 5.7.2-2), Locked/Barred Cells.
+  - Novos cards: Idle↔Connected Inter-Freq Trigger (|Δ| > 6 dB WARN), A5 Inter-Freq vs A2 Activation (FAIL se threshold3InterFreq > threshold2InterFreq), Intra-Freq A5 (threshold3a − threshold3 fora de 0–6 dB WARN), CIO Range & Asymmetry (|CIO| > 6 dB ou par co-site assimétrico WARN), Reselection Priority Map (mesma EARFCN com prioridades diferentes SIB/IRFIM → FAIL), TAC Consistency per Site (inclui contagem de LNADJL com mesma TAC do site e com outra TAC), PCI Mod-3/Mod-30 co-site (mesmo PCI ou mod 3 → FAIL, mod 30 → WARN), PRACH Root Sequence Overlap (faixas sobrepostas → FAIL, Ncs pela Tab. 5.7.2-2), Locked/Barred Cells.
   - Helpers compartilhados: `hcTtt`, `hcDbEnum`, `hcCellEarfcn`, `hcSibOf`, `hcBtsOf`, `hcLncelOf`.
 - **Guidance nos cards** (`HC_GUIDANCE`, `addHcGuidance`): quando o status é WARN/FAIL, o detalhe ganha um bloco âmbar logo após o resumo com "Why it matters" e "Ideal setup (RF good practice)" com valores típicos (dBm(raw)). Card novo → adicionar entrada no `HC_GUIDANCE`.
 - **EARFCN junto do LNCEL**: toda tabela do detalhe do Health Check que lista LNCEL ganha a coluna EARFCN logo após a coluna da célula (`hcAddEarfcnColumns`, aplicado no modal; tabelas que já têm EARFCN ficam como estão).

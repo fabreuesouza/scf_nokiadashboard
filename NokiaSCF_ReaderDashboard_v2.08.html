@@ -980,7 +980,7 @@
     <!-- LINE 1: MAIN BRANDING & FILE ACTIONS HEADER -->
     <header>
         <div class="logo-area">
-            <h1>SCF Nokia Analytics <span class="logo-badge">Pro Suite</span> <span class="logo-badge" style="background:rgba(255,255,255,0.1); font-weight:600;">v2.15</span></h1>
+            <h1>SCF Nokia Analytics <span class="logo-badge">Pro Suite</span> <span class="logo-badge" style="background:rgba(255,255,255,0.1); font-weight:600;">v2.16</span></h1>
         </div>
         <div class="upload-area">
             <span class="summary-badge" id="site-summary">No SCF file loaded</span>
@@ -4303,14 +4303,17 @@ B1 (addition) and A2 (release) act on the same NR leg from opposite directions, 
                 tacs.forEach(t => rows.push({ icon: tacs.length > 1 ? '⚠️' : '✅', bts: hcShort(b), tac: t, cells: byBts[b].filter(c => c.tac === t).map(c => c.label).join(', '), status: tacs.length > 1 ? 'WARN' : 'OK' }));
             });
             const siteTacs = new Set(rows.map(r => r.tac));
-            const foreign = getMOsByClass('LNADJL').map(o => getParamCaseInsensitive(o.params, 'tac')).filter(t => !hcBlank(t) && !siteTacs.has(String(t)));
+            const nbrTacs = getMOsByClass('LNADJL').map(o => getParamCaseInsensitive(o.params, 'tac')).filter(t => !hcBlank(t)).map(String);
+            const sameCount = nbrTacs.filter(t => siteTacs.has(t)).length;
+            const foreignCount = nbrTacs.length - sameCount;
             const byTac = {};
-            foreign.forEach(t => { byTac[t] = (byTac[t] || 0) + 1; });
-            const summary = `${btsKeys.length - mixed} of ${btsKeys.length} LNBTS use a single TAC on all their cells. ${foreign.length} LNADJL neighbour(s) on another TAC (TAU border, information only).`;
-            const foreignHtml = foreign.length === 0 ? '' : `\n\n<strong>Neighbours (LNADJL) on another TAC</strong>` + renderHcDetailTable([{ key: 'tac', label: 'TAC', mono: true }, { key: 'n', label: 'LNADJL count', mono: true }], Object.keys(byTac).map(t => ({ tac: t, n: byTac[t] })));
+            nbrTacs.forEach(t => { byTac[t] = (byTac[t] || 0) + 1; });
+            const summary = `${btsKeys.length - mixed} of ${btsKeys.length} LNBTS use a single TAC on all their cells. Neighbours (LNADJL): ${sameCount} on the same TAC as the site, ${foreignCount} on another TAC (TAU border, information only).`;
+            const foreignHtml = nbrTacs.length === 0 ? '' : `\n\n<strong>Neighbour cells (LNADJL) per TAC</strong>` + renderHcDetailTable([{ key: 'tac', label: 'TAC', mono: true }, { key: 'rel', label: 'vs site', mono: true }, { key: 'n', label: 'LNADJL count', mono: true }],
+                Object.keys(byTac).sort((a, b) => (siteTacs.has(b) - siteTacs.has(a)) || (byTac[b] - byTac[a])).map(t => ({ tac: t, rel: siteTacs.has(t) ? 'same TAC' : 'other TAC (TAU border)', n: byTac[t] })));
             const fullDetail = summary + renderHcDetailTable([{ key: 'icon', label: '' }, { key: 'bts', label: 'LNBTS', mono: true }, { key: 'tac', label: 'TAC', mono: true }, { key: 'cells', label: 'Cells', mono: true }, { key: 'status', label: 'Status' }], rows) + foreignHtml;
             if (mixed === 0) return { status: 'OK', detail: summary, fullDetail };
-            return { status: 'WARN', detail: `${mixed} LNBTS with more than one TAC across their cells — TAU signalling at sector borders.`, fullDetail };
+            return { status: 'WARN', detail: `${mixed} LNBTS with more than one TAC across their cells — TAU signalling at sector borders. Neighbours: ${sameCount} same TAC, ${foreignCount} other TAC.`, fullDetail };
         }
 
         // N6: the absolute reselection priority of a carrier must be the same everywhere it is announced: as serving layer
