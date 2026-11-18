@@ -978,7 +978,7 @@
     <!-- LINE 1: MAIN BRANDING & FILE ACTIONS HEADER -->
     <header>
         <div class="logo-area">
-            <h1>SCF Nokia Analytics <span class="logo-badge">Pro Suite</span> <span class="logo-badge" style="background:rgba(255,255,255,0.1); font-weight:600;">v2.11</span></h1>
+            <h1>SCF Nokia Analytics <span class="logo-badge">Pro Suite</span> <span class="logo-badge" style="background:rgba(255,255,255,0.1); font-weight:600;">v2.12</span></h1>
         </div>
         <div class="upload-area">
             <span class="summary-badge" id="site-summary">No SCF file loaded</span>
@@ -3113,7 +3113,6 @@
         // that balances it, so the RS symbols are either over or under the PA budget.
         function checkDlRsBoost(ctx) {
             if (ctx.allLncelFdd.length === 0) return { status: 'NA', detail: 'No LNCEL_FDD found in this SCF.' };
-            const PB_MAP = [{ boost: 0, pb: 0 }, { boost: 3, pb: 1 }, { boost: 4.77, pb: 2 }, { boost: 6, pb: 3 }];
             const active = [], incoherent = [];
             const tableRows = [];
             ctx.allLncelFdd.forEach(o => {
@@ -3130,9 +3129,9 @@
                     pb = apz === false ? 1 : 0;
                     if (apz === false) { status = 'WARN'; note = 'allowPbIndexZero=false forces pB1 with 0dB boost — ~1dB of PDSCH power unused on RS symbols (legacy setting)'; }
                 } else {
-                    const match = PB_MAP.find(m => m.boost !== 0 && Math.abs(m.boost - boost) <= 0.3);
+                    const matchPb = getEffectivePbIndex(boost, apzRaw);
                     active.push(`${label}=${boost}dB`);
-                    if (match) { pb = match.pb; status = 'WARN'; note = `active RS boost — balanced by pB${pb}, verify it is intentional`; }
+                    if (matchPb !== null) { pb = matchPb; status = 'WARN'; note = `active RS boost — balanced by pB${pb}, verify it is intentional`; }
                     else { status = 'FAIL'; note = boost < 0 ? 'RS de-boost — no pB balances it, PDSCH on RS symbols exceeds the Type A budget' : 'no pB balances this boost (coherent values: 3 / 4.77 / 6dB) — RS symbols over/under the PA budget'; incoherent.push(`${label}=${boost}dB`); }
                 }
                 tableRows.push({ icon: status === 'FAIL' ? '❌' : (status === 'WARN' ? '⚠️' : '✅'), mo: label, boost: `${boost}dB${String(raw) !== String(boost) ? `(${raw})` : ''}`, apz: hcBlank(apzRaw) ? 'N/A' : apzRaw, pb: pb === null ? '—' : `pB${pb}`, note, status });
@@ -5191,14 +5190,19 @@ B1 (addition) and A2 (release) act on the same NR leg from opposite directions, 
             return anyNum ? parseFloat(anyNum[1]) : 10;
         }
 
-        function parsePbToDb(allowPbIndexZero) {
-            if (allowPbIndexZero === undefined || allowPbIndexZero === null) return 0;
-            const idxStr = String(allowPbIndexZero).trim();
-            if (idxStr === '0') return 10 * Math.log10(1.25);  
-            if (idxStr === '1') return 0;                      
-            if (idxStr === '2') return 10 * Math.log10(0.75);  
-            if (idxStr === '3') return 10 * Math.log10(0.50);  
-            return 0;
+        // pB is not configured in the SCF: the eNB derives it from dlRsBoost (TS 36.213 Table 5.2-1, 2/4 Tx ports:
+        // pB0=5/4, pB1=1, pB2=3/4, pB3=1/2). allowPbIndexZero (true/false) only matters at 0dB: 'false' forces pB1.
+        // Coherent boosts: 0dB->pB0, 3dB->pB1, 4.77dB->pB2, 6dB->pB3 (power balance inferred from 36.213); others -> null.
+        function getEffectivePbIndex(boostDb, allowPbIndexZero) {
+            if (isNaN(boostDb)) return null;
+            if (Math.abs(boostDb) < 0.01) return String(allowPbIndexZero ?? '').toLowerCase() === 'false' ? 1 : 0;
+            const m = [{ b: 3, pb: 1 }, { b: 4.77, pb: 2 }, { b: 6, pb: 3 }].find(x => Math.abs(x.b - boostDb) <= 0.3);
+            return m ? m.pb : null;
+        }
+        // PDSCH Type B (no RS) EPRE relative to Type A, in dB (10·log10 ρB/ρA). 0 when pB can't be derived.
+        function parsePbToDb(allowPbIndexZero, dlRsBoostRaw) {
+            const idx = getEffectivePbIndex(hcDbEnum(dlRsBoostRaw ?? 0), allowPbIndexZero);
+            return idx === null ? 0 : 10 * Math.log10([1.25, 1, 0.75, 0.5][idx]);
         }
 
         function formatParamValue(val, paramName = '') {
@@ -5479,19 +5483,19 @@ B1 (addition) and A2 (release) act on the same NR leg from opposite directions, 
 
             powerData4G.forEach(cell => {
                 const fddData = lncelFddParams[cell.distName] || {};
-                const dlRsBoostVal = parseFloat(fddData.dlRsBoost || '0') || 0;
-                const dlpcMimoCompVal = parseFloat(fddData.dlpcMimoComp || '0') || 0;
+                const dlRsBoostVal = hcDbEnum(fddData.dlRsBoost ?? 0) || 0;
+                const dlpcMimoCompVal = (parseFloat(fddData.dlpcMimoComp || '0') || 0) / 100; // stored as dB×100
                 const bwVal = fddData.dlChBw || cell.dlChBw || '10 MHz';
                 const subcarriers = bwToSubcarriers(bwVal);
                 const bwLoss = 10 * Math.log10(subcarriers);
-                const pbDbLoss = parsePbToDb(cell.allowPbIndexZero);
+                const pbDb = parsePbToDb(cell.allowPbIndexZero, fddData.dlRsBoost);
 
                 let reTypeASymbolDbm = 'N/A', reTypeBRsDbm = 'N/A', reTypeBNoRsDbm = 'N/A';
                 if (cell.pMaxDbm !== 'N/A' && !isNaN(cell.pMaxDbm)) {
                     const pMaxDbm = cell.pMaxDbm; const pwrRed = cell.dlCellPwrRed || 0; const mimoComp = dlpcMimoCompVal;
                     reTypeASymbolDbm = (pMaxDbm - pwrRed - mimoComp - bwLoss).toFixed(2);
                     reTypeBRsDbm = (pMaxDbm - pwrRed + dlRsBoostVal - bwLoss).toFixed(2);
-                    reTypeBNoRsDbm = (pMaxDbm - pwrRed - mimoComp - pbDbLoss - bwLoss).toFixed(2);
+                    reTypeBNoRsDbm = (pMaxDbm - pwrRed - mimoComp + pbDb - bwLoss).toFixed(2);
                 }
 
                 boostDataLTE.push({
@@ -8800,17 +8804,17 @@ ${cmDataBlocks}</raml>
                 const subcarriers = bwToSubcarriers(bwStr);
                 const bwLoss = 10 * Math.log10(subcarriers);
                 const pwrRed = cell.dlCellPwrRed || 0;
-                const mimoComp = parseFloat(fddData.dlpcMimoComp || '0') || 0;
+                const mimoComp = (parseFloat(fddData.dlpcMimoComp || '0') || 0) / 100; // stored as dB×100
 
                 let symbolDbm = 'N/A', symbolBRsDbm = 'N/A', symbolBNoRsDbm = 'N/A';
                 if (cell.pMaxDbm !== 'N/A' && !isNaN(cell.pMaxDbm)) {
                     symbolDbm = (cell.pMaxDbm - pwrRed - mimoComp - bwLoss).toFixed(2);
                     // RE Type B (RS / no_RS): same formulas as Boost Analytics (LTE only — dlRsBoost and Pb are LTE parameters).
                     if (is4G) {
-                        const dlRsBoostVal = parseFloat(fddData.dlRsBoost || '0') || 0;
-                        const pbDbLoss = parsePbToDb(cell.allowPbIndexZero);
+                        const dlRsBoostVal = hcDbEnum(fddData.dlRsBoost ?? 0) || 0;
+                        const pbDb = parsePbToDb(cell.allowPbIndexZero, fddData.dlRsBoost);
                         symbolBRsDbm = (cell.pMaxDbm - pwrRed + dlRsBoostVal - bwLoss).toFixed(2);
-                        symbolBNoRsDbm = (cell.pMaxDbm - pwrRed - mimoComp - pbDbLoss - bwLoss).toFixed(2);
+                        symbolBNoRsDbm = (cell.pMaxDbm - pwrRed - mimoComp + pbDb - bwLoss).toFixed(2);
                     }
                 }
                 const symLine = (label, v) => `<span style="white-space:nowrap;"><small style="color:var(--text-muted);">${label}</small> <code>${v !== 'N/A' ? v + ' dBm/RE' : 'N/A'}</code></span>`;

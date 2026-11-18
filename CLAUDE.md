@@ -5,7 +5,7 @@ Leia isto antes de qualquer tarefa. Este arquivo é carregado automaticamente em
 ## O projeto
 
 - Ferramenta web **de arquivo único**: `NokiaSCF_ReaderDashboard_v2.08.html` (~8.8k linhas, HTML + CSS + JS inline, sem build, sem dependências além de Google Fonts).
-- Lê arquivos SCF (XML de configuração de sites Nokia LTE/NR) no navegador e gera módulos de análise. Versão exibida no header: **v2.11** (o nome do arquivo continua `_v2.08.html`).
+- Lê arquivos SCF (XML de configuração de sites Nokia LTE/NR) no navegador e gera módulos de análise. Versão exibida no header: **v2.12** (o nome do arquivo continua `_v2.08.html`).
 - O dono trabalha com engenharia/otimização de redes Nokia. Comunicação em **português**; código, comentários e commits em **inglês**.
 
 ## Fluxo de trabalho combinado (fazer sempre, sem perguntar)
@@ -74,6 +74,9 @@ Use `grep -n` pelo nome da função em vez de confiar nos números.
 | `threshold2Wcdma`, `threshold2GERAN`, `threshold3`, `threshold3a` (LNCEL) | dBm = raw − 140 |
 | `pMax` | dBm = raw / 10 |
 | `dlCellPwrRed` | dB = raw / 10 |
+| `dlpcMimoComp` (LNCEL_FDD) | dB = raw / 100 |
+| `dlRsBoost` | enum (`dB3`, `dB1_77`…) → lido com `hcDbEnum` |
+| pB (derivado) | `getEffectivePbIndex(boost, allowPbIndexZero)`; B no_RS = A + 10·log10(ρB/ρA) via `parsePbToDb(allowPbIndexZero, dlRsBoost)` |
 | `b2Threshold2RssiGERAN` | dBm = raw − 110 |
 
 ## Regras de negócio já decididas
