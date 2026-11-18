@@ -88,6 +88,10 @@ Use `grep -n` pelo nome da função em vez de confiar nos números.
 - **Neighbor Analytics → Audit GSM** (`renderNeighborGsmAudit`, view `neighborGsmView`, tab `neighborGsm`): por LNCEL, lista as LNRELG resolvidas para a LNADJG (mesma regra LNBTS + CI/LAC). Colunas: LNRELG, LNADJG, CI, LAC, RAC, ARFCN, Band, BSIC, eNACC, SRVCC, Redir w/ SI, RIM, DTM, Issues. Issues: LNRELG órfã, ARFCN fora do REDRT GSM do LNCEL, ARFCN+BSIC duplicado. Cabeçalho de colunas repetido sob cada linha de LNCEL (que mostra também o TAC). Tabela extra de LNADJG não usadas. Ordem do menu: Audit, Audit GSM, Mapping. GSM → LTE não existe no SCF (precisa do dump da BSC).
 - **Modal do Health Check**: 1080px de largura; fonte do detalhe `calc(0.76rem - 1px)`, tabela `calc(0.7rem - 1px)`.
 
+## Agentes
+
+- `lte-agent` (`.claude/agents/lte-agent.md`): especialista LTE Nokia; analisa e recomenda melhorias em toda a parte LTE do viewer, usando o `nokia_database` e 3GPP como fonte. Só edita código se pedido.
+
 ## Pendências / ideias
 
 - Ampliar o uso do `nokia_database` com glossários em outros cards (mesmo padrão do 5G NSA LEG).
