@@ -5,7 +5,7 @@ Leia isto antes de qualquer tarefa. Este arquivo é carregado automaticamente em
 ## O projeto
 
 - Ferramenta web **de arquivo único**: `NokiaSCF_ReaderDashboard_v2.08.html` (~8.8k linhas, HTML + CSS + JS inline, sem build, sem dependências além de Google Fonts).
-- Lê arquivos SCF (XML de configuração de sites Nokia LTE/NR) no navegador e gera módulos de análise. Versão exibida no header: **v2.14** (o nome do arquivo continua `_v2.08.html`).
+- Lê arquivos SCF (XML de configuração de sites Nokia LTE/NR) no navegador e gera módulos de análise. Versão exibida no header: **v2.15** (o nome do arquivo continua `_v2.08.html`).
 - O dono trabalha com engenharia/otimização de redes Nokia. Comunicação em **português**; código, comentários e commits em **inglês**.
 
 ## Fluxo de trabalho combinado (fazer sempre, sem perguntar)
@@ -90,7 +90,7 @@ Use `grep -n` pelo nome da função em vez de confiar nos números.
   - Par ARFCN + BSIC duplicado na mesma LNBTS → FAIL (tabela própria).
 - **Cell → RMOD** (`buildLcellRmodMap`, `getCellRmods`): LTE `LNCEL.lcrId` → `MNL/.../CELLMAPPING/LCELL-<lcrId>/CHANNELGROUP/CHANNEL.antlDN` → `RMOD-x/ANTL-y` (exibe `RMOD-3 (ANTL-1/2)`); NR `NRCELL.lcrId` → `LCELNR-<lcrId>/.../CHANNEL.resourceDN` → `RMOD-x/PHYANT-y` (exibe `RMOD-21 (PHYANT-1, 8T4R)`, contando canais TX/RX).
 - **Cell → RET** (`buildAntlRetuMap`, `formatCellRet`): `ALD-x/RETU-y.antlDNList` lista as ANTL do RMOD; cruzando com as ANTL da célula obtém-se o tilt. `angle` em 0.1° (110 → 11.0°). NR (PHYANT) normalmente sem RETU → N/A.
-- **Power & Footprint**: células NB-IoT (LNCEL com filho NBIOT_FDD) ocultas da tabela e dos filtros (`getPowerVisibleDataset`); filtros laterais por Sector (ANTL-1/2→1, 3/4→2, 5/6→3; só LTE) e RMOD; colunas: Cell, RMOD, RET Tilt, Bandwidth, PMax, PwrRed, DL RS Boost, qrxLevMin (SIB-0), Power (W), Spectral Density, Symbol Level (LTE: 3 linhas — RE Type A, B RS, B no_RS, mesmas fórmulas do Boost Analytics; NR: só A), FSPL (f e d = 0.5 km em cinza na célula).
+- **Power & Footprint**: células NB-IoT (LNCEL com filho NBIOT_FDD) ocultas da tabela e dos filtros (`getPowerVisibleDataset`); filtros laterais por Sector (ANTL-1/2→1, 3/4→2, 5/6→3; só LTE) e RMOD; colunas: Cell, RMOD, RET Tilt, Bandwidth, PMax, PwrRed, DL RS Boost, qrxLevMin (SIB-0), Power (W), Spectral Density, Symbol Level (LTE: 3 linhas — RE Type A, B RS, B no_RS; NR: só A), FSPL (f e d = 0.5 km em cinza na célula).
 - **Neighbor Analytics → Audit GSM** (`renderNeighborGsmAudit`, view `neighborGsmView`, tab `neighborGsm`): por LNCEL, lista as LNRELG resolvidas para a LNADJG (mesma regra LNBTS + CI/LAC). Colunas: LNRELG, LNADJG, CI, LAC, RAC, ARFCN, Band, BSIC, eNACC, SRVCC, Redir w/ SI, RIM, DTM, Issues. Issues: LNRELG órfã, ARFCN fora do REDRT GSM do LNCEL, ARFCN+BSIC duplicado. Cabeçalho de colunas repetido sob cada linha de LNCEL (que mostra também o TAC). Tabela extra de LNADJG não usadas. Ordem do menu: Audit, Audit GSM, Mapping. GSM → LTE não existe no SCF (precisa do dump da BSC).
 - **Health Check — revisão LTE (v2.11)**:
   - Células LNCEL com `administrativeState=locked` são excluídas de todos os checks (e seus filhos); cada card lista as locked com 🔒 / N/A e há um chip no topo. Card próprio "Locked / Barred Cells".
@@ -113,4 +113,5 @@ Use `grep -n` pelo nome da função em vez de confiar nos números.
 ## Pendências / ideias
 
 - Ampliar o uso do `nokia_database` com glossários em outros cards (mesmo padrão do 5G NSA LEG).
+- Módulo Boost Analytics removido na v2.15 (o cálculo de RE Type A/B ficou só no Power & Footprint).
 - Exportações/downloads não funcionam dentro do artifact viewer (precisariam da capability `downloads`).

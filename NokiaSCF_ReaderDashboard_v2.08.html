@@ -623,22 +623,22 @@
         .list-title { font-size: 0.725rem; font-weight: 700; color: var(--brand-blue); text-transform: uppercase; letter-spacing: 0.05em; }
         .list-item { background-color: var(--bg-subtle); padding: 8px; border-radius: 6px; border: 1px solid var(--border-color); }
 
-        .boost-view, .cio-view, .power-footprint-view, .layer-priority-view, .hardware-view, .neighbor-view, .neighbor-mapping-view, .neighbor-gsm-view, .health-view { display: none; flex: 1; flex-direction: column; padding: 0; overflow: hidden; gap: 8px; }
-        .boost-fixed-header, .footprint-fixed-header { display: flex; flex-direction: column; gap: 8px; flex-shrink: 0; }
+        .cio-view, .power-footprint-view, .layer-priority-view, .hardware-view, .neighbor-view, .neighbor-mapping-view, .neighbor-gsm-view, .health-view { display: none; flex: 1; flex-direction: column; padding: 0; overflow: hidden; gap: 8px; }
+        .footprint-fixed-header { display: flex; flex-direction: column; gap: 8px; flex-shrink: 0; }
         .power-tech-tabs { display: flex; align-items: center; gap: 6px; border-bottom: 1px solid var(--border-color); padding-bottom: 6px; }
         .power-tech-btn { padding: 4px 12px; border-radius: 9999px; border: 1px solid var(--border-color-strong); background: var(--bg-card); font-size: 0.75rem; font-weight: 600; color: var(--text-secondary); cursor: pointer; transition: all 0.15s ease; display: flex; align-items: center; gap: 6px; }
         .power-tech-btn:hover { border-color: var(--brand-blue); color: var(--brand-blue); }
         .power-tech-btn.active-4g { background-color: var(--tech-4g-bg); border-color: var(--tech-4g-main); color: var(--tech-4g-text); font-weight: 700; }
         .power-tech-btn.active-5g { background-color: var(--tech-5g-bg); border-color: var(--tech-5g-main); color: var(--tech-5g-text); font-weight: 700; }
         
-        .footprint-summary-grid, .boost-summary-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 8px; }
+        .footprint-summary-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 8px; }
         .power-summary-card { background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 8px; padding: 10px 12px; display: flex; flex-direction: column; gap: 2px; box-shadow: var(--shadow-xs); }
         .power-card-title { font-size: 0.675rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; }
         .power-card-value { font-size: 1.2rem; font-weight: 700; font-family: 'JetBrains Mono', monospace; color: var(--text-primary); letter-spacing: -0.02em; }
         .power-card-sub { font-size: 0.675rem; color: var(--text-secondary); font-weight: 500; }
-        .power-card-highlight, .boost-card-highlight { background: var(--bg-card); border-color: #10b981; }
-        .power-card-highlight .power-card-title, .boost-card-highlight .power-card-title { color: #059669; }
-        .power-card-highlight .power-card-value, .boost-card-highlight .power-card-value { color: #10b981; }
+        .power-card-highlight { background: var(--bg-card); border-color: #10b981; }
+        .power-card-highlight .power-card-title { color: #059669; }
+        .power-card-highlight .power-card-value { color: #10b981; }
 
         .psd-legend-bar { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; background: var(--bg-subtle); padding: 6px 12px; border-radius: 6px; border: 1px solid var(--border-color); font-size: 0.7rem; font-weight: 600; }
         .psd-legend-item { display: flex; align-items: center; gap: 6px; }
@@ -720,8 +720,8 @@
         .nbr-map-conflict-badge { display: inline-block; background: var(--badge-false-bg); color: var(--badge-false-text); border: 1px solid var(--badge-false-border); border-radius: 4px; padding: 1px 6px; font-size: 11px; font-weight: 700; margin-top: 2px; white-space: normal; }
         .nbr-map-ok-badge { display: inline-block; background: var(--badge-true-bg); color: var(--badge-true-text); border: 1px solid var(--badge-true-border); border-radius: 4px; padding: 1px 6px; font-size: 11px; font-weight: 700; margin-top: 2px; }
 
-        .footprint-table-card, .boost-table-card { flex: 1; display: flex; flex-direction: column; overflow: hidden; background-color: var(--bg-card); border: 1px solid var(--border-color); border-radius: 8px; padding: 12px; box-shadow: var(--shadow-xs); }
-        .footprint-table-scroll, .boost-table-scroll { flex: 1; overflow-y: auto; overflow-x: auto; margin-top: 4px; border: 1px solid var(--border-color); border-radius: 6px; }
+        .footprint-table-card { flex: 1; display: flex; flex-direction: column; overflow: hidden; background-color: var(--bg-card); border: 1px solid var(--border-color); border-radius: 8px; padding: 12px; box-shadow: var(--shadow-xs); }
+        .footprint-table-scroll { flex: 1; overflow-y: auto; overflow-x: auto; margin-top: 4px; border: 1px solid var(--border-color); border-radius: 6px; }
         .checkbox-cell { width: 34px; text-align: center; }
         .checkbox-cell input[type="checkbox"] { width: 14px; height: 14px; cursor: pointer; accent-color: var(--brand-blue); }
         .sparkline-container { display: flex; align-items: flex-end; gap: 3px; height: 24px; width: 100px; background: var(--bg-subtle); padding: 2px 4px; border-radius: 4px; border: 1px solid var(--border-color-strong); }
@@ -980,7 +980,7 @@
     <!-- LINE 1: MAIN BRANDING & FILE ACTIONS HEADER -->
     <header>
         <div class="logo-area">
-            <h1>SCF Nokia Analytics <span class="logo-badge">Pro Suite</span> <span class="logo-badge" style="background:rgba(255,255,255,0.1); font-weight:600;">v2.14</span></h1>
+            <h1>SCF Nokia Analytics <span class="logo-badge">Pro Suite</span> <span class="logo-badge" style="background:rgba(255,255,255,0.1); font-weight:600;">v2.15</span></h1>
         </div>
         <div class="upload-area">
             <span class="summary-badge" id="site-summary">No SCF file loaded</span>
@@ -999,7 +999,6 @@
         <div class="main-nav-tabs">
             <button class="main-nav-btn active" id="btnNavAnalytics" onclick="switchMainTab('analytics')"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block; vertical-align:-3px; margin-right:2px;"><circle cx="10" cy="10" r="7"></circle><line x1="21" y1="21" x2="15" y2="15"></line></svg>SCF Analytics</button>
             <button class="main-nav-btn" id="btnNavFootprint" onclick="switchMainTab('powerFootprint')"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block; vertical-align:-3px; margin-right:2px;"><path d="M4 16a8 8 0 0 1 16 0"></path><line x1="12" y1="16" x2="16" y2="10"></line><circle cx="12" cy="16" r="1" fill="currentColor" stroke="none"></circle></svg>Power & Footprint</button>
-            <button class="main-nav-btn" id="btnNavBoost" onclick="switchMainTab('boost')"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block; vertical-align:-3px; margin-right:2px;"><path d="M12 2c3 2 5 6 5 10c0 2-1 4-2 5l-3 3-3-3c-1-1-2-3-2-5c0-4 2-8 5-10z"></path><circle cx="12" cy="10" r="1.6"></circle><path d="M9 17l-2 4M15 17l2 4"></path></svg>Boost Analytics</button>
             <button class="main-nav-btn" id="btnNavCio" onclick="switchMainTab('cio')"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block; vertical-align:-3px; margin-right:2px;"><line x1="5" y1="21" x2="5" y2="13"></line><line x1="12" y1="21" x2="12" y2="7"></line><line x1="19" y1="21" x2="19" y2="11"></line></svg>CIO Analytics</button>
             <div class="main-nav-btn-group" id="lmsNavGroup">
                 <button class="main-nav-btn" id="btnNavLms" onclick="toggleNavDropdown(event, 'lmsDropdownMenu')"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block; vertical-align:-3px; margin-right:2px;"><circle cx="12" cy="12" r="9"></circle><circle cx="12" cy="12" r="5"></circle><circle cx="12" cy="12" r="1" fill="currentColor" stroke="none"></circle></svg>LMS<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block; vertical-align:-1px; margin-left:3px;"><polyline points="6,9 12,15 18,9"></polyline></svg></button>
@@ -1241,73 +1240,6 @@
                             </thead>
                             <tbody>
                                 <tr><td colspan="13" style="text-align:center; color:var(--text-muted); font-style:italic;">No SCF file loaded.</td></tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- MODULE 3: BOOST ANALYTICS -->
-        <div class="boost-view" id="boostView">
-            <div class="boost-fixed-header">
-                <div class="boost-summary-grid">
-                    <div class="power-summary-card boost-card-highlight">
-                        <span class="power-card-title">Audited LTE Cells</span>
-                        <span class="power-card-value" id="boostTotalCells">0 LNCEL</span>
-                        <span class="power-card-sub">Based on Active Filter</span>
-                    </div>
-                    <div class="power-summary-card">
-                        <span class="power-card-title">RE Type A Symbol Average</span>
-                        <span class="power-card-value" id="boostAvgSymbol">0.00 dBm</span>
-                        <span class="power-card-sub">Average Level per Subcarrier</span>
-                    </div>
-                </div>
-            </div>
-
-            <div class="footprint-main-content">
-                <div class="footprint-sidebar-filters">
-                    <div>
-                        <div class="filter-section-title">
-                            <span>EARFCN</span>
-                            <span class="btn-reset" onclick="resetBoostEarfcns()">Reset</span>
-                        </div>
-                        <div class="sidebar-chip-group" id="boostEarfcnFilters">
-                            <span style="font-size:0.75rem; color:var(--text-muted);">None</span>
-                        </div>
-                    </div>
-                    <div>
-                        <div class="filter-section-title">
-                            <span>Cells (Sector)</span>
-                            <span class="btn-reset" onclick="resetBoostCells()">Reset</span>
-                        </div>
-                        <div class="sidebar-chip-group" id="boostCellFilters">
-                            <span style="font-size:0.75rem; color:var(--text-muted);">None</span>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="boost-table-card">
-                    <div class="panel-ctrl-row" style="margin-bottom: 6px; align-items: flex-start;">
-                        <div style="display:flex; flex-direction: column; gap: 4px;">
-                            <h2><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block; vertical-align:-4px; margin-right:4px;"><path d="M12 2c3 2 5 6 5 10c0 2-1 4-2 5l-3 3-3-3c-1-1-2-3-2-5c0-4 2-8 5-10z"></path><circle cx="12" cy="10" r="1.6"></circle><path d="M9 17l-2 4M15 17l2 4"></path></svg>RS Boost & RE Power Audit (LNCEL)</h2>
-                            <span class="summary-badge">Calculated Values in dBm & Symbol Visual Comparison</span>
-                        </div>
-                    </div>
-                    <div class="boost-table-scroll">
-                        <table id="boostTable">
-                            <thead>
-                                <tr>
-                                    <th>LTE Cell (LNCEL) / distName</th>
-                                    <th>dlRsBoost (dB)</th>
-                                    <th>RE Type A Symbol (dBm)</th>
-                                    <th>RE Type B RS (dBm)</th>
-                                    <th>RE Type B no_RS (dBm)</th>
-                                    <th>Visual Comparison</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr><td colspan="6" style="text-align:center; color:var(--text-muted); font-style:italic;">No SCF file loaded.</td></tr>
                             </tbody>
                         </table>
                     </div>
@@ -1903,7 +1835,6 @@
         let nrcellRfParams = {}; 
         let powerData4G = []; 
         let powerData5G = []; 
-        let boostDataLTE = []; 
         let lnrelData = {}; 
         let layerPriorityData = {}; 
         
@@ -1929,9 +1860,7 @@
         window.currentSetLayoutMode = "vertical"; 
         window.activeHwSubTab = "modules";
         
-        let activeBoostEarfcns = new Set();
         let activePowerEarfcns = new Set();
-        let activeBoostCells = new Set();
         let activePowerCells = new Set();
         let activePowerRmods = new Set();
         let activePowerSectors = new Set();
@@ -5085,7 +5014,6 @@ B1 (addition) and A2 (release) act on the same NR leg from opposite directions, 
         function switchMainTab(tabName) {
             document.getElementById('btnNavAnalytics')?.classList.toggle('active', tabName === 'analytics');
             document.getElementById('btnNavFootprint')?.classList.toggle('active', tabName === 'powerFootprint');
-            document.getElementById('btnNavBoost')?.classList.toggle('active', tabName === 'boost');
             document.getElementById('btnNavCio')?.classList.toggle('active', tabName === 'cio');
             document.getElementById('btnNavLms')?.classList.toggle('active', tabName === 'priority' || tabName === 'connectedPriority');
             document.getElementById('btnNavIdlePriority')?.classList.toggle('active', tabName === 'priority');
@@ -5101,7 +5029,6 @@ B1 (addition) and A2 (release) act on the same NR leg from opposite directions, 
 
             const aV = document.getElementById('analyticsView'); if (aV) aV.style.display = (tabName === 'analytics') ? 'flex' : 'none';
             const pfV = document.getElementById('powerFootprintView'); if (pfV) pfV.style.display = (tabName === 'powerFootprint') ? 'flex' : 'none';
-            const bV = document.getElementById('boostView'); if (bV) bV.style.display = (tabName === 'boost') ? 'flex' : 'none';
             const cV = document.getElementById('cioView'); if (cV) cV.style.display = (tabName === 'cio') ? 'flex' : 'none';
             const lpV = document.getElementById('layerPriorityView'); if (lpV) lpV.style.display = (tabName === 'priority') ? 'flex' : 'none';
             const cpV = document.getElementById('connectedPriorityView'); if (cpV) cpV.style.display = (tabName === 'connectedPriority') ? 'flex' : 'none';
@@ -5117,7 +5044,6 @@ B1 (addition) and A2 (release) act on the same NR leg from opposite directions, 
             if (Object.keys(scfData).length === 0 || tabName === 'analytics' || tabName === 'cmeditor') {
                 if (tabName === 'cio') renderCioDashboard();
                 if (tabName === 'powerFootprint') renderPowerFootprintDashboard();
-                if (tabName === 'boost') renderBoostDashboard();
                 if (tabName === 'priority') renderPriorityDashboard();
                 if (tabName === 'connectedPriority') renderConnectedPriorityDashboard();
                 if (tabName === 'neighbor') renderNeighborMapping();
@@ -5140,7 +5066,6 @@ B1 (addition) and A2 (release) act on the same NR leg from opposite directions, 
             
             let moduleName = "Module";
             if (tabName === 'powerFootprint') moduleName = "Power & Footprint";
-            else if (tabName === 'boost') moduleName = "Boost Analytics";
             else if (tabName === 'cio') moduleName = "CIO Analytics";
             else if (tabName === 'priority') moduleName = "Idle Priority";
             else if (tabName === 'connectedPriority') moduleName = "Connected Priority";
@@ -5161,8 +5086,7 @@ B1 (addition) and A2 (release) act on the same NR leg from opposite directions, 
                 try {
                     if (tabName === 'cio') renderCioDashboard();
                     if (tabName === 'powerFootprint') renderPowerFootprintDashboard();
-                    if (tabName === 'boost') renderBoostDashboard();
-                    if (tabName === 'priority') renderPriorityDashboard();
+                        if (tabName === 'priority') renderPriorityDashboard();
                     if (tabName === 'connectedPriority') renderConnectedPriorityDashboard();
                     if (tabName === 'neighbor') renderNeighborMapping();
                     if (tabName === 'neighborMapping') renderNeighborMappingDashboard();
@@ -5418,7 +5342,7 @@ B1 (addition) and A2 (release) act on the same NR leg from opposite directions, 
 
         function processXML(xmlDoc) {
             scfData = {}; lncelFddParams = {}; nrcellRfParams = {}; 
-            powerData4G = []; powerData5G = []; boostDataLTE = []; lnrelData = {}; 
+            powerData4G = []; powerData5G = []; lnrelData = {}; 
             layerPriorityData = {};
             window.currentDistName = null;
             
@@ -5584,29 +5508,6 @@ B1 (addition) and A2 (release) act on the same NR leg from opposite directions, 
                 }
             }
 
-            powerData4G.forEach(cell => {
-                const fddData = lncelFddParams[cell.distName] || {};
-                const dlRsBoostVal = hcDbEnum(fddData.dlRsBoost ?? 0) || 0;
-                const dlpcMimoCompVal = (parseFloat(fddData.dlpcMimoComp || '0') || 0) / 100; // stored as dB×100
-                const bwVal = fddData.dlChBw || cell.dlChBw || '10 MHz';
-                const subcarriers = bwToSubcarriers(bwVal);
-                const bwLoss = 10 * Math.log10(subcarriers);
-                const pbDb = parsePbToDb(cell.allowPbIndexZero, fddData.dlRsBoost);
-
-                let reTypeASymbolDbm = 'N/A', reTypeBRsDbm = 'N/A', reTypeBNoRsDbm = 'N/A';
-                if (cell.pMaxDbm !== 'N/A' && !isNaN(cell.pMaxDbm)) {
-                    const pMaxDbm = cell.pMaxDbm; const pwrRed = cell.dlCellPwrRed || 0; const mimoComp = dlpcMimoCompVal;
-                    reTypeASymbolDbm = (pMaxDbm - pwrRed - mimoComp - bwLoss).toFixed(2);
-                    reTypeBRsDbm = (pMaxDbm - pwrRed + dlRsBoostVal - bwLoss).toFixed(2);
-                    reTypeBNoRsDbm = (pMaxDbm - pwrRed - mimoComp + pbDb - bwLoss).toFixed(2);
-                }
-
-                boostDataLTE.push({
-                    distName: cell.distName, id: cell.id, name: cell.name, earfcn: fddData.earfcnDL || 'N/A',
-                    dlRsBoost: dlRsBoostVal, reTypeASymbolDbm: reTypeASymbolDbm, reTypeBRsDbm: reTypeBRsDbm, reTypeBNoRsDbm: reTypeBNoRsDbm
-                });
-            });
-
             const setTxt = (id, val) => { const el = document.getElementById(id); if(el) el.innerText = val; };
             setTxt('moCntGnbts', `${moCounts.GNBTS} GNBTS`);
             setTxt('moCntGnbcf', moCounts.GNBCF);
@@ -5655,7 +5556,6 @@ B1 (addition) and A2 (release) act on the same NR leg from opposite directions, 
             nrcellCells.sort((a, b) => naturalCompare(a.id, b.id));
             powerData4G.sort((a, b) => naturalCompare(a.id, b.id));
             powerData5G.sort((a, b) => naturalCompare(a.id, b.id));
-            boostDataLTE.sort((a, b) => naturalCompare(a.id, b.id));
 
             setTxt('site-summary', `BTS ID: ${btsName} | Total MOs: ${objCount}`);
             setTxt('stat2G', `${stats.GNBTS} GNBTS | ${stats.GNCEL} GNCEL`);
@@ -5690,8 +5590,6 @@ B1 (addition) and A2 (release) act on the same NR leg from opposite directions, 
             buildTreeView();
             buildCmEditorTree();
             renderSetsBar(); 
-            buildBoostEarfcnFilter(); 
-            buildBoostCellFilter();
             buildPowerEarfcnFilter();
             buildPowerSectorFilter();
             buildPowerRmodFilter();
@@ -5702,7 +5600,6 @@ B1 (addition) and A2 (release) act on the same NR leg from opposite directions, 
             buildNeighborEarfcnFilter();
             renderSelectedLnrelPanel();
             renderPowerFootprintDashboard(); 
-            renderBoostDashboard(); 
             renderCioDashboard();
             renderPriorityDashboard();
             renderConnectedPriorityDashboard();
@@ -7766,74 +7663,6 @@ ${cmDataBlocks}</raml>
             renderPowerFootprintDashboard();
         }
 
-        function resetBoostEarfcns() {
-            activeBoostEarfcns.clear();
-            document.querySelectorAll('#boostEarfcnFilters .earfcn-chip').forEach(chip => chip.classList.remove('active'));
-            renderBoostDashboard();
-        }
-
-        function resetBoostCells() {
-            activeBoostCells.clear();
-            document.querySelectorAll('#boostCellFilters .earfcn-chip').forEach(chip => chip.classList.remove('active'));
-            renderBoostDashboard();
-        }
-
-        function toggleBoostEarfcn(earfcn) {
-            if (activeBoostEarfcns.has(earfcn)) activeBoostEarfcns.delete(earfcn);
-            else activeBoostEarfcns.add(earfcn);
-            document.querySelectorAll('#boostEarfcnFilters .earfcn-chip').forEach(chip => {
-                if (activeBoostEarfcns.has(chip.dataset.val)) chip.classList.add('active');
-                else chip.classList.remove('active');
-            });
-            renderBoostDashboard();
-        }
-
-        function buildBoostEarfcnFilter() {
-            const container = document.getElementById('boostEarfcnFilters');
-            if (!container) return;
-            container.innerHTML = '';
-            activeBoostEarfcns.clear();
-            const uniqueEarfcns = [...new Set(boostDataLTE.map(item => item.earfcn).filter(e => e !== 'N/A'))].sort((a,b) => parseInt(a) - parseInt(b));
-            if (uniqueEarfcns.length === 0) {
-                container.innerHTML = '<span style="font-size:0.75rem; color:var(--text-muted);">None</span>';
-                return;
-            }
-            uniqueEarfcns.forEach(e => {
-                const chip = document.createElement('div');
-                chip.className = 'earfcn-chip'; chip.dataset.val = e; chip.innerHTML = `<span>EARFCN ${e}</span>`;
-                chip.onclick = () => toggleBoostEarfcn(e);
-                container.appendChild(chip);
-            });
-        }
-
-        function toggleBoostCell(cellId) {
-            if (activeBoostCells.has(cellId)) activeBoostCells.delete(cellId);
-            else activeBoostCells.add(cellId);
-            document.querySelectorAll('#boostCellFilters .earfcn-chip').forEach(chip => {
-                if (activeBoostCells.has(chip.dataset.val)) chip.classList.add('active');
-                else chip.classList.remove('active');
-            });
-            renderBoostDashboard();
-        }
-
-        function buildBoostCellFilter() {
-            const container = document.getElementById('boostCellFilters');
-            if (!container) return;
-            container.innerHTML = '';
-            activeBoostCells.clear();
-            const uniqueCells = [...new Set(boostDataLTE.map(item => item.id))].sort(naturalCompare);
-            if (uniqueCells.length === 0) {
-                container.innerHTML = '<span style="font-size:0.75rem; color:var(--text-muted);">None</span>';
-                return;
-            }
-            uniqueCells.forEach(cellId => {
-                const chip = document.createElement('div');
-                chip.className = 'earfcn-chip'; chip.dataset.val = cellId; chip.innerText = cellId;
-                chip.onclick = () => toggleBoostCell(cellId);
-                container.appendChild(chip);
-            });
-        }
-
         // Power & Footprint dataset without NB-IoT cells (LNCEL with an NBIOT_FDD child) — shared by table and sidebar filters.
         function getPowerVisibleDataset(is4G) {
             if (!is4G) return powerData5G;
@@ -8912,7 +8741,7 @@ ${cmDataBlocks}</raml>
                 let symbolDbm = 'N/A', symbolBRsDbm = 'N/A', symbolBNoRsDbm = 'N/A';
                 if (cell.pMaxDbm !== 'N/A' && !isNaN(cell.pMaxDbm)) {
                     symbolDbm = (cell.pMaxDbm - pwrRed - mimoComp - bwLoss).toFixed(2);
-                    // RE Type B (RS / no_RS): same formulas as Boost Analytics (LTE only — dlRsBoost and Pb are LTE parameters).
+                    // RE Type B (RS / no_RS): LTE only — dlRsBoost and Pb are LTE parameters).
                     if (is4G) {
                         const dlRsBoostVal = hcDbEnum(fddData.dlRsBoost ?? 0) || 0;
                         const pbDb = parsePbToDb(cell.allowPbIndexZero, fddData.dlRsBoost);
@@ -9001,83 +8830,6 @@ ${cmDataBlocks}</raml>
             recalculateSelectedPower();
         }
 
-        function renderBoostDashboard() {
-            const tbody = document.querySelector('#boostTable tbody');
-            if (!tbody) return;
-            tbody.innerHTML = '';
-
-            let filteredData = boostDataLTE;
-            if (activeBoostEarfcns.size > 0) {
-                filteredData = filteredData.filter(item => activeBoostEarfcns.has(item.earfcn));
-            }
-            if (activeBoostCells.size > 0) {
-                filteredData = filteredData.filter(item => activeBoostCells.has(item.id));
-            }
-
-            if (filteredData.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; color:var(--text-muted); font-style:italic;">No LTE cells (LNCEL) found matching current filter.</td></tr>`;
-                const btc = document.getElementById('boostTotalCells'); if (btc) btc.innerText = `0 LNCEL`;
-                const bas = document.getElementById('boostAvgSymbol'); if (bas) bas.innerText = `0.00 dBm`;
-                return;
-            }
-
-            let sumSymbolDbm = 0;
-            let validCount = 0;
-
-            filteredData.forEach(item => {
-                const rfTagHtml = renderLncelRfTag(item.distName);
-                let symbolADisplay = 'N/A', valA = 0;
-                if (item.reTypeASymbolDbm !== 'N/A') {
-                    symbolADisplay = `${item.reTypeASymbolDbm} dBm`;
-                    valA = parseFloat(item.reTypeASymbolDbm);
-                    sumSymbolDbm += valA;
-                    validCount++;
-                }
-
-                let symbolBRsDisplay = 'N/A', valBRs = 0;
-                if (item.reTypeBRsDbm !== 'N/A') {
-                    symbolBRsDisplay = `${item.reTypeBRsDbm} dBm`;
-                    valBRs = parseFloat(item.reTypeBRsDbm);
-                }
-
-                let symbolBNoRsDisplay = 'N/A', valBNoRs = 0;
-                if (item.reTypeBNoRsDbm !== 'N/A') {
-                    symbolBNoRsDisplay = `${item.reTypeBNoRsDbm} dBm`;
-                    valBNoRs = parseFloat(item.reTypeBNoRsDbm);
-                }
-
-                const mwA = item.reTypeASymbolDbm !== 'N/A' ? dbmToWatt(valA) : 0;
-                const mwBRs = item.reTypeBRsDbm !== 'N/A' ? dbmToWatt(valBRs) : 0;
-                const mwBNoRs = item.reTypeBNoRsDbm !== 'N/A' ? dbmToWatt(valBNoRs) : 0;
-
-                const maxMw = Math.max(mwA, mwBRs, mwBNoRs, 0.000001);
-                const pctA = Math.max(Math.round((mwA / maxMw) * 100), 12);
-                const pctBRs = Math.max(Math.round((mwBRs / maxMw) * 100), 12);
-                const pctBNoRs = Math.max(Math.round((mwBNoRs / maxMw) * 100), 12);
-
-                const sparklineHtml = `
-                    <div class="sparkline-container" title="Type A: ${symbolADisplay} | Type B RS: ${symbolBRsDisplay} | Type B no_RS: ${symbolBNoRsDisplay}">
-                        <div class="sparkline-bar sparkbar-type-a" style="height: ${pctA}%;"></div>
-                        <div class="sparkline-bar sparkbar-type-b-rs" style="height: ${pctBRs}%;"></div>
-                        <div class="sparkline-bar sparkbar-type-b-nors" style="height: ${pctBNoRs}%;"></div>
-                    </div>
-                `;
-
-                const tr = document.createElement('tr');
-                tr.innerHTML = `
-                    <td><strong>${item.id}</strong>: ${item.name}<br><small style="color:var(--text-muted); font-family:'JetBrains Mono', monospace;">${item.distName}</small>${rfTagHtml ? '<br>' + rfTagHtml : ''}</td>
-                    <td><strong style="color:var(--brand-blue); font-size:1.05em;">${item.dlRsBoost} dB</strong></td>
-                    <td><strong style="color:#10b981; font-size:1.05em; font-family:'JetBrains Mono', monospace;">${symbolADisplay}</strong></td>
-                    <td><strong style="color:#8b5cf6; font-size:1.05em; font-family:'JetBrains Mono', monospace;">${symbolBRsDisplay}</strong></td>
-                    <td><strong style="color:#f97316; font-size:1.05em; font-family:'JetBrains Mono', monospace;">${symbolBNoRsDisplay}</strong></td>
-                    <td>${sparklineHtml}</td>
-                `;
-                tbody.appendChild(tr);
-            });
-
-            const btc = document.getElementById('boostTotalCells'); if (btc) btc.innerText = `${filteredData.length} LNCEL`;
-            const bas = document.getElementById('boostAvgSymbol'); if (bas) bas.innerText = `${validCount > 0 ? (sumSymbolDbm / validCount).toFixed(2) : '0.00'} dBm`;
-        }
 
         function renderCioDashboard() {
             const container = document.getElementById('cioViewContent');

@@ -14,7 +14,6 @@ Versão atual: **v2.08** (exibida no header da ferramenta).
 | Módulo | O que faz |
 |---|---|
 | SCF Analytics | Visão geral do SCF, contagem de MOs por tecnologia |
-| Boost Analytics | Análise de RS boost / potência de referência |
 | CIO Analytics | Cell Individual Offsets das relações de vizinhança |
 | Power & Footprint | pMax, dlCellPwrRed, PSD (W/MHz) e potência por RE |
 | Neighbor Analytics → Audit | Auditoria de relações LNREL/LNRELW/LNRELGNBCELL |
