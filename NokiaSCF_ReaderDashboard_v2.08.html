@@ -980,7 +980,7 @@
     <!-- LINE 1: MAIN BRANDING & FILE ACTIONS HEADER -->
     <header>
         <div class="logo-area">
-            <h1>SCF Nokia Analytics <span class="logo-badge">Pro Suite</span> <span class="logo-badge" style="background:rgba(255,255,255,0.1); font-weight:600;">v2.16</span></h1>
+            <h1>SCF Nokia Analytics <span class="logo-badge">Pro Suite</span> <span class="logo-badge" style="background:rgba(255,255,255,0.1); font-weight:600;">v2.17</span></h1>
         </div>
         <div class="upload-area">
             <span class="summary-badge" id="site-summary">No SCF file loaded</span>
@@ -3008,31 +3008,50 @@
             const tableRows = [];
             let evaluated = 0;
             const num = v => { const m = String(v ?? '').match(/\d+/); return m ? parseInt(m[0], 10) : NaN; };
+            const ms = v => isNaN(v) ? 'N/A' : `${v}ms`;
+            const nn = v => isNaN(v) ? 'N/A' : `n${v}`;
+            const grey = t => `<span style="color:var(--text-muted)">${t}</span>`;
             ctx.allLncel.forEach(cell => {
                 const label = hcShort(cell.distName);
-                const t310q = getParamCaseInsensitive(cell.params, 't310Qci1');
-                const n310q = getParamCaseInsensitive(cell.params, 'n310Qci1');
+                const p = (o, k) => o ? num(getParamCaseInsensitive(o.params, k)) : NaN;
                 const sib = hcSibOf(cell.distName);
-                const t310s = sib ? getParamCaseInsensitive(sib.params, 't310') : undefined;
-                const n310s = sib ? getParamCaseInsensitive(sib.params, 'n310') : undefined;
-                if (hcBlank(t310q) && hcBlank(n310q)) { tableRows.push({ icon: '➖', mo: label, t310q: 'N/A', t310s: hcBlank(t310s) ? 'N/A' : `${num(t310s)}ms`, n310q: 'N/A', n310s: hcBlank(n310s) ? 'N/A' : num(n310s), status: 'N/A' }); return; }
-                evaluated++;
-                const tq = num(t310q), ts = num(t310s), nq = num(n310q), ns = num(n310s);
+                const tq = p(cell, 't310Qci1'), nq = p(cell, 'n310Qci1');
+                const ts = p(sib, 't310'), ns = p(sib, 'n310');
+                // Context timers (shown, not evaluated): RLF recovery (t311/n311), connection setup (t300) and
+                // re-establishment (t301) from SIB; intra-LTE HO supervision t304 from LNCEL.
+                const extra = { t311: ms(p(sib, 't311')), n311: nn(p(sib, 'n311')), t300: ms(p(sib, 't300')), t301: ms(p(sib, 't301')), t304: ms(p(cell, 't304IntraLte')) };
+                const noQci = isNaN(tq) && isNaN(nq), noSib = isNaN(ts) && isNaN(ns);
                 const probs = [];
                 if (!isNaN(tq) && !isNaN(ts) && tq < ts) probs.push(`t310Qci1 ${tq}ms < SIB t310 ${ts}ms`);
-                if (!isNaN(nq) && !isNaN(ns) && nq < ns) probs.push(`n310Qci1 ${nq} < SIB n310 ${ns}`);
-                if (isNaN(ts) && isNaN(ns)) probs.push('no SIB t310/n310 to compare');
-                const bad = probs.length > 0 && !(isNaN(ts) && isNaN(ns));
+                if (!isNaN(nq) && !isNaN(ns) && nq < ns) probs.push(`n310Qci1 n${nq} < SIB n310 n${ns}`);
+                if (!noQci) evaluated++;
+                const bad = !noQci && !noSib && probs.length > 0;
                 if (bad) issues.push(`${label}: ${probs.join(', ')}`);
-                tableRows.push({ icon: bad ? '⚠️' : (isNaN(ts) && isNaN(ns) ? '➖' : '✅'), mo: label, t310q: isNaN(tq) ? 'N/A' : `${tq}ms`, t310s: isNaN(ts) ? 'N/A' : `${ts}ms`, n310q: isNaN(nq) ? 'N/A' : nq, n310s: isNaN(ns) ? 'N/A' : ns, status: bad ? 'WARN' : (isNaN(ts) && isNaN(ns) ? 'N/A' : 'OK') });
+                const red = (txt, cond) => cond ? `<span style="color:var(--status-error,#ef4444);font-weight:600">${txt}</span>` : txt;
+                tableRows.push({
+                    icon: noQci || noSib ? '➖' : (bad ? '⚠️' : '✅'), mo: label,
+                    t310s: ms(ts), t310q: red(ms(tq), !isNaN(tq) && !isNaN(ts) && tq < ts),
+                    n310s: nn(ns), n310q: red(nn(nq), !isNaN(nq) && !isNaN(ns) && nq < ns),
+                    t311: grey(extra.t311), n311: grey(extra.n311), t300: grey(extra.t300), t301: grey(extra.t301), t304: grey(extra.t304),
+                    status: noQci || noSib ? 'N/A' : (bad ? 'WARN' : 'OK')
+                });
             });
-            if (evaluated === 0) return { status: 'NA', detail: 'No LNCEL with t310Qci1/n310Qci1 configured.' };
-            const summary = `${evaluated - issues.length} of ${evaluated} LNCEL have VoLTE RLF timers (t310Qci1/n310Qci1) at least as tolerant as the SIB2 defaults (t310/n310).`;
-            const fullDetail = summary + renderHcDetailTable([
+            if (evaluated === 0) return { status: 'NA', detail: 'No LNCEL with t310Qci1/n310Qci1 configured.', fullDetail: 'No LNCEL with t310Qci1/n310Qci1 configured.' + renderHcDetailTable(cols(), tableRows) };
+            function cols() { return [
                 { key: 'icon', label: '' }, { key: 'mo', label: 'LNCEL', mono: true },
-                { key: 't310q', label: 't310Qci1', mono: true }, { key: 't310s', label: 'SIB t310', mono: true },
-                { key: 'n310q', label: 'n310Qci1', mono: true }, { key: 'n310s', label: 'SIB n310', mono: true }, { key: 'status', label: 'Status' }
-            ], tableRows);
+                { key: 't310s', label: 'SIB t310', mono: true }, { key: 't310q', label: 't310Qci1', mono: true },
+                { key: 'n310s', label: 'SIB n310', mono: true }, { key: 'n310q', label: 'n310Qci1', mono: true },
+                { key: 't311', label: 'SIB t311', mono: true }, { key: 'n311', label: 'SIB n311', mono: true },
+                { key: 't300', label: 'SIB t300', mono: true }, { key: 't301', label: 'SIB t301', mono: true },
+                { key: 't304', label: 't304IntraLte', mono: true }, { key: 'status', label: 'Status' }
+            ]; }
+            const summary = `${evaluated - issues.length} of ${evaluated} LNCEL have VoLTE RLF timers (t310Qci1/n310Qci1) at least as tolerant as the SIB2 defaults (t310/n310).`;
+            const glossary = `\n<b>Timers</b> (only t310/n310 vs QCI1 are evaluated; the others, in grey, are context):\n` +
+                `• <b>t310 / n310</b>: RLF detection – after n310 consecutive out-of-sync indications the UE starts t310; on expiry it declares RLF. t310Qci1/n310Qci1 replace them for UEs with a QCI1 (VoLTE) bearer.\n` +
+                `• <b>t311</b>: time the UE has to find a suitable cell for RRC re-establishment after RLF. <b>n311</b>: in-sync indications that stop t310.\n` +
+                `• <b>t301</b>: RRC Connection Re-establishment supervision. <b>t300</b>: RRC Connection Request supervision.\n` +
+                `• <b>t304IntraLte</b> (LNCEL): intra-LTE handover supervision; on expiry the UE starts re-establishment.\n`;
+            const fullDetail = summary + glossary + renderHcDetailTable(cols(), tableRows);
             if (issues.length === 0) return { status: 'OK', detail: summary, fullDetail };
             return { status: 'WARN', detail: `${issues.length} of ${evaluated} LNCEL have VoLTE RLF timers shorter than the SIB defaults: ${issues.slice(0, 3).join('; ')}${issues.length > 3 ? '…' : ''}`, fullDetail };
         }
