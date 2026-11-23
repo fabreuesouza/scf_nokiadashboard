@@ -5,7 +5,7 @@ Leia isto antes de qualquer tarefa. Este arquivo é carregado automaticamente em
 ## O projeto
 
 - Ferramenta web **de arquivo único**: `NokiaSCF_ReaderDashboard_v2.08.html` (~8.8k linhas, HTML + CSS + JS inline, sem build, sem dependências além de Google Fonts).
-- Lê arquivos SCF (XML de configuração de sites Nokia LTE/NR) no navegador e gera módulos de análise. Versão exibida no header: **v2.17** (o nome do arquivo continua `_v2.08.html`).
+- Lê arquivos SCF (XML de configuração de sites Nokia LTE/NR) no navegador e gera módulos de análise. Versão exibida no header: **v2.18** (o nome do arquivo continua `_v2.08.html`).
 - O dono trabalha com engenharia/otimização de redes Nokia. Comunicação em **português**; código, comentários e commits em **inglês**.
 
 ## Fluxo de trabalho combinado (fazer sempre, sem perguntar)
@@ -88,6 +88,7 @@ Use `grep -n` pelo nome da função em vez de confiar nos números.
   - Colunas: ícone, MO, Related LNCEL/LNRELG, CI, LAC, RAC, ARFCN, Band, BSIC, Status. (Colunas `targetCellDn`/`targetName` foram testadas e removidas — sem dado no SCF.)
   - ARFCN do LNADJG deve estar no `redirGeranArfcnStructL` dos REDRT GSM de cada LNCEL relacionado; ausente → vermelho + FAIL.
   - Par ARFCN + BSIC duplicado na mesma LNBTS → FAIL (tabela própria).
+  - Tabela REDRT → LNADJG resolution: ARFCNs do `redirGeranArfcnStructL` encontrados em LNADJG da mesma LNBTS ficam em negrito azul.
 - **Cell → RMOD** (`buildLcellRmodMap`, `getCellRmods`): LTE `LNCEL.lcrId` → `MNL/.../CELLMAPPING/LCELL-<lcrId>/CHANNELGROUP/CHANNEL.antlDN` → `RMOD-x/ANTL-y` (exibe `RMOD-3 (ANTL-1/2)`); NR `NRCELL.lcrId` → `LCELNR-<lcrId>/.../CHANNEL.resourceDN` → `RMOD-x/PHYANT-y` (exibe `RMOD-21 (PHYANT-1, 8T4R)`, contando canais TX/RX).
 - **Cell → RET** (`buildAntlRetuMap`, `formatCellRet`): `ALD-x/RETU-y.antlDNList` lista as ANTL do RMOD; cruzando com as ANTL da célula obtém-se o tilt. `angle` em 0.1° (110 → 11.0°). NR (PHYANT) normalmente sem RETU → N/A.
 - **Power & Footprint**: células NB-IoT (LNCEL com filho NBIOT_FDD) ocultas da tabela e dos filtros (`getPowerVisibleDataset`); filtros laterais por Sector (ANTL-1/2→1, 3/4→2, 5/6→3; só LTE) e RMOD; colunas: Cell, RMOD, RET Tilt, Bandwidth, PMax, PwrRed, DL RS Boost, qrxLevMin (SIB-0), Power (W), Spectral Density, Symbol Level (LTE: 3 linhas — RE Type A, B RS, B no_RS; NR: só A), FSPL (f e d = 0.5 km em cinza na célula).
