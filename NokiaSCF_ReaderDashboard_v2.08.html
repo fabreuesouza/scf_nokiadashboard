@@ -980,7 +980,7 @@
     <!-- LINE 1: MAIN BRANDING & FILE ACTIONS HEADER -->
     <header>
         <div class="logo-area">
-            <h1>SCF Nokia Analytics <span class="logo-badge">Pro Suite</span> <span class="logo-badge" style="background:rgba(255,255,255,0.1); font-weight:600;">v2.17</span></h1>
+            <h1>SCF Nokia Analytics <span class="logo-badge">Pro Suite</span> <span class="logo-badge" style="background:rgba(255,255,255,0.1); font-weight:600;">v2.18</span></h1>
         </div>
         <div class="upload-area">
             <span class="summary-badge" id="site-summary">No SCF file loaded</span>
@@ -4056,7 +4056,7 @@ B1 (addition) and A2 (release) act on the same NR leg from opposite directions, 
                 if (!hasMatch) orphanRedirectCount++;
                 return {
                     icon: hasMatch ? '✅' : '⚠️', mo: `${lncelLabel}/${redrtLabel}`,
-                    redirGeranArfcnStructL: redirArfcns.length > 0 ? redirArfcns.join(',') : 'N/A',
+                    redirGeranArfcnStructL: redirArfcns.length > 0 ? redirArfcns.map(a => arfcnSet && arfcnSet.has(a) ? `<span style="color:var(--accent,#3b82f6);font-weight:700">${a}</span>` : a).join(',') : 'N/A',
                     resolution: hasMatch ? `${matchedArfcns.length} of ${redirArfcns.length} ARFCNs match a known LNADJG` : 'no LNADJG match under the same LNBTS',
                     status: hasMatch ? 'OK' : 'WARN'
                 };
