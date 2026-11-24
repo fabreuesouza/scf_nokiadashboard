@@ -980,7 +980,7 @@
     <!-- LINE 1: MAIN BRANDING & FILE ACTIONS HEADER -->
     <header>
         <div class="logo-area">
-            <h1>SCF Nokia Analytics <span class="logo-badge">Pro Suite</span> <span class="logo-badge" style="background:rgba(255,255,255,0.1); font-weight:600;">v2.18</span></h1>
+            <h1>SCF Nokia Analytics <span class="logo-badge">Pro Suite</span> <span class="logo-badge" style="background:rgba(255,255,255,0.1); font-weight:600;">v2.19</span></h1>
         </div>
         <div class="upload-area">
             <span class="summary-badge" id="site-summary">No SCF file loaded</span>
@@ -2060,80 +2060,44 @@
 
         function checkInterFreqA5ThresholdBalance(ctx) {
             if (ctx.allLnhoif.length === 0) return { status: 'NA', detail: 'No LNHOIF (inter-frequency mobility profile) found in this SCF.' };
-
             let anticipated = 0, delayed = 0, balanced = 0;
-            const extreme = [];
-            const lines = [];
-            let evaluated = 0;
-
-            // Create a lookup map for LNCEL by distName to access cellName
-            const lncelLookup = {};
-            ctx.allLncel.forEach(cell => {
-                lncelLookup[cell.distName] = cell;
-            });
-
+            const extreme = []; const rows = [];
             ctx.allLnhoif.forEach(o => {
-                const lncelDistName = getParentDistName(o.distName);
-                const lncelShort = lncelDistName.split('/').pop();
-                const lnhoifShort = o.distName.split('/').pop();
-                const earfcn = (lncelFddParams[lncelDistName] && lncelFddParams[lncelDistName].earfcnDL) ? lncelFddParams[lncelDistName].earfcnDL : 'N/A';
-                
-                // Get cellName from LNCEL
-                const lncelCellName = (lncelLookup[lncelDistName] && lncelLookup[lncelDistName].params) ? 
-                    getParamCaseInsensitive(lncelLookup[lncelDistName].params, 'cellName') : 'N/A';
-                
-                const carrierInfoRaw = getParamCaseInsensitive(o.params, 'eutraCarrierInfo');
-                const carrierInfo = (carrierInfoRaw !== undefined && carrierInfoRaw !== null && carrierInfoRaw !== '') ? carrierInfoRaw : 'N/A';
-                const label = `${lncelShort}(${earfcn})/${lnhoifShort}(${carrierInfo})`;
-
-                const t3Raw = parseFloat(getParamCaseInsensitive(o.params, 'threshold3InterFreq'));
-                const t3aRaw = parseFloat(getParamCaseInsensitive(o.params, 'threshold3aInterFreq'));
-                if (isNaN(t3Raw) || isNaN(t3aRaw)) { lines.push(`➖ <strong>${label}</strong>: \nthreshold3InterFreq/threshold3aInterFreq not found`); return; }
-                evaluated++;
-
-                // Nokia stores these thresholds as an index; the real RSRP value in dBm is index - 140.
-                const t3Dbm = t3Raw - 140;
-                const t3aDbm = t3aRaw - 140;
-                const diff = t3Raw - t3aRaw; // same result whether computed from raw index or from dBm
-
-                let tendency;
-                if (diff > 0) { anticipated++; tendency = 'anticipated (early HO)'; }
-                else if (diff < 0) { delayed++; tendency = 'delayed (late HO)'; }
-                else { balanced++; tendency = 'balanced'; }
-
+                const lncel = hcLncelOf(o.distName);
+                const t3 = hcIfDbm(getParamCaseInsensitive(o.params, 'threshold3InterFreq'));
+                const t3a = hcIfDbm(getParamCaseInsensitive(o.params, 'threshold3aInterFreq'));
+                const base = { mo: hcIfLabel(o), own: hcCellEarfcn(lncel) || 'N/A', tgt: hcIfTarget(o), t3: t3.t, t3a: t3a.t };
+                if (isNaN(t3.n) || isNaN(t3a.n)) { rows.push({ icon: '➖', ...base, diff: 'N/A', tend: 'thresholds not found', status: 'N/A' }); return; }
+                const diff = t3a.n - t3.n; // how much better than the serving trigger the target must be
+                let tend;
+                if (diff < 0) { anticipated++; tend = 'target may be weaker than serving trigger'; }
+                else if (diff > 0) { delayed++; tend = 'target must be stronger'; }
+                else { balanced++; tend = 'equal thresholds'; }
                 const flagged = Math.abs(diff) > 6;
-                if (flagged) extreme.push(`${label} (serving=${t3Dbm}dBm, neighbor=${t3aDbm}dBm, Δ=${diff > 0 ? '+' : ''}${diff})`);
-
-                const icon = flagged ? '⚠️' : '✅';
-                
-                // Enhanced detail header with LNCEL Name and Frequencies
-                const detailHeader = `${icon} <strong>LNCEL: ${lncelShort}</strong> | <strong>Freq (EARFCN): ${earfcn}</strong> | Profile: ${lnhoifShort}`;
-                const detailBody = `Cell Name: ${lncelCellName}\nCarrier Info: ${carrierInfo}\nthreshold3InterFreq (serving) = ${t3Dbm} dBm (raw: ${t3Raw})\nthreshold3aInterFreq (neighbor) = ${t3aDbm} dBm (raw: ${t3aRaw})\nΔ = ${diff > 0 ? '+' : ''}${diff} — ${tendency}${flagged ? ' [⚠️ STRONG IMBALANCE]' : ''}`;
-                
-                lines.push(`${detailHeader}\n${detailBody}`);
+                if (flagged) extreme.push(`${base.mo} (Δ=${diff > 0 ? '+' : ''}${diff}dB)`);
+                rows.push({ icon: flagged ? '⚠️' : '✅', ...base, diff: `${diff > 0 ? '+' : ''}${diff}dB`, tend, status: flagged ? 'WARN' : 'OK' });
             });
-
+            const evaluated = anticipated + delayed + balanced;
             if (evaluated === 0) return { status: 'NA', detail: 'threshold3InterFreq / threshold3aInterFreq not found in any LNHOIF profile.' };
-
-            const summary = `${anticipated} anticipated (early HO), ${delayed} delayed (late HO), ${balanced} balanced — out of ${evaluated} inter-freq mobility profile(s) evaluated (serving vs. neighbor RSRP threshold, converted to dBm as value-140).`;
-            const fullDetail = `${summary}\n\n${lines.join('\n\n')}`;
-
+            const summary = `${evaluated} LNHOIF evaluated: ${delayed} target stronger than serving trigger, ${anticipated} target allowed weaker, ${balanced} equal. ${extreme.length} with |Δ| > 6dB.`;
+            const fullDetail = summary + renderHcDetailTable([{ key: 'icon', label: '' }, { key: 'mo', label: 'LNCEL/LNHOIF', mono: true }, { key: 'own', label: 'Own EARFCN', mono: true }, { key: 'tgt', label: 'Target EARFCN', mono: true }, { key: 't3', label: 'threshold3InterFreq (serving)', mono: true }, { key: 't3a', label: 'threshold3aInterFreq (target)', mono: true }, { key: 'diff', label: 'Δ target − serving', mono: true }, { key: 'tend', label: 'Assessment' }, { key: 'status', label: 'Status' }], rows);
             if (extreme.length === 0) return { status: 'OK', detail: summary, fullDetail };
-            return { status: 'WARN', detail: `${summary} ${extreme.length} profile(s) with a strong imbalance (|Δ|>6) worth reviewing: ${extreme.slice(0, 3).join('; ')}${extreme.length > 3 ? '…' : ''}`, fullDetail };
+            return { status: 'WARN', detail: `${extreme.length} LNHOIF with a strong A5 imbalance (|Δ| > 6dB): ${extreme.slice(0, 3).join('; ')}${extreme.length > 3 ? '…' : ''}`, fullDetail };
         }
 
         function checkInterFreqMobilityCoverage(ctx) {
             if (ctx.allLncel.length === 0) return { status: 'NA', detail: 'No LNCEL found in this SCF.' };
-            const lnhoifParents = new Set(ctx.allLnhoif.map(o => getParentDistName(o.distName)));
-            const missing = ctx.allLncel.filter(cell => !lnhoifParents.has(cell.distName));
-            const lines = ctx.allLncel.map(cell => {
-                const label = cell.distName.split('/').pop();
-                const hasHoif = lnhoifParents.has(cell.distName);
-                return `${hasHoif ? '✅' : '❌'} <strong>${label}</strong>: \n${hasHoif ? 'has LNHOIF configured' : 'NO LNHOIF configured'}`;
+            const by = {};
+            ctx.allLnhoif.forEach(o => (by[hcLncelOf(o.distName)] = by[hcLncelOf(o.distName)] || []).push(hcIfTarget(o)));
+            const rows = ctx.allLncel.map(cell => {
+                const t = by[cell.distName] || [];
+                return { icon: t.length ? '✅' : '❌', mo: hcShort(cell.distName), n: t.length, tgts: t.sort((a, b) => a - b).join(', ') || '—', status: t.length ? 'OK' : 'FAIL' };
             });
-            const fullDetail = `${missing.length} of ${ctx.allLncel.length} LNCEL have NO LNHOIF configured.\n\n${lines.join('\n')}`;
-            if (missing.length === 0) return { status: 'OK', detail: `All ${ctx.allLncel.length} LNCEL have at least one LNHOIF (inter-frequency mobility profile).`, fullDetail };
-            return { status: 'FAIL', detail: `${missing.length} of ${ctx.allLncel.length} LNCEL have NO LNHOIF configured (isolated from inter-freq mobility): ${missing.slice(0, 3).map(c => c.distName.split('/').pop()).join(', ')}${missing.length > 3 ? '…' : ''}`, fullDetail };
+            const missing = rows.filter(r => r.status === 'FAIL');
+            const summary = `${rows.length - missing.length} of ${rows.length} LNCEL have at least one LNHOIF (inter-frequency HO profile).`;
+            const fullDetail = summary + renderHcDetailTable([{ key: 'icon', label: '' }, { key: 'mo', label: 'LNCEL', mono: true }, { key: 'n', label: 'LNHOIF count', mono: true }, { key: 'tgts', label: 'Target EARFCNs', mono: true }, { key: 'status', label: 'Status' }], rows);
+            if (missing.length === 0) return { status: 'OK', detail: summary, fullDetail };
+            return { status: 'FAIL', detail: `${missing.length} of ${rows.length} LNCEL have NO LNHOIF configured (isolated from inter-freq mobility): ${missing.slice(0, 3).map(r => r.mo).join(', ')}${missing.length > 3 ? '…' : ''}`, fullDetail };
         }
 
         function checkSrvccOrphan(ctx) {
@@ -4304,6 +4268,166 @@ B1 (addition) and A2 (release) act on the same NR leg from opposite directions, 
             return { status: 'FAIL', detail: `${bad.length} LNHOIF with A5 serving threshold above the A2 start: ${bad.slice(0, 3).join('; ')}${bad.length > 3 ? '…' : ''}`, fullDetail };
         }
 
+        // ===== Inter-Freq HO (LTE) category =====
+        // Shared helpers: dBm from the Nokia RSRP index (raw - 140) and dB from 0.5 dB steps (raw / 2).
+        const hcIfDbm = v => { const n = parseFloat(v); return isNaN(n) ? { n: NaN, t: 'N/A' } : { n: n - 140, t: `${n - 140}dBm(${n})` }; };
+        const hcIfHalf = v => { const n = parseFloat(v); return isNaN(n) ? { n: NaN, t: 'N/A' } : { n: n / 2, t: `${n / 2}dB(${n})` }; };
+        const hcIfLabel = o => `${hcShort(hcLncelOf(o.distName))}/${hcShort(o.distName)}`;
+        const hcIfTarget = o => { const v = getParamCaseInsensitive(o.params, 'eutraCarrierInfo'); return hcBlank(v) ? 'N/A' : String(v); };
+
+        // IF1: A2 that starts inter-freq measurements (LNCEL threshold2InterFreq, hysThreshold2InterFreq,
+        // a2TimeToTriggerActInterFreqMeas). Typical window −95…−115 dBm; outside it, measurements start too early
+        // (gaps, throughput loss) or too late (drops before the A5 fires).
+        function checkIfA2Start(ctx) {
+            if (ctx.allLncel.length === 0) return { status: 'NA', detail: 'No LNCEL found in this SCF.' };
+            const rows = []; const bad = [];
+            ctx.allLncel.forEach(cell => {
+                const label = hcShort(cell.distName);
+                const t2 = hcIfDbm(getParamCaseInsensitive(cell.params, 'threshold2InterFreq'));
+                const hys = hcIfHalf(getParamCaseInsensitive(cell.params, 'hysThreshold2InterFreq'));
+                const ttt = hcTtt(getParamCaseInsensitive(cell.params, 'a2TimeToTriggerActInterFreqMeas'));
+                const q1 = hcIfDbm(getParamCaseInsensitive(cell.params, 'threshold2InterFreqQci1'));
+                if (isNaN(t2.n)) { rows.push({ icon: '➖', mo: label, t2: 'N/A', hys: hys.t, ttt: ttt.text, q1: q1.t, note: 'threshold2InterFreq not found', status: 'N/A' }); return; }
+                const probs = [];
+                if (t2.n > -95) probs.push('starts too early (> −95dBm)');
+                if (t2.n < -115) probs.push('starts too late (< −115dBm)');
+                if (!isNaN(ttt.ms) && ttt.ms > 640) probs.push('TTT > 640ms');
+                if (probs.length) bad.push(`${label}: ${probs.join(', ')}`);
+                rows.push({ icon: probs.length ? '⚠️' : '✅', mo: label, t2: t2.t, hys: hys.t, ttt: ttt.text, q1: q1.t, note: probs.join('; ') || 'OK', status: probs.length ? 'WARN' : 'OK' });
+            });
+            const ev = rows.filter(r => r.status !== 'N/A').length;
+            if (ev === 0) return { status: 'NA', detail: 'threshold2InterFreq not found on any LNCEL.' };
+            const summary = `${ev - bad.length} of ${ev} LNCEL start inter-freq measurements between −115 and −95 dBm with A2 TTT ≤ 640ms.`;
+            const fullDetail = summary + renderHcDetailTable([{ key: 'icon', label: '' }, { key: 'mo', label: 'LNCEL', mono: true }, { key: 't2', label: 'threshold2InterFreq', mono: true }, { key: 'hys', label: 'hysThreshold2InterFreq', mono: true }, { key: 'ttt', label: 'a2TimeToTriggerActInterFreqMeas', mono: true }, { key: 'q1', label: 'threshold2InterFreqQci1', mono: true }, { key: 'note', label: 'Assessment' }, { key: 'status', label: 'Status' }], rows);
+            if (bad.length === 0) return { status: 'OK', detail: summary, fullDetail };
+            return { status: 'WARN', detail: `${bad.length} LNCEL with A2 inter-freq start outside the usual window: ${bad.slice(0, 3).join('; ')}${bad.length > 3 ? '…' : ''}`, fullDetail };
+        }
+
+        // IF2: measurement window per bearer type. The A1 stop (threshold2a*) must stay ≥ 3 dB above the A2 start
+        // (threshold2InterFreq*), for default, QCI1 and HPUE profiles; otherwise gaps toggle on/off (ping-pong).
+        function checkIfMeasWindow(ctx) {
+            if (ctx.allLncel.length === 0) return { status: 'NA', detail: 'No LNCEL found in this SCF.' };
+            const PAIRS = [['Default', 'threshold2a', 'threshold2InterFreq'], ['QCI1', 'threshold2aQci1', 'threshold2InterFreqQci1'], ['HPUE', 'threshold2aHpue', 'threshold2InterFreqHpue']];
+            const rows = []; const bad = [];
+            ctx.allLncel.forEach(cell => {
+                const label = hcShort(cell.distName);
+                PAIRS.forEach(([prof, stopK, startK]) => {
+                    const stop = hcIfDbm(getParamCaseInsensitive(cell.params, stopK)), start = hcIfDbm(getParamCaseInsensitive(cell.params, startK));
+                    if (isNaN(stop.n) || isNaN(start.n)) return;
+                    const gap = stop.n - start.n;
+                    const st = gap < 0 ? 'FAIL' : gap < 3 ? 'WARN' : 'OK';
+                    if (st !== 'OK') bad.push(`${label} ${prof}: Δ=${gap}dB`);
+                    rows.push({ icon: hcStatusIcon(st), mo: label, prof, stop: `${stop.t}`, start: `${start.t}`, gap: `${gap > 0 ? '+' : ''}${gap}dB`, status: st });
+                });
+            });
+            if (rows.length === 0) return { status: 'NA', detail: 'threshold2a* / threshold2InterFreq* not found.' };
+            const summary = `${rows.length - bad.length} of ${rows.length} A1-stop/A2-start pairs keep the stop ≥ 3 dB above the start (default, QCI1, HPUE).`;
+            const fullDetail = summary + renderHcDetailTable([{ key: 'icon', label: '' }, { key: 'mo', label: 'LNCEL', mono: true }, { key: 'prof', label: 'Profile' }, { key: 'stop', label: 'A1 stop (threshold2a*)', mono: true }, { key: 'start', label: 'A2 start (threshold2InterFreq*)', mono: true }, { key: 'gap', label: 'Stop − Start', mono: true }, { key: 'status', label: 'Status' }], rows);
+            if (bad.length === 0) return { status: 'OK', detail: summary, fullDetail };
+            return { status: rows.some(r => r.status === 'FAIL') ? 'FAIL' : 'WARN', detail: `${bad.length} pair(s) with a narrow or inverted measurement window: ${bad.slice(0, 3).join('; ')}${bad.length > 3 ? '…' : ''}`, fullDetail };
+        }
+
+        // IF3: inter-freq A3 per LNHOIF. Effective margin = a3OffsetRsrpInterFreq + hysA3OffsetRsrpInterFreq (both raw/2 dB);
+        // WARN outside 1–6 dB. QCI1 offset and TTT shown for context.
+        function checkIfA3(ctx) {
+            const rows = []; const bad = [];
+            ctx.allLnhoif.forEach(o => {
+                const off = hcIfHalf(getParamCaseInsensitive(o.params, 'a3OffsetRsrpInterFreq'));
+                const hys = hcIfHalf(getParamCaseInsensitive(o.params, 'hysA3OffsetRsrpInterFreq'));
+                const q1 = hcIfHalf(getParamCaseInsensitive(o.params, 'a3OffsetRsrpInterFreqQci1'));
+                const ttt = hcTtt(getParamCaseInsensitive(o.params, 'a3TimeToTriggerRsrpInterFreq'));
+                if (isNaN(off.n)) return;
+                const eff = off.n + (isNaN(hys.n) ? 0 : hys.n);
+                const st = eff < 1 || eff > 6 ? 'WARN' : 'OK';
+                if (st !== 'OK') bad.push(`${hcIfLabel(o)}=${eff}dB`);
+                rows.push({ icon: hcStatusIcon(st), mo: hcIfLabel(o), tgt: hcIfTarget(o), off: off.t, hys: hys.t, eff: `${eff}dB`, q1: q1.t, ttt: ttt.text, status: st });
+            });
+            if (rows.length === 0) return { status: 'NA', detail: 'No LNHOIF with a3OffsetRsrpInterFreq (inter-freq A3 not configured).' };
+            const summary = `${rows.length - bad.length} of ${rows.length} LNHOIF have an inter-freq A3 effective margin (offset + hysteresis) between 1 and 6 dB.`;
+            const fullDetail = summary + renderHcDetailTable([{ key: 'icon', label: '' }, { key: 'mo', label: 'LNCEL/LNHOIF', mono: true }, { key: 'tgt', label: 'Target EARFCN', mono: true }, { key: 'off', label: 'a3OffsetRsrpInterFreq', mono: true }, { key: 'hys', label: 'hysA3OffsetRsrpInterFreq', mono: true }, { key: 'eff', label: 'Effective margin', mono: true }, { key: 'q1', label: 'a3Offset…Qci1', mono: true }, { key: 'ttt', label: 'a3TimeToTrigger…InterFreq', mono: true }, { key: 'status', label: 'Status' }], rows);
+            if (bad.length === 0) return { status: 'OK', detail: summary, fullDetail };
+            return { status: 'WARN', detail: `${bad.length} LNHOIF with inter-freq A3 margin outside 1–6 dB: ${bad.slice(0, 3).join(', ')}${bad.length > 3 ? '…' : ''}`, fullDetail };
+        }
+
+        // IF4: inter-freq A5 timing per LNHOIF: a5TimeToTriggerInterFreq (WARN > 640ms or 0ms), hysThreshold3InterFreq,
+        // report interval/amount shown for context.
+        function checkIfA5Timing(ctx) {
+            const rows = []; const bad = [];
+            ctx.allLnhoif.forEach(o => {
+                const ttt = hcTtt(getParamCaseInsensitive(o.params, 'a5TimeToTriggerInterFreq'));
+                const hys = hcIfHalf(getParamCaseInsensitive(o.params, 'hysThreshold3InterFreq'));
+                const ri = getParamCaseInsensitive(o.params, 'a5ReportIntervalInterFreq');
+                const ra = getParamCaseInsensitive(o.params, 'a5ReportAmountRsrpInterFreq');
+                if (isNaN(ttt.ms)) return;
+                const probs = [];
+                if (ttt.ms > 640) probs.push('TTT > 640ms (late coverage HO)');
+                if (ttt.ms === 0) probs.push('TTT 0ms (ping-pong risk)');
+                if (!isNaN(hys.n) && hys.n > 3) probs.push('hysteresis > 3dB');
+                const st = probs.length ? 'WARN' : 'OK';
+                if (probs.length) bad.push(`${hcIfLabel(o)}: ${probs.join(', ')}`);
+                rows.push({ icon: hcStatusIcon(st), mo: hcIfLabel(o), tgt: hcIfTarget(o), ttt: ttt.text, hys: hys.t, ri: hcBlank(ri) ? 'N/A' : ri, ra: hcBlank(ra) ? 'N/A' : ra, note: probs.join('; ') || 'OK', status: st });
+            });
+            if (rows.length === 0) return { status: 'NA', detail: 'a5TimeToTriggerInterFreq not found on any LNHOIF.' };
+            const summary = `${rows.length - bad.length} of ${rows.length} LNHOIF have inter-freq A5 TTT between 40 and 640ms and hysteresis ≤ 3dB.`;
+            const fullDetail = summary + renderHcDetailTable([{ key: 'icon', label: '' }, { key: 'mo', label: 'LNCEL/LNHOIF', mono: true }, { key: 'tgt', label: 'Target EARFCN', mono: true }, { key: 'ttt', label: 'a5TimeToTriggerInterFreq', mono: true }, { key: 'hys', label: 'hysThreshold3InterFreq', mono: true }, { key: 'ri', label: 'a5ReportIntervalInterFreq', mono: true }, { key: 'ra', label: 'a5ReportAmountRsrpInterFreq', mono: true }, { key: 'note', label: 'Assessment' }, { key: 'status', label: 'Status' }], rows);
+            if (bad.length === 0) return { status: 'OK', detail: summary, fullDetail };
+            return { status: 'WARN', detail: `${bad.length} LNHOIF with questionable A5 timing: ${bad.slice(0, 3).join('; ')}${bad.length > 3 ? '…' : ''}`, fullDetail };
+        }
+
+        // IF5: carrier map per LNCEL. Every other EARFCN served on the same LNBTS should have an LNHOIF (connected) and an
+        // IRFIM (idle). Missing LNHOIF for a co-site layer → FAIL; LNHOIF/IRFIM mismatch, LNHOIF to own EARFCN → WARN.
+        function checkIfCarrierMap(ctx) {
+            if (ctx.allLncel.length === 0) return { status: 'NA', detail: 'No LNCEL found in this SCF.' };
+            const siteEarfcns = {};
+            ctx.allLncel.forEach(c => { const e = hcCellEarfcn(c.distName); if (e) (siteEarfcns[hcBtsOf(c.distName)] = siteEarfcns[hcBtsOf(c.distName)] || new Set()).add(e); });
+            const hoifBy = {}, irfimBy = {};
+            ctx.allLnhoif.forEach(o => { const e = hcIfTarget(o); if (e !== 'N/A') (hoifBy[hcLncelOf(o.distName)] = hoifBy[hcLncelOf(o.distName)] || new Set()).add(e); });
+            getMOsByClass('IRFIM').forEach(o => { const e = getParamCaseInsensitive(o.params, 'dlCarFrqEut'); if (!hcBlank(e)) (irfimBy[hcLncelOf(o.distName)] = irfimBy[hcLncelOf(o.distName)] || new Set()).add(String(e)); });
+            const rows = []; const issues = []; let fails = 0;
+            const fmt = (list, colour) => list.length ? list.map(e => colour ? `<span style="color:${colour};font-weight:600">${e}</span>` : e).join(', ') : '—';
+            ctx.allLncel.forEach(cell => {
+                const label = hcShort(cell.distName), own = hcCellEarfcn(cell.distName);
+                const co = [...(siteEarfcns[hcBtsOf(cell.distName)] || [])].filter(e => e !== own).sort((a, b) => a - b);
+                const ho = hoifBy[cell.distName] || new Set(), ir = irfimBy[cell.distName] || new Set();
+                const missHo = co.filter(e => !ho.has(e));
+                const hoNoIr = [...ho].filter(e => !ir.has(e) && e !== own);
+                const irNoHo = [...ir].filter(e => !ho.has(e));
+                const self = own && ho.has(own);
+                const probs = [];
+                if (missHo.length) probs.push(`no LNHOIF to co-site ${missHo.join(', ')}`);
+                if (hoNoIr.length) probs.push(`LNHOIF without IRFIM: ${hoNoIr.join(', ')}`);
+                if (irNoHo.length) probs.push(`IRFIM without LNHOIF: ${irNoHo.join(', ')}`);
+                if (self) probs.push('LNHOIF points to own EARFCN');
+                const st = missHo.length ? 'FAIL' : probs.length ? 'WARN' : 'OK';
+                if (st === 'FAIL') fails++;
+                if (probs.length) issues.push(`${label}: ${probs.join('; ')}`);
+                const red = 'var(--status-error,#ef4444)', amber = 'var(--status-warning,#f59e0b)';
+                rows.push({ icon: hcStatusIcon(st), mo: label, own: own || 'N/A', co: co.map(e => missHo.includes(e) ? fmt([e], red) : e).join(', ') || '—', ho: [...ho].sort((a, b) => a - b).map(e => hoNoIr.includes(e) || e === own ? fmt([e], amber) : e).join(', ') || '—', ir: [...ir].sort((a, b) => a - b).map(e => irNoHo.includes(e) ? fmt([e], amber) : e).join(', ') || '—', note: probs.join('; ') || 'OK', status: st });
+            });
+            const summary = `${ctx.allLncel.length - issues.length} of ${ctx.allLncel.length} LNCEL have LNHOIF and IRFIM for every other co-site EARFCN, with matching connected/idle carrier lists.`;
+            const fullDetail = summary + renderHcDetailTable([{ key: 'icon', label: '' }, { key: 'mo', label: 'LNCEL', mono: true }, { key: 'own', label: 'Own EARFCN', mono: true }, { key: 'co', label: 'Other co-site EARFCNs', mono: true }, { key: 'ho', label: 'LNHOIF targets', mono: true }, { key: 'ir', label: 'IRFIM carriers', mono: true }, { key: 'note', label: 'Assessment' }, { key: 'status', label: 'Status' }], rows);
+            if (issues.length === 0) return { status: 'OK', detail: summary, fullDetail };
+            return { status: fails ? 'FAIL' : 'WARN', detail: `${issues.length} LNCEL with gaps in the inter-freq carrier map: ${issues.slice(0, 3).join(' | ')}${issues.length > 3 ? '…' : ''}`, fullDetail };
+        }
+
+        // IF6: inter-frequency features per LNCEL/LNBTS: actInterFreqLB, actServRlqInterFreqLB, actInterFreqSPIDBasedHo (LNCEL)
+        // and UE-based inter-freq ANR (LNBTS). Information card: WARN only when ANR is disabled.
+        function checkIfFeatures(ctx) {
+            if (ctx.allLncel.length === 0) return { status: 'NA', detail: 'No LNCEL found in this SCF.' };
+            const v = (o, k) => { const x = getParamCaseInsensitive(o.params, k); return hcBlank(x) ? 'N/A' : String(x); };
+            const anrOff = ctx.allLnbts.filter(b => v(b, 'actUeBasedAnrInterFreqLte').toLowerCase() !== 'true').map(b => hcShort(b.distName));
+            const rows = ctx.allLncel.map(cell => {
+                const bts = ctx.allLnbts.find(b => b.distName === hcBtsOf(cell.distName));
+                const anr = bts ? v(bts, 'actUeBasedAnrInterFreqLte') : 'N/A';
+                const st = anr.toLowerCase() === 'true' ? 'OK' : 'WARN';
+                return { icon: hcStatusIcon(st), mo: hcShort(cell.distName), lb: v(cell, 'actInterFreqLB'), rlq: v(cell, 'actServRlqInterFreqLB'), spid: v(cell, 'actInterFreqSPIDBasedHo'), anr, status: st };
+            });
+            const summary = `Inter-freq features per LNCEL. UE-based inter-freq ANR disabled on ${anrOff.length} of ${ctx.allLnbts.length} LNBTS.`;
+            const fullDetail = summary + renderHcDetailTable([{ key: 'icon', label: '' }, { key: 'mo', label: 'LNCEL', mono: true }, { key: 'lb', label: 'actInterFreqLB', mono: true }, { key: 'rlq', label: 'actServRlqInterFreqLB', mono: true }, { key: 'spid', label: 'actInterFreqSPIDBasedHo', mono: true }, { key: 'anr', label: 'actUeBasedAnrInterFreqLte (LNBTS)', mono: true }, { key: 'status', label: 'Status' }], rows);
+            if (anrOff.length === 0) return { status: 'OK', detail: summary, fullDetail };
+            return { status: 'WARN', detail: `UE-based inter-freq ANR disabled on: ${anrOff.join(', ')}`, fullDetail };
+        }
+
         // N5: cells of one LNBTS normally share a TAC; different TACs inside a site cause TAU signalling at sector borders.
         // LNADJL neighbours on another TAC are listed for information only.
         function checkTacConsistency(ctx) {
@@ -4469,6 +4593,11 @@ B1 (addition) and A2 (release) act on the same NR leg from opposite directions, 
             csfb_geran_target_identity: { why: `Incomplete LNADJG identity, ARFCNs missing from REDRT or duplicated ARFCN+BSIC make CSFB/redirect to GSM land on the wrong or an unknown cell.`, ideal: `Each LNADJG with CI/LAC/RAC/ARFCN/band/BSIC filled, its ARFCN present in redirGeranArfcnStructL of the related LNCEL, and a unique ARFCN+BSIC pair per LNBTS.` },
             csfb_geran_admission: { why: `If the B2-GERAN RSSI trigger is below the GSM cell admission floor (qRxLevMinGer), the UE is sent to a GSM cell it can't camp on.`, ideal: `b2Threshold2RssiGERAN ≈ −100dBm (10) ≥ qRxLevMinGer ≈ −105dBm, i.e. the trigger at least 3–5dB above the admission floor.` },
             redirect_nr_to_lte: { why: `NR→LTE redirect enabled without NRREDRT (or the reverse) leaves NR UEs without a defined LTE fallback at NR coverage loss.`, ideal: `NRBTS actRedirect enabled + NRREDRT pointing to the anchor LTE EARFCN(s).` },
+            if_a2_start: { why: `The A2 inter-freq threshold decides when measurement gaps start: too high wastes throughput on gaps, too low leaves no time for the A5 before the drop.`, ideal: `threshold2InterFreq = −106dBm (34), hysThreshold2InterFreq = 1dB (2), a2TimeToTriggerActInterFreqMeas = 256–320ms.` },
+            if_meas_window: { why: `If the A1 stop is not clearly above the A2 start, the UE toggles inter-freq measurements on and off at the cell edge.`, ideal: `threshold2a* at least 3dB above threshold2InterFreq* for each profile, e.g. default −100dBm (40) stop / −106dBm (34) start; QCI1 −98dBm / −104dBm.` },
+            if_a3: { why: `An inter-freq A3 margin that is too small causes ping-pong between layers; too large keeps UEs on a worse layer.`, ideal: `a3OffsetRsrpInterFreq + hysA3OffsetRsrpInterFreq = 2–4dB (e.g. 3dB (6) + 1dB (2)), a3TimeToTriggerRsrpInterFreq = 256–320ms.` },
+            if_a5_timing: { why: `Inter-freq A5 is the coverage HO; a long TTT makes it fire after the radio link already failed, 0ms makes it react to fast fading.`, ideal: `a5TimeToTriggerInterFreq = 256–480ms, hysThreshold3InterFreq = 0–1dB, a5ReportIntervalInterFreq = 240–480ms.` },
+            if_carrier_map: { why: `A co-site layer without LNHOIF can't be reached in connected mode; LNHOIF without IRFIM (or vice versa) makes idle and connected mobility follow different layer strategies.`, ideal: `On every LNCEL: one LNHOIF and one IRFIM for each other EARFCN of the site (and for each external layer used), none pointing to the cell's own EARFCN.` },
             anr_interfreq: { why: `Without UE-based inter-freq ANR, missing inter-freq neighbours are never learned automatically.`, ideal: `actUeBasedAnrInterFreqLte = true on every LNBTS (with neighbour cleanup policy active).` },
             twin_beam_sectors: { why: `Twin-beam sectors need consistent configuration on both beams; inconsistencies split the sector unevenly.`, ideal: `Both beams with the same EARFCN/BW/power settings and mirrored azimuth/tilt planning.` },
             blocked_handover_relations: { why: `Relations with handover blocked prevent HO to that neighbour; unless intentional (border/blacklist) this causes drops.`, ideal: `handoverAllowed = allowed on all LNREL except documented blacklist relations.` },
@@ -4515,12 +4644,17 @@ B1 (addition) and A2 (release) act on the same NR leg from opposite directions, 
         const HEALTH_CHECKS = [
             { id: 'a1_serving_threshold', category: 'Mobility (LTE Events)', icon: 'antenna', title: 'A1 Stop Inter-Freq/RAT Meas (threshold2a)', run: checkA1ServingGoodSignalThreshold },
             { id: 'a2_redirect_timers', category: 'Mobility (LTE Events)', icon: 'antenna', title: 'A2 Redirect & Trigger Timers', run: checkA2RedirectTriggerTimers },
-            { id: 'a2_threshold_margin', category: 'Mobility (LTE Events)', icon: 'antenna', title: 'A2 Stop/Start Margin (threshold2a vs inter-freq/RAT)', run: checkA2ThresholdMargin },
+            { id: 'a2_threshold_margin', category: 'Inter-Freq HO (LTE)', icon: 'layers', title: 'A2 Stop/Start Margin (threshold2a vs inter-freq/RAT)', run: checkA2ThresholdMargin },
             { id: 'a3_offset', category: 'Mobility (LTE Events)', icon: 'antenna', title: 'A3 Offset (Intra-Freq HO)', run: checkA3OffsetIntraFreq },
             { id: 'a4_load_balancing', category: 'Mobility (LTE Events)', icon: 'antenna', title: 'A4 Intra-Freq Load Balancing', run: checkA4LoadBalancingConsistency },
             { id: 'a5_ttt', category: 'Mobility (LTE Events)', icon: 'antenna', title: 'A5 Emergency HO Reaction', run: checkA5TimeToTrigger },
-            { id: 'a5_interfreq_balance', category: 'Mobility (LTE Events)', icon: 'antenna', title: 'A5 Inter-Freq Threshold Balance', run: checkInterFreqA5ThresholdBalance },
-            { id: 'interfreq_coverage', category: 'Mobility (LTE Events)', icon: 'antenna', title: 'Inter-Freq Mobility Coverage', run: checkInterFreqMobilityCoverage },
+            { id: 'if_a2_start', category: 'Inter-Freq HO (LTE)', icon: 'layers', title: 'Inter-Freq A2 Measurement Start', run: checkIfA2Start },
+            { id: 'if_meas_window', category: 'Inter-Freq HO (LTE)', icon: 'layers', title: 'Inter-Freq Measurement Window (Default/QCI1/HPUE)', run: checkIfMeasWindow },
+            { id: 'if_a3', category: 'Inter-Freq HO (LTE)', icon: 'layers', title: 'Inter-Freq A3 Margin (LNHOIF)', run: checkIfA3 },
+            { id: 'if_a5_timing', category: 'Inter-Freq HO (LTE)', icon: 'layers', title: 'Inter-Freq A5 Timing (LNHOIF)', run: checkIfA5Timing },
+            { id: 'if_carrier_map', category: 'Inter-Freq HO (LTE)', icon: 'layers', title: 'Inter-Freq Carrier Map (LNHOIF ↔ IRFIM ↔ co-site)', run: checkIfCarrierMap },
+            { id: 'a5_interfreq_balance', category: 'Inter-Freq HO (LTE)', icon: 'layers', title: 'A5 Inter-Freq Threshold Balance', run: checkInterFreqA5ThresholdBalance },
+            { id: 'interfreq_coverage', category: 'Inter-Freq HO (LTE)', icon: 'layers', title: 'LNHOIF Coverage per LNCEL', run: checkInterFreqMobilityCoverage },
             { id: 'meas_report_config', category: 'Mobility (LTE Events)', icon: 'antenna', title: 'A3/A5 Measurement Report Config', run: checkMeasurementReportConfig },
             { id: 'transmitted_ss_blocks', category: 'Radio Configuration', icon: 'radio', title: 'Transmitted SS Blocks', run: checkTransmittedSsBlocks },
             { id: 'nbiot_capacity_alignment', category: 'Radio Configuration', icon: 'radio', title: 'NB-IoT Capacity Alignment', run: checkNbiotCapacityAlignment },
@@ -4537,7 +4671,7 @@ B1 (addition) and A2 (release) act on the same NR leg from opposite directions, 
             { id: 'csfb_geran_target_identity', category: 'CS Fallback', icon: 'antenna', title: 'CSFB GERAN Target Cell Identity (LNADJG)', run: checkCsfbGeranTargetIdentity },
             { id: 'csfb_geran_admission', category: 'CS Fallback', icon: 'antenna', title: 'CSFB GERAN Admission Thresholds (GNFL/LNHOG)', run: checkCsfbGeranAdmissionThresholds },
             { id: 'redirect_nr_to_lte', category: 'Mobility (LTE Events)', icon: 'antenna', title: 'NR to LTE Redirect (NRREDRT)', run: checkRedirectNrToLte },
-            { id: 'anr_interfreq', category: 'Mobility (LTE Events)', icon: 'antenna', title: 'ANR Inter-Freq', run: checkAnrInterFreq },
+            { id: 'anr_interfreq', category: 'Inter-Freq HO (LTE)', icon: 'layers', title: 'Inter-Freq Features & ANR', run: checkIfFeatures },
             { id: 'twin_beam_sectors', category: 'Power & Coverage', icon: 'bolt', title: 'Twin Beam Sector Detection', run: checkTwinBeamSectors },
             { id: 'blocked_handover_relations', category: 'Mobility (LTE Events)', icon: 'antenna', title: 'Blocked Handover Relations (LNREL)', run: checkBlockedHandoverRelations },
             { id: 'ca_events', category: 'Carrier Aggregation', icon: 'layers', title: 'CA Measurement Events (A3/A6)', run: checkCaMeasurementEvents },
@@ -4558,8 +4692,8 @@ B1 (addition) and A2 (release) act on the same NR leg from opposite directions, 
             { id: 'nr_tilt_offset', category: 'Power & Coverage', icon: 'bolt', title: 'NR Tilt Offset', run: checkNrTiltOffset },
             { id: 'power_saving_4g', category: 'Power & Coverage', icon: 'bolt', title: 'Power Saving (4G)', run: checkPowerSaving4G },
             { id: 'power_saving_nr', category: 'Power & Coverage', icon: 'bolt', title: 'Power Saving (5G)', run: checkPowerSavingNR },
-            { id: 'idle_connected_coherence', category: 'Mobility (LTE Events)', icon: 'antenna', title: 'Idle ↔ Connected Inter-Freq Trigger', run: checkIdleConnectedCoherence },
-            { id: 'a5_vs_a2_activation', category: 'Mobility (LTE Events)', icon: 'antenna', title: 'A5 Inter-Freq vs A2 Activation', run: checkA5VsA2Activation },
+            { id: 'idle_connected_coherence', category: 'Inter-Freq HO (LTE)', icon: 'layers', title: 'Idle ↔ Connected Inter-Freq Trigger', run: checkIdleConnectedCoherence },
+            { id: 'a5_vs_a2_activation', category: 'Inter-Freq HO (LTE)', icon: 'layers', title: 'A5 Inter-Freq vs A2 Activation', run: checkA5VsA2Activation },
             { id: 'intrafreq_a5', category: 'Mobility (LTE Events)', icon: 'antenna', title: 'Intra-Freq A5 (threshold3/3a)', run: checkIntraFreqA5 },
             { id: 'cio_asymmetry', category: 'Mobility (LTE Events)', icon: 'antenna', title: 'CIO Range & Asymmetry (LNREL)', run: checkCioAsymmetry },
             { id: 'reselection_priority_map', category: 'Mobility (LTE Events)', icon: 'antenna', title: 'Reselection Priority Map (SIB/IRFIM)', run: checkReselectionPriorityMap },

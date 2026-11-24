@@ -5,7 +5,7 @@ Leia isto antes de qualquer tarefa. Este arquivo é carregado automaticamente em
 ## O projeto
 
 - Ferramenta web **de arquivo único**: `NokiaSCF_ReaderDashboard_v2.08.html` (~8.8k linhas, HTML + CSS + JS inline, sem build, sem dependências além de Google Fonts).
-- Lê arquivos SCF (XML de configuração de sites Nokia LTE/NR) no navegador e gera módulos de análise. Versão exibida no header: **v2.18** (o nome do arquivo continua `_v2.08.html`).
+- Lê arquivos SCF (XML de configuração de sites Nokia LTE/NR) no navegador e gera módulos de análise. Versão exibida no header: **v2.19** (o nome do arquivo continua `_v2.08.html`).
 - O dono trabalha com engenharia/otimização de redes Nokia. Comunicação em **português**; código, comentários e commits em **inglês**.
 
 ## Fluxo de trabalho combinado (fazer sempre, sem perguntar)
@@ -103,6 +103,13 @@ Use `grep -n` pelo nome da função em vez de confiar nos números.
   - VoLTE t310/n310: WARN se t310Qci1/n310Qci1 < t310/n310 do SIB. Tabela: SIB t310 × t310Qci1, SIB n310 × n310Qci1 (menor em vermelho) e, só como contexto (cinza), t311, n311, t300, t301 (SIB) e t304IntraLte (LNCEL), com glossário.
   - Novos cards: Idle↔Connected Inter-Freq Trigger (|Δ| > 6 dB WARN), A5 Inter-Freq vs A2 Activation (FAIL se threshold3InterFreq > threshold2InterFreq), Intra-Freq A5 (threshold3a − threshold3 fora de 0–6 dB WARN), CIO Range & Asymmetry (|CIO| > 6 dB ou par co-site assimétrico WARN), Reselection Priority Map (mesma EARFCN com prioridades diferentes SIB/IRFIM → FAIL), TAC Consistency per Site (inclui contagem de LNADJL com mesma TAC do site e com outra TAC), PCI Mod-3/Mod-30 co-site (mesmo PCI ou mod 3 → FAIL, mod 30 → WARN), PRACH Root Sequence Overlap (faixas sobrepostas → FAIL, Ncs pela Tab. 5.7.2-2), Locked/Barred Cells.
   - Helpers compartilhados: `hcTtt`, `hcDbEnum`, `hcCellEarfcn`, `hcSibOf`, `hcBtsOf`, `hcLncelOf`.
+- **Categoria Inter-Freq HO (LTE)** (v2.19, helpers `hcIfDbm`, `hcIfHalf`, `hcIfLabel`, `hcIfTarget`): agrupa A2 Stop/Start Margin, A5 Inter-Freq Balance (agora tabela, Δ = threshold3aInterFreq − threshold3InterFreq), LNHOIF Coverage (tabela com alvos), Idle↔Connected, A5 vs A2 Activation e os novos:
+  - Inter-Freq A2 Measurement Start: threshold2InterFreq fora de −115…−95 dBm ou a2TimeToTriggerActInterFreqMeas > 640 ms → WARN.
+  - Measurement Window: threshold2a* − threshold2InterFreq* (Default/QCI1/HPUE) < 3 dB WARN, < 0 FAIL.
+  - Inter-Freq A3 Margin: a3OffsetRsrpInterFreq + hysA3OffsetRsrpInterFreq (raw/2) fora de 1–6 dB → WARN.
+  - Inter-Freq A5 Timing: a5TimeToTriggerInterFreq > 640 ms ou 0 ms, hysThreshold3InterFreq > 3 dB → WARN.
+  - Carrier Map: EARFCN co-site sem LNHOIF → FAIL; LNHOIF sem IRFIM, IRFIM sem LNHOIF ou LNHOIF para a própria EARFCN → WARN.
+  - Inter-Freq Features & ANR (substitui o card ANR Inter-Freq): actInterFreqLB, actServRlqInterFreqLB, actInterFreqSPIDBasedHo por LNCEL + ANR da LNBTS (WARN só se ANR off).
 - **Guidance nos cards** (`HC_GUIDANCE`, `addHcGuidance`): quando o status é WARN/FAIL, o detalhe ganha um bloco âmbar logo após o resumo com "Why it matters" e "Ideal setup (RF good practice)" com valores típicos (dBm(raw)). Card novo → adicionar entrada no `HC_GUIDANCE`.
 - **EARFCN junto do LNCEL**: toda tabela do detalhe do Health Check que lista LNCEL ganha a coluna EARFCN logo após a coluna da célula (`hcAddEarfcnColumns`, aplicado no modal; tabelas que já têm EARFCN ficam como estão).
 - **Modal do Health Check**: 1080px de largura; fonte do detalhe `calc(0.76rem - 1px)`, tabela `calc(0.7rem - 1px)`.
